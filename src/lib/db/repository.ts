@@ -6,11 +6,17 @@ import mongoose, {
   ProjectionType,
   QueryOptions,
   UpdateQuery,
-  PaginateModel, PipelineStage,
+  PaginateModel,
+  PipelineStage,
+  BulkWriteOptions,
+  BulkWriteResult
 } from 'mongoose';
 
 export interface MixedModel<T> extends PaginateModel<T>, AggregatePaginateModel<T> {
-
+  bulkWrite(
+    operations: mongoose.AnyBulkWriteOperation<T>[],
+    options?: BulkWriteOptions
+  ): Promise<BulkWriteResult>;
 }
 
 
@@ -71,6 +77,28 @@ export class BaseRepository<T> {
 
   findById(_id: string) {
     return this._model.findById(_id);
+  }
+
+  /**
+   * Perform a bulkWrite operation
+   * @param operations - Array of operations to perform
+   * @param options - Options for the bulkWrite operation
+   * @returns Result of the bulkWrite operation
+   */
+  bulkWrite(
+    operations: mongoose.AnyBulkWriteOperation<T>[],
+    options?: BulkWriteOptions
+  ): Promise<BulkWriteResult> {
+    return this._model.bulkWrite(operations, options);
+  }
+
+  /**
+   * Delete one document that matches the filter
+   * @param filter - Filter to match documents
+   * @returns Result of the deleteOne operation
+   */
+  deleteOne(filter: FilterQuery<T>) {
+    return this._model.deleteOne(this.processFilter(filter));
   }
 
   private processFilter(filter: FilterQuery<T>) {
