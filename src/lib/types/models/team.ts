@@ -1,4 +1,6 @@
 import {BaseEntity} from "@/lib/types/models/base";
+import mongoose from "mongoose";
+import {User} from "@/lib/types/models/user";
 
 export enum TeamRole {
   Owner = 'owner',
@@ -17,4 +19,6 @@ export interface Team extends BaseEntity {
 export interface TeamMember extends BaseEntity {
   displayName: string;
   role: TeamRole;
+  user: string | mongoose.Types.ObjectId | User;
+  team: string | mongoose.Types.ObjectId | Team;
 }
