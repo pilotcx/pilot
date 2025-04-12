@@ -2,7 +2,7 @@ import axios, {AxiosRequestConfig, Method} from 'axios';
 import {ApiResponse} from "@/lib/types/common/api";
 import {RegisterSchema, LoginSchema} from "@/lib/validations/auth";
 import {CreateTeamSchema, UpdateTeamSchema, AddTeamMemberSchema, UpdateTeamMemberSchema} from "@/lib/validations/team";
-import {Team} from "@/lib/types/models/team";
+import {Team, TeamMember} from "@/lib/types/models/team";
 
 export class ApiService {
   api = axios.create({
@@ -45,7 +45,7 @@ export class ApiService {
   };
 
   getTeam = async (teamId: string) => {
-    return this.call('GET', `/teams/${teamId}`);
+    return this.call<Team>('GET', `/teams/${teamId}`);
   };
 
   getTeamWithMembership = async (slug: string) => {
@@ -62,7 +62,7 @@ export class ApiService {
 
   // Team members methods
   getTeamMembers = async (teamId: string, page = 1, limit = 10) => {
-    return this.call('GET', `/teams/${teamId}/members?page=${page}&limit=${limit}`);
+    return this.call<TeamMember[]>('GET', `/teams/${teamId}/members?page=${page}&limit=${limit}`);
   };
 
   addTeamMember = async (teamId: string, data: AddTeamMemberSchema) => {

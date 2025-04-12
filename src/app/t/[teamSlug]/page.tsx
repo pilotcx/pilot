@@ -1,8 +1,10 @@
 import { withAuthPage } from "@/lib/utils/withAuthPage";
 import { teamService } from "@/lib/services/team";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Settings, Users } from "lucide-react";
 
 interface TeamPageProps {
   params: Promise<{
@@ -28,12 +30,20 @@ export default async function TeamPage({ params }: TeamPageProps) {
     return (
       <div className="container py-10">
         <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-2xl">{team.name}</CardTitle>
-            <CardDescription className="flex items-center">
-              <Users className="mr-2 h-4 w-4" />
-              {team.membersCount} {team.membersCount === 1 ? "member" : "members"}
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">{team.name}</CardTitle>
+              <CardDescription className="flex items-center">
+                <Users className="mr-2 h-4 w-4" />
+                {team.membersCount} {team.membersCount === 1 ? "member" : "members"}
+              </CardDescription>
+            </div>
+            <Link href={`/t/${params.teamSlug}/settings`}>
+              <Button variant="outline" size="sm">
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </Button>
+            </Link>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">

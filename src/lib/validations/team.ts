@@ -28,7 +28,7 @@ export const updateTeamSchema = z.object({
 export const addTeamMemberSchema = z.object({
   userId: z.string().min(1, { message: "User ID is required" }),
   displayName: z.string().min(1, { message: "Display name is required" }),
-  role: z.nativeEnum(TeamRole).default(TeamRole.Member),
+  role: z.nativeEnum(TeamRole).default(TeamRole.Member).optional(),
 }).strict();
 
 export const updateTeamMemberSchema = z.object({

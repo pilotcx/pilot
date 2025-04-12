@@ -10,7 +10,8 @@ export const GET = withApi(async (request: NextRequest, context, decoded) => {
     throw new ApiError(401, 'Unauthorized');
   }
 
-  const teamId = context.params.teamId;
+  const params = await context.params;
+  const teamId = params.teamId;
   const { searchParams } = new URL(request.url);
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '10');
@@ -36,7 +37,8 @@ export const POST = withApi(async (request: NextRequest, context, decoded) => {
     throw new ApiError(401, 'Unauthorized');
   }
 
-  const teamId = context.params.teamId;
+  const params = await context.params;
+  const teamId = params.teamId;
   const body = await request.json();
 
   // Validate the request body against the schema
