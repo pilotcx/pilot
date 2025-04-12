@@ -64,7 +64,7 @@ export function ChangePasswordForm() {
   return (
     <Dialog open={showPasswordForm} onOpenChange={setShowPasswordForm}>
       <DialogTrigger asChild>
-        <Button className="w-full">Change Password</Button>
+        <Button className="w-fit">Change Password</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

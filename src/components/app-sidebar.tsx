@@ -163,19 +163,19 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const {teamId} = useParams();
+  const {teamSlug} = useParams();
   const navMainWithTeamUrl = data.navMain.map((item) => ({
     ...item,
-    url: `/t/${teamId}${item.url}`,
+    url: `/t/${teamSlug}${item.url}`,
     items: item.items?.map((subItem) => ({
       ...subItem,
-      url: `/t/${teamId}${subItem.url}`
+      url: `/t/${teamSlug}${subItem.url}`
     }))
   }));
 
   const projectsWithTeamUrl = data.projects.map((item) => ({
     ...item,
-    url: `/t/${teamId}${item.url}`
+    url: `/t/${teamSlug}${item.url}`
   }));
 
   return (
