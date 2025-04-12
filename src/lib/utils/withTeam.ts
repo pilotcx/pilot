@@ -8,10 +8,11 @@ interface TeamParams {
 
 export default async function withTeam(params: TeamParams | Promise<TeamParams>) {
   const {teamSlug} = await params;
-  await withAuthPage({
+  const jwt = await withAuthPage({
     redirectTo: '/login'
   });
-  const team = await teamService.getTeamBySlug(teamSlug);
-  if (!team) return redirect('/not-found');
-  return team;
+  const userId = jwt.id;
+  const data = await teamService.getTeamWithMembership(teamSlug, userId);
+  if (!data || !data.team || !data.membership) return redirect('/not-found');
+  return {team: data.team, membership: data.membership};
 }

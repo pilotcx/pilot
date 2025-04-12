@@ -28,7 +28,7 @@ export async function withAuthPage(options: WithAuthOptions = {}) {
     } else {
       if (roles.length > 0 && !roles.includes(decoded.role as UserRole)) return redirect(forbiddenPath);
     }
-    return !!decoded.role;
+    return decoded;
   } catch (e) {
     redirect(redirectTo);
   }

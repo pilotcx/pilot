@@ -12,7 +12,7 @@ import {SidebarInset, SidebarProvider, SidebarTrigger,} from "@/components/ui/si
 import {ReactNode} from "react";
 import withTeam from "@/lib/utils/withTeam";
 import TeamProvider from "@/components/providers/team-provider";
-import {Team} from "@/lib/types/models/team";
+import {Team, TeamMember} from "@/lib/types/models/team";
 
 interface TeamLayoutProps {
   children: ReactNode;
@@ -22,11 +22,12 @@ interface TeamLayoutProps {
 }
 
 export default async function TeamLayout({children, params}: TeamLayoutProps) {
-  const team = await withTeam(params);
+  const {team, membership} = await withTeam(params);
   // Fetch team data for the breadcrumb
   const teamJson = JSON.parse(JSON.stringify(team)) as Team;
+  const membershipJson = JSON.parse(JSON.stringify(membership)) as TeamMember;
   return (
-    <TeamProvider team={teamJson}>
+    <TeamProvider team={teamJson} membership={membershipJson}>
       <SidebarProvider>
         <AppSidebar/>
         <SidebarInset>

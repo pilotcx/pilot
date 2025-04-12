@@ -44,6 +44,10 @@ export class ApiService {
     return this.call('GET', `/teams/${teamId}`);
   };
 
+  getTeamWithMembership = async (slug: string) => {
+    return this.call('GET', `/teams/${slug}/with-membership`);
+  };
+
   updateTeam = async (teamId: string, data: UpdateTeamSchema) => {
     return this.call('PUT', `/teams/${teamId}`, data);
   };

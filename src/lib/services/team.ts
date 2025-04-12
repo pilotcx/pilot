@@ -29,6 +29,28 @@ class TeamService {
   }
 
   /**
+   * Get a team by slug with the current user's membership
+   */
+  async getTeamWithMembership(slug: string, userId: string) {
+    const team = await dbService.team.findOne({ slug });
+
+    if (!team) {
+      return null;
+    }
+
+    // Get the user's membership in this team
+    const membership = await dbService.teamMember.findOne({
+      team: team._id,
+      user: userId
+    });
+
+    return {
+      team,
+      membership
+    };
+  }
+
+  /**
    * Check if a slug is available
    */
   async isSlugAvailable(slug: string): Promise<boolean> {
