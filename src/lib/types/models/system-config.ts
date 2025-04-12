@@ -7,6 +7,7 @@ export enum SystemConfigKey {
   OrgAvatar = 'org_avatar',
   OrgAllowMultiTeam = 'org_allow_multi_team',
   OrgAllowTeamCreationEveryone = 'org_allow_team_creation_everyone',
+  AllowRegistration = 'allow_registration',
 }
 
 export interface SystemConfig extends BaseEntity {
