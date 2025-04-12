@@ -52,11 +52,9 @@ const INITIAL_DATA: OrganizationComplete = {
   phone: "",
   website: "",
 
-  streetAddress: "",
-  city: "",
+  address: "",
   state: "",
   postalCode: "",
-  country: "",
 };
 
 export function OrganizationSetupForm() {
