@@ -4,6 +4,7 @@ import {TeamRole} from '@/lib/types/models/team';
 import {UserRole} from '@/lib/types/models/user';
 import {AddTeamMemberSchema, CreateTeamSchema, UpdateTeamMemberSchema, UpdateTeamSchema} from '@/lib/validations/team';
 import {PaginateOptions} from 'mongoose';
+import {slugify} from '@/lib/utils/slugify';
 
 class TeamService {
   /**
@@ -21,12 +22,54 @@ class TeamService {
   }
 
   /**
+   * Get a team by slug
+   */
+  getTeamBySlug(slug: string) {
+    return dbService.team.findOne({ slug });
+  }
+
+  /**
+   * Check if a slug is available
+   */
+  async isSlugAvailable(slug: string): Promise<boolean> {
+    const existingTeam = await dbService.team.findOne({ slug });
+    return !existingTeam;
+  }
+
+  /**
    * Create a new team
    */
   async createTeam(data: CreateTeamSchema, userId: string) {
+    // Generate slug from name if not provided
+    let slug = data.slug;
+    if (!slug) {
+      slug = slugify(data.name);
+    }
+
+    // Check if slug is available
+    const isAvailable = await this.isSlugAvailable(slug);
+    if (!isAvailable) {
+      // Try to find a unique slug by appending numbers
+      let counter = 1;
+      let newSlug = `${slug}-${counter}`;
+
+      while (!(await this.isSlugAvailable(newSlug))) {
+        counter++;
+        newSlug = `${slug}-${counter}`;
+
+        // Prevent infinite loops
+        if (counter > 100) {
+          throw new ApiError(400, 'Could not generate a unique slug. Please provide a different team name.');
+        }
+      }
+
+      slug = newSlug;
+    }
+
     // Create the team
     const team = await dbService.team.create({
       name: data.name,
+      slug,
       description: data.description || '',
       avatar: data.avatar || '',
       membersCount: 1,
@@ -76,6 +119,14 @@ class TeamService {
 
     if (!isAdmin && !isOwner) {
       throw new ApiError(403, 'Only admins or team owners can update a team');
+    }
+
+    // If slug is being updated, check if it's available
+    if (data.slug && data.slug !== team.slug) {
+      const isAvailable = await this.isSlugAvailable(data.slug);
+      if (!isAvailable) {
+        throw new ApiError(400, 'This slug is already in use. Please choose a different one.');
+      }
     }
 
     // Update the team

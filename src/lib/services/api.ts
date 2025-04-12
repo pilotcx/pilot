@@ -2,6 +2,7 @@ import axios, {AxiosRequestConfig, Method} from 'axios';
 import {ApiResponse} from "@/lib/types/common/api";
 import {RegisterSchema, LoginSchema} from "@/lib/validations/auth";
 import {CreateTeamSchema, UpdateTeamSchema, AddTeamMemberSchema, UpdateTeamMemberSchema} from "@/lib/validations/team";
+import {Team} from "@/lib/types/models/team";
 
 export class Api {
   api = axios.create({
@@ -32,7 +33,7 @@ export class Api {
 
   // Team methods
   createTeam = async (data: CreateTeamSchema) => {
-    return this.call('POST', '/teams', data);
+    return this.call<Team>('POST', '/teams', data);
   };
 
   getTeams = async (page = 1, limit = 10) => {

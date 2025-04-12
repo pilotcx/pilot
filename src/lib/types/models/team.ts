@@ -10,6 +10,7 @@ export enum TeamRole {
 
 export interface Team extends BaseEntity {
   name: string;
+  slug: string;
   description: string;
   avatar: string;
   membersCount: number;

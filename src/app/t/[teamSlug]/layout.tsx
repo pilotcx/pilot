@@ -10,12 +10,31 @@ import {
 import {Separator} from "@/components/ui/separator"
 import {SidebarInset, SidebarProvider, SidebarTrigger,} from "@/components/ui/sidebar"
 import {withAuthPage} from "@/lib/utils/withAuthPage";
+import {teamService} from "@/lib/services/team";
 import {ReactNode} from "react";
 
-export default async function TeamLayout({children}: { children: ReactNode }) {
+interface TeamLayoutProps {
+  children: ReactNode;
+  params: {
+    teamSlug: string;
+  };
+}
+
+export default async function TeamLayout({ children, params }: TeamLayoutProps) {
   await withAuthPage({
     redirectTo: '/login'
   });
+
+  // Fetch team data for the breadcrumb
+  let teamName = "Team";
+  try {
+    const team = await teamService.getTeamBySlug(params.teamSlug);
+    if (team) {
+      teamName = team.name;
+    }
+  } catch (error) {
+    console.error("Error fetching team for layout:", error);
+  }
   return (
     <SidebarProvider>
       <AppSidebar/>
@@ -31,13 +50,13 @@ export default async function TeamLayout({children}: { children: ReactNode }) {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Building Your Application
+                  <BreadcrumbLink href="/">
+                    Teams
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block"/>
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                  <BreadcrumbPage>{teamName}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
