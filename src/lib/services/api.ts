@@ -4,7 +4,7 @@ import {RegisterSchema, LoginSchema} from "@/lib/validations/auth";
 import {CreateTeamSchema, UpdateTeamSchema, AddTeamMemberSchema, UpdateTeamMemberSchema} from "@/lib/validations/team";
 import {Team} from "@/lib/types/models/team";
 
-export class Api {
+export class ApiService {
   api = axios.create({
     baseURL: `/api`,
   });
@@ -37,7 +37,7 @@ export class Api {
   };
 
   getTeams = async (page = 1, limit = 10) => {
-    return this.call('GET', `/teams?page=${page}&limit=${limit}`);
+    return this.call<Team[]>('GET', `/teams?page=${page}&limit=${limit}`);
   };
 
   getTeam = async (teamId: string) => {
@@ -75,4 +75,6 @@ export class Api {
   };
 }
 
-export default new Api();
+const apiService = new ApiService();
+
+export default apiService;

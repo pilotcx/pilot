@@ -22,7 +22,8 @@ export const GET = withApi(async (request: NextRequest, context, decoded) => {
   });
 
   return {
-    data: members,
+    data: members.docs,
+    pagination: members,
     message: 'Team members retrieved successfully',
   };
 }, {
@@ -37,16 +38,16 @@ export const POST = withApi(async (request: NextRequest, context, decoded) => {
 
   const teamId = context.params.teamId;
   const body = await request.json();
-  
+
   // Validate the request body against the schema
   const result = addTeamMemberSchema.safeParse(body);
   if (!result.success) {
     throw new ApiError(400, result.error.message);
   }
-  
+
   // Add the team member
   const member = await teamService.addTeamMember(teamId, result.data, decoded.id);
-  
+
   return {
     data: member,
     message: 'Team member added successfully',
