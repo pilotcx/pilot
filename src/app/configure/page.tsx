@@ -5,8 +5,8 @@ export default async function ConfigurePage() {
   await dbService.connect();
 
   return (
-    <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-xl">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-indigo-950 p-4">
+      <div className="w-full max-w-4xl">
         <OrganizationSetupForm />
       </div>
     </div>
