@@ -48,6 +48,7 @@ export function BasicInfoStep({ data, onUpdate, onNext }: BasicInfoStepProps) {
       avatar: data.avatar || "",
       organizationStructure:
         data.organizationStructure || OrganizationStructure.MultiTeam,
+      allowRegistration: data.allowRegistration || false,
       teamCreationPermission: data.teamCreationPermission || {
         allowAnyUser: false,
         allowedRoles: [UserRole.Admin],
@@ -120,9 +121,7 @@ export function BasicInfoStep({ data, onUpdate, onNext }: BasicInfoStepProps) {
             name="avatar"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>
-                  Avatar link
-                </FormLabel>
+                <FormLabel>Avatar link</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="https://example.com/avatar.png"
@@ -133,7 +132,7 @@ export function BasicInfoStep({ data, onUpdate, onNext }: BasicInfoStepProps) {
               </FormItem>
             )}
           />
-        
+
           <FormField
             control={form.control}
             name="organizationStructure"
@@ -166,7 +165,7 @@ export function BasicInfoStep({ data, onUpdate, onNext }: BasicInfoStepProps) {
               </FormItem>
             )}
           />
-            <FormField
+          <FormField
             control={form.control}
             name="size"
             render={({ field }) => (
@@ -193,7 +192,9 @@ export function BasicInfoStep({ data, onUpdate, onNext }: BasicInfoStepProps) {
               </FormItem>
             )}
           />
-
+        </div>
+        {form.watch("organizationStructure") ===
+          OrganizationStructure.MultiTeam && (
           <FormField
             control={form.control}
             name="teamCreationPermission.allowAnyUser"
@@ -216,61 +217,26 @@ export function BasicInfoStep({ data, onUpdate, onNext }: BasicInfoStepProps) {
               </FormItem>
             )}
           />
-        </div>
-
-        {!form.watch("teamCreationPermission.allowAnyUser") && (
-          <div className="space-y-2 ml-6">
-            <p className="text-sm text-gray-600">
-              Select roles that can create teams:
-            </p>
-            <div className="space-y-2">
-              {Object.values(UserRole).map((role) => (
-                <FormField
-                  key={role}
-                  control={form.control}
-                  name="teamCreationPermission.allowedRoles"
-                  render={() => {
-                    const allowedRoles =
-                      form.watch("teamCreationPermission.allowedRoles") || [];
-                    const isChecked = allowedRoles.includes(role);
-
-                    return (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl>
-                          <Checkbox
-                            id={`role-${role}`}
-                            checked={isChecked}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                form.setValue(
-                                  "teamCreationPermission.allowedRoles",
-                                  [...allowedRoles, role],
-                                  { shouldValidate: true }
-                                );
-                              } else {
-                                form.setValue(
-                                  "teamCreationPermission.allowedRoles",
-                                  allowedRoles.filter((r) => r !== role),
-                                  { shouldValidate: true }
-                                );
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <label
-                          htmlFor={`role-${role}`}
-                          className="text-sm font-medium capitalize"
-                        >
-                          {formatRoleLabel(role)}
-                        </label>
-                      </FormItem>
-                    );
-                  }}
-                />
-              ))}
-            </div>
-          </div>
         )}
+        <FormField
+          control={form.control}
+          name="allowRegistration"
+          render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormControl>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="allowRegistration"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                  <Label htmlFor="allowRegistration">Allow Registration</Label>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <Button type="submit" className="w-full">
           Continue

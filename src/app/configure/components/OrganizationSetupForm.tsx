@@ -41,6 +41,7 @@ const INITIAL_DATA: OrganizationComplete = {
   industry: Industry.Other,
   size: OrganizationSize.XSmall,
   organizationStructure: OrganizationStructure.MultiTeam,
+  allowRegistration: false,
   teamCreationPermission: {
     allowAnyUser: false,
     allowedRoles: [UserRole.Admin]

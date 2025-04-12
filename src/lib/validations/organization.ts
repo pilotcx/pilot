@@ -35,6 +35,7 @@ export const organizationBasicInfoSchema = z.object({
   size: z.nativeEnum(OrganizationSize).default(OrganizationSize.XSmall),
   organizationStructure: z.nativeEnum(OrganizationStructure).default(OrganizationStructure.MultiTeam),
   avatar: z.string().optional(),
+  allowRegistration: z.boolean().default(false),
   teamCreationPermission: z.object({
     allowAnyUser: z.boolean().default(false),
     allowedRoles: z.array(z.nativeEnum(UserRole)).optional(),
