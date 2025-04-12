@@ -17,6 +17,7 @@ import { AddressStep } from "./AddressStep";
 import { BasicInfoStep } from "./BasicInfoStep";
 import { ContactInfoStep } from "./ContactInfoStep";
 import { FormProgress } from "./FormProgress";
+import { CheckCircleIcon } from "lucide-react";
 
 const FORM_STEPS: Step[] = [
   {
@@ -118,20 +119,7 @@ export function OrganizationSetupForm() {
         <CardContent className="p-6">
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                className="h-8 w-8 text-green-600"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4.5 12.75l6 6 9-13.5"
-                />
-              </svg>
+              <CheckCircleIcon className="h-8 w-8 text-green-600" />
             </div>
             <h2 className="text-2xl font-semibold">Organization Created!</h2>
             <p className="text-muted-foreground mt-2 max-w-md">

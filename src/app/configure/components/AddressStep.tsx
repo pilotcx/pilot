@@ -35,13 +35,11 @@ export function AddressStep({
   const form = useForm<OrganizationAddress>({
     resolver: zodResolver(organizationAddressSchema),
     defaultValues: {
-      streetAddress: data.streetAddress || "",
-      city: data.city || "",
+      address: data.address || "",
       state: data.state || "",
       postalCode: data.postalCode || "",
-      country: data.country || "",
     },
-    mode: "onChange"
+    mode: "onChange",
   });
 
   useEffect(() => {
@@ -50,7 +48,7 @@ export function AddressStep({
     });
     return () => subscription.unsubscribe();
   }, [form, onUpdate]);
-  
+
   function handleFormSubmit(values: OrganizationAddress) {
     onUpdate(values);
     onSubmit();
@@ -58,13 +56,16 @@ export function AddressStep({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit(handleFormSubmit)}
+        className="space-y-6"
+      >
         <FormField
           control={form.control}
-          name="streetAddress"
+          name="address"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Street Address <span className="text-red-500">*</span></FormLabel>
+              <FormLabel>Address</FormLabel>
               <FormControl>
                 <Input placeholder="123 Main St" {...field} />
               </FormControl>
@@ -76,24 +77,10 @@ export function AddressStep({
         <div className="grid grid-cols-2 gap-6 items-start">
           <FormField
             control={form.control}
-            name="city"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>City <span className="text-red-500">*</span></FormLabel>
-                <FormControl>
-                  <Input placeholder="San Francisco" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
             name="state"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>State/Province <span className="text-red-500">*</span></FormLabel>
+                <FormLabel>State/Province</FormLabel>
                 <FormControl>
                   <Input placeholder="CA" {...field} />
                 </FormControl>
@@ -101,15 +88,13 @@ export function AddressStep({
               </FormItem>
             )}
           />
-        </div>
 
-        <div className="grid grid-cols-2 gap-6  items-start">
           <FormField
             control={form.control}
             name="postalCode"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Postal Code <span className="text-red-500">*</span></FormLabel>
+                <FormLabel>Postal Code</FormLabel>
                 <FormControl>
                   <Input placeholder="94103" {...field} />
                 </FormControl>
@@ -118,21 +103,7 @@ export function AddressStep({
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="country"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Country <span className="text-red-500">*</span></FormLabel>
-                <FormControl>
-                  <Input placeholder="United States" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
-
         <div className="flex gap-3">
           <Button
             type="button"

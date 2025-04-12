@@ -78,7 +78,7 @@ export function ContactInfoStep({
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone Number <span className="text-red-500">*</span></FormLabel>
+              <FormLabel>Phone Number</FormLabel>
               <FormControl>
                 <Input
                   type="tel"
@@ -96,7 +96,7 @@ export function ContactInfoStep({
           name="website"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Website (Optional)</FormLabel>
+              <FormLabel>Website</FormLabel>
               <FormControl>
                 <Input
                   type="url"
