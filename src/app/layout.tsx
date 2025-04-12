@@ -4,6 +4,7 @@ import "./globals.css";
 import {ReactNode} from "react";
 import {systemConfigService} from "@/lib/services/system-config";
 import {SystemConfigKey} from "@/lib/types/models/system-config";
+import { dbService } from "@/lib/db/service";
 
 const interFont = Inter({
   variable: "--font-inter",
@@ -11,6 +12,7 @@ const interFont = Inter({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
+  await dbService.connect();
   const title = await systemConfigService.get<string>(SystemConfigKey.OrgName);
   const description = await systemConfigService.get<string>(SystemConfigKey.OrgDesc);
 
