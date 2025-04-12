@@ -2,7 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles,} from "lucide-react"
+import {
+  BadgeCheck,
+  Bell,
+  ChevronsUpDown,
+  CreditCard,
+  InfoIcon,
+  LogOut,
+  ShieldIcon,
+  Sparkles,
+  UserIcon,
+} from "lucide-react"
 
 import {Avatar, AvatarFallback, AvatarImage,} from "@/components/ui/avatar"
 import {
@@ -66,23 +76,12 @@ export function NavUser() {
             <DropdownMenuSeparator/>
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <Sparkles/>
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator/>
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck/>
+                <UserIcon/>
                 Account
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <CreditCard/>
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell/>
-                Notifications
+                <ShieldIcon/>
+                Security
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator/>
