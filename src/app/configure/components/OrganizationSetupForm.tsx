@@ -6,6 +6,10 @@ import {
   OrganizationBasicInfo,
   OrganizationComplete,
   OrganizationContact,
+  Industry,
+  OrganizationSize,
+  OrganizationStructure,
+  UserRole
 } from "@/lib/validations/organization";
 import axios from "axios";
 import { useState, useEffect } from "react";
@@ -34,8 +38,13 @@ const FORM_STEPS: Step[] = [
 
 const INITIAL_DATA: OrganizationComplete = {
   name: "",
-  industry: "Other",
-  size: "1-10" as any,
+  industry: Industry.Other,
+  size: OrganizationSize.XSmall,
+  organizationStructure: OrganizationStructure.MultiTeam,
+  teamCreationPermission: {
+    allowAnyUser: false,
+    allowedRoles: [UserRole.Admin]
+  },
 
   email: "",
   phone: "",
@@ -50,7 +59,6 @@ const INITIAL_DATA: OrganizationComplete = {
 
 export function OrganizationSetupForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   const {
@@ -65,7 +73,6 @@ export function OrganizationSetupForm() {
     updateFormData,
   } = useMultiStepForm<OrganizationComplete>(FORM_STEPS, INITIAL_DATA);
 
-  // Debug when step changes
   useEffect(() => {
     console.log("Current step:", currentStep.id);
     console.log("Current form data:", formData);
@@ -77,7 +84,6 @@ export function OrganizationSetupForm() {
     }
   };
 
-  // Create wrapper functions for navigation
   const handleNext = () => {
     console.log("Next button clicked, advancing to next step");
     next();
@@ -95,13 +101,11 @@ export function OrganizationSetupForm() {
 
   async function handleSubmit() {
     setIsSubmitting(true);
-    setError(null);
 
     try {
       setSuccess(true);
     } catch (err) {
       console.error("Submit error:", err);
-      setError("Failed to create organization");
     } finally {
       setIsSubmitting(false);
     }
@@ -154,12 +158,6 @@ export function OrganizationSetupForm() {
           currentStepIndex={currentStepIndex}
           onStepClick={handleStepClick}
         />
-        
-        {error && (
-          <div className="mb-6 rounded-md bg-red-50 p-4 text-sm text-red-500">
-            {error}
-          </div>
-        )}
         
         {currentStep.id === "basic-info" && (
           <BasicInfoStep

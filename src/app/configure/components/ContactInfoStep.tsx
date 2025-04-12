@@ -1,13 +1,21 @@
 "use client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   organizationContactSchema,
   type OrganizationContact,
 } from "@/lib/validations/organization";
-import { useState } from "react";
-import { z } from "zod";
+import { useEffect } from "react";
 
 type ContactInfoStepProps = {
   data: OrganizationContact;
@@ -22,124 +30,99 @@ export function ContactInfoStep({
   onNext,
   onBack,
 }: ContactInfoStepProps) {
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const form = useForm<OrganizationContact>({
+    resolver: zodResolver(organizationContactSchema),
+    defaultValues: {
+      email: data.email || "",
+      phone: data.phone || "",
+      website: data.website || "",
+    },
+    mode: "onChange"
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    onUpdate({ ...data, [name]: value });
-  };
-
-  const handleSkip = () => {
-    onUpdate({
-      ...data,
-      email: data.email || "contact@example.com",
-      phone: data.phone || "0000000000",
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      onUpdate(value as OrganizationContact);
     });
+    return () => subscription.unsubscribe();
+  }, [form, onUpdate]);
+  
+  function onSubmit(values: OrganizationContact) {
+    onUpdate(values);
     onNext();
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      const modifiedContactSchema = z.object({
-        email: z.string().email({ message: "Please enter a valid email address" }),
-        phone: z.string().min(1, { message: "Please enter a phone number" }),
-        website: z.union([z.string().url(), z.string().max(0)]).optional(),
-      });
-      
-      const result = modifiedContactSchema.safeParse(data);
-      
-      if (result.success) {
-        setErrors({});
-        onNext();
-      } else {
-        const formattedErrors: Record<string, string> = {};
-        result.error.errors.forEach((err) => {
-          if (err.path[0]) {
-            formattedErrors[err.path[0].toString()] = err.message;
-          }
-        });
-        setErrors(formattedErrors);
-      }
-    } catch (error) {
-      console.error("Contact form validation error:", error);
-      if (error instanceof z.ZodError) {
-        const formattedErrors: Record<string, string> = {};
-        error.errors.forEach((err) => {
-          if (err.path[0]) {
-            formattedErrors[err.path[0].toString()] = err.message;
-          }
-        });
-        setErrors(formattedErrors);
-      }
-    }
-  };
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="email">Contact Email</Label>
-        <Input
-          id="email"
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
           name="email"
-          type="email"
-          value={data.email || ""}
-          onChange={handleChange}
-          placeholder="contact@acmeinc.com"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Contact Email <span className="text-red-500">*</span></FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="contact@acmeinc.com"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="phone">Phone Number</Label>
-        <Input
-          id="phone"
+        <FormField
+          control={form.control}
           name="phone"
-          type="tel"
-          value={data.phone || ""}
-          onChange={handleChange}
-          placeholder="1234567890"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone Number <span className="text-red-500">*</span></FormLabel>
+              <FormControl>
+                <Input
+                  type="tel"
+                  placeholder="1234567890"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="website">Website (Optional)</Label>
-        <Input
-          id="website"
+        <FormField
+          control={form.control}
           name="website"
-          type="url"
-          value={data.website || ""}
-          onChange={handleChange}
-          placeholder="https://acmeinc.com"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Website (Optional)</FormLabel>
+              <FormControl>
+                <Input
+                  type="url"
+                  placeholder="https://acmeinc.com"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.website && (
-          <p className="text-sm text-red-500">{errors.website}</p>
-        )}
-      </div>
 
-      <div className="flex gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onBack}
-          className="flex-1"
-        >
-          Back
-        </Button>
-        <Button type="submit" className="flex-1">
-          Continue
-        </Button>
-        <Button 
-          type="button" 
-          variant="ghost" 
-          onClick={handleSkip} 
-          className="flex-none"
-        >
-          Skip
-        </Button>
-      </div>
-    </form>
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+            className="flex-1"
+          >
+            Back
+          </Button>
+          <Button type="submit" className="flex-1">
+            Continue
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }

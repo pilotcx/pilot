@@ -1,9 +1,43 @@
 import { z } from 'zod';
 
+export enum Industry {
+  Technology = "Technology",
+  Healthcare = "Healthcare",
+  Finance = "Finance",
+  Education = "Education",
+  Manufacturing = "Manufacturing",
+  Retail = "Retail",
+  Other = "Other",
+}
+
+export enum OrganizationSize {
+  XSmall = "1-10",
+  Small = "11-50",
+  Medium = "51-200",
+  Large = "201-1000",
+  XLarge = "1000+",
+}
+
+export enum OrganizationStructure {
+  MultiTeam = "multi-team",
+  SingleTeam = "single-team",
+}
+
+export enum UserRole {
+  Admin = "admin",
+  Manager = "manager",
+  TeamLead = "team_lead",
+}
+
 export const organizationBasicInfoSchema = z.object({
   name: z.string().min(1, { message: "Organization name is required" }).max(100),
-  industry: z.string().optional().default("Other"),
-  size: z.enum(['1-10', '11-50', '51-200', '201-1000', '1000+']).optional().default('1-10'),
+  industry: z.nativeEnum(Industry).default(Industry.Other),
+  size: z.nativeEnum(OrganizationSize).default(OrganizationSize.XSmall),
+  organizationStructure: z.nativeEnum(OrganizationStructure).default(OrganizationStructure.MultiTeam),
+  teamCreationPermission: z.object({
+    allowAnyUser: z.boolean().default(false),
+    allowedRoles: z.array(z.nativeEnum(UserRole)).optional(),
+  }).default({ allowAnyUser: false, allowedRoles: [UserRole.Admin] }),
 }).strict();
 
 export const organizationContactSchema = z.object({

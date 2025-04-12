@@ -1,13 +1,21 @@
 "use client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   organizationAddressSchema,
   type OrganizationAddress,
 } from "@/lib/validations/organization";
-import { useState } from "react";
-import { z } from "zod";
+import { useEffect } from "react";
 
 type AddressStepProps = {
   data: OrganizationAddress;
@@ -24,136 +32,121 @@ export function AddressStep({
   onBack,
   isSubmitting,
 }: AddressStepProps) {
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const form = useForm<OrganizationAddress>({
+    resolver: zodResolver(organizationAddressSchema),
+    defaultValues: {
+      streetAddress: data.streetAddress || "",
+      city: data.city || "",
+      state: data.state || "",
+      postalCode: data.postalCode || "",
+      country: data.country || "",
+    },
+    mode: "onChange"
+  });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    onUpdate({ ...data, [name]: value });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      // Use safeParse for consistent validation approach
-      const result = organizationAddressSchema.safeParse(data);
-      
-      if (result.success) {
-        setErrors({});
-        onSubmit();
-      } else {
-        // Format validation errors
-        const formattedErrors: Record<string, string> = {};
-        result.error.errors.forEach((err) => {
-          if (err.path[0]) {
-            formattedErrors[err.path[0].toString()] = err.message;
-          }
-        });
-        setErrors(formattedErrors);
-      }
-    } catch (error) {
-      console.error("Address form validation error:", error);
-      if (error instanceof z.ZodError) {
-        const formattedErrors: Record<string, string> = {};
-        error.errors.forEach((err) => {
-          if (err.path[0]) {
-            formattedErrors[err.path[0].toString()] = err.message;
-          }
-        });
-        setErrors(formattedErrors);
-      }
-    }
-  };
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      onUpdate(value as OrganizationAddress);
+    });
+    return () => subscription.unsubscribe();
+  }, [form, onUpdate]);
+  
+  function handleFormSubmit(values: OrganizationAddress) {
+    onUpdate(values);
+    onSubmit();
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="streetAddress">Street Address</Label>
-        <Input
-          id="streetAddress"
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
           name="streetAddress"
-          value={data.streetAddress || ""}
-          onChange={handleChange}
-          placeholder="123 Main St"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Street Address <span className="text-red-500">*</span></FormLabel>
+              <FormControl>
+                <Input placeholder="123 Main St" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        {errors.streetAddress && (
-          <p className="text-sm text-red-500">{errors.streetAddress}</p>
-        )}
-      </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="city">City</Label>
-          <Input
-            id="city"
+        <div className="grid grid-cols-2 gap-6 items-start">
+          <FormField
+            control={form.control}
             name="city"
-            value={data.city || ""}
-            onChange={handleChange}
-            placeholder="San Francisco"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>City <span className="text-red-500">*</span></FormLabel>
+                <FormControl>
+                  <Input placeholder="San Francisco" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.city && <p className="text-sm text-red-500">{errors.city}</p>}
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="state">State/Province</Label>
-          <Input
-            id="state"
+          <FormField
+            control={form.control}
             name="state"
-            value={data.state || ""}
-            onChange={handleChange}
-            placeholder="CA"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>State/Province <span className="text-red-500">*</span></FormLabel>
+                <FormControl>
+                  <Input placeholder="CA" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.state && (
-            <p className="text-sm text-red-500">{errors.state}</p>
-          )}
         </div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="postalCode">Postal Code</Label>
-          <Input
-            id="postalCode"
+        <div className="grid grid-cols-2 gap-6  items-start">
+          <FormField
+            control={form.control}
             name="postalCode"
-            value={data.postalCode || ""}
-            onChange={handleChange}
-            placeholder="94103"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Postal Code <span className="text-red-500">*</span></FormLabel>
+                <FormControl>
+                  <Input placeholder="94103" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.postalCode && (
-            <p className="text-sm text-red-500">{errors.postalCode}</p>
-          )}
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="country">Country</Label>
-          <Input
-            id="country"
+          <FormField
+            control={form.control}
             name="country"
-            value={data.country || ""}
-            onChange={handleChange}
-            placeholder="United States"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Country <span className="text-red-500">*</span></FormLabel>
+                <FormControl>
+                  <Input placeholder="United States" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.country && (
-            <p className="text-sm text-red-500">{errors.country}</p>
-          )}
         </div>
-      </div>
 
-      <div className="flex gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onBack}
-          className="flex-1"
-        >
-          Back
-        </Button>
-        <Button type="submit" disabled={isSubmitting} className="flex-1">
-          {isSubmitting ? "Submitting..." : "Complete Setup"}
-        </Button>
-      </div>
-    </form>
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+            className="flex-1"
+          >
+            Back
+          </Button>
+          <Button type="submit" disabled={isSubmitting} className="flex-1">
+            {isSubmitting ? "Submitting..." : "Complete Setup"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }
