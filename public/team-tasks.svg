@@ -1,0 +1,29 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Task Board -->
+  <rect x="40" y="40" width="120" height="120" rx="6" fill="#EEF2FF" stroke="#4F46E5" stroke-width="3"/>
+  
+  <!-- Columns -->
+  <rect x="50" y="60" width="30" height="90" rx="4" fill="#C7D2FE"/>
+  <rect x="85" y="60" width="30" height="90" rx="4" fill="#A5B4FC"/>
+  <rect x="120" y="60" width="30" height="90" rx="4" fill="#818CF8"/>
+  
+  <!-- Column Headers -->
+  <rect x="50" y="50" width="30" height="8" rx="2" fill="#4F46E5"/>
+  <rect x="85" y="50" width="30" height="8" rx="2" fill="#4F46E5"/>
+  <rect x="120" y="50" width="30" height="8" rx="2" fill="#4F46E5"/>
+  
+  <!-- Task Cards -->
+  <rect x="53" y="70" width="24" height="15" rx="2" fill="white" stroke="#4F46E5" stroke-width="1"/>
+  <rect x="53" y="90" width="24" height="15" rx="2" fill="white" stroke="#4F46E5" stroke-width="1"/>
+  <rect x="53" y="110" width="24" height="15" rx="2" fill="white" stroke="#4F46E5" stroke-width="1"/>
+  
+  <rect x="88" y="70" width="24" height="15" rx="2" fill="white" stroke="#4F46E5" stroke-width="1"/>
+  <rect x="88" y="90" width="24" height="15" rx="2" fill="white" stroke="#4F46E5" stroke-width="1"/>
+  
+  <rect x="123" y="70" width="24" height="15" rx="2" fill="white" stroke="#4F46E5" stroke-width="1"/>
+  
+  <!-- Checkmarks -->
+  <path d="M58 77 L63 82 L72 73" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M93 77 L98 82 L107 73" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M128 77 L133 82 L142 73" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg> 
