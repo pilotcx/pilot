@@ -29,11 +29,26 @@ export function ContactInfoStep({
     onUpdate({ ...data, [name]: value });
   };
 
+  const handleSkip = () => {
+    onUpdate({
+      ...data,
+      email: data.email || "contact@example.com",
+      phone: data.phone || "0000000000",
+    });
+    onNext();
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const result = organizationContactSchema.safeParse(data);
+      const modifiedContactSchema = z.object({
+        email: z.string().email({ message: "Please enter a valid email address" }),
+        phone: z.string().min(1, { message: "Please enter a phone number" }),
+        website: z.union([z.string().url(), z.string().max(0)]).optional(),
+      });
+      
+      const result = modifiedContactSchema.safeParse(data);
       
       if (result.success) {
         setErrors({});
@@ -115,6 +130,14 @@ export function ContactInfoStep({
         </Button>
         <Button type="submit" className="flex-1">
           Continue
+        </Button>
+        <Button 
+          type="button" 
+          variant="ghost" 
+          onClick={handleSkip} 
+          className="flex-none"
+        >
+          Skip
         </Button>
       </div>
     </form>

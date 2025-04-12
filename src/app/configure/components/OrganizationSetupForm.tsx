@@ -8,7 +8,7 @@ import {
   OrganizationContact,
 } from "@/lib/validations/organization";
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AddressStep } from "./AddressStep";
 import { BasicInfoStep } from "./BasicInfoStep";
 import { ContactInfoStep } from "./ContactInfoStep";
@@ -34,8 +34,8 @@ const FORM_STEPS: Step[] = [
 
 const INITIAL_DATA: OrganizationComplete = {
   name: "",
-  industry: "",
-  size: "" as any,
+  industry: "Other",
+  size: "1-10" as any,
 
   email: "",
   phone: "",
@@ -65,12 +65,33 @@ export function OrganizationSetupForm() {
     updateFormData,
   } = useMultiStepForm<OrganizationComplete>(FORM_STEPS, INITIAL_DATA);
 
+  // Debug when step changes
+  useEffect(() => {
+    console.log("Current step:", currentStep.id);
+    console.log("Current form data:", formData);
+  }, [currentStep, formData]);
+
   const handleStepClick = (index: number) => {
     if (index <= currentStepIndex) {
       goTo(index);
     }
   };
 
+  // Create wrapper functions for navigation
+  const handleNext = () => {
+    console.log("Next button clicked, advancing to next step");
+    next();
+  };
+
+  const handleBack = () => {
+    console.log("Back button clicked");
+    back();
+  };
+
+  const handleUpdateFormData = (data: Partial<OrganizationComplete>) => {
+    console.log("Updating form data with:", data);
+    updateFormData(data);
+  };
 
   async function handleSubmit() {
     setIsSubmitting(true);
@@ -79,6 +100,8 @@ export function OrganizationSetupForm() {
     try {
       setSuccess(true);
     } catch (err) {
+      console.error("Submit error:", err);
+      setError("Failed to create organization");
     } finally {
       setIsSubmitting(false);
     }
@@ -141,26 +164,26 @@ export function OrganizationSetupForm() {
         {currentStep.id === "basic-info" && (
           <BasicInfoStep
             data={formData}
-            onUpdate={(data: OrganizationBasicInfo) => updateFormData(data)}
-            onNext={next}
+            onUpdate={handleUpdateFormData}
+            onNext={handleNext}
           />
         )}
         
         {currentStep.id === "contact" && (
           <ContactInfoStep
             data={formData}
-            onUpdate={(data: OrganizationContact) => updateFormData(data)}
-            onNext={next}
-            onBack={back}
+            onUpdate={handleUpdateFormData}
+            onNext={handleNext}
+            onBack={handleBack}
           />
         )}
         
         {currentStep.id === "address" && (
           <AddressStep
             data={formData}
-            onUpdate={(data: OrganizationAddress) => updateFormData(data)}
+            onUpdate={handleUpdateFormData}
             onSubmit={handleSubmit}
-            onBack={back}
+            onBack={handleBack}
             isSubmitting={isSubmitting}
           />
         )}

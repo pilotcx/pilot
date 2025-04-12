@@ -22,7 +22,7 @@ import {
   organizationBasicInfoSchema,
   type OrganizationBasicInfo,
 } from "@/lib/validations/organization";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 type BasicInfoStepProps = {
   data: OrganizationBasicInfo;
@@ -43,100 +43,94 @@ export function BasicInfoStep({ data, onUpdate, onNext }: BasicInfoStepProps) {
   
   const sizes = ['1-10', '11-50', '51-200', '201-1000', '1000+'];
   
-  const form = useForm<OrganizationBasicInfo>({
-    resolver: zodResolver(organizationBasicInfoSchema),
-    defaultValues: data,
-    mode: "onChange",
+  // Use simpler form state management
+  const [formState, setFormState] = useState({
+    name: data.name || "",
+    industry: data.industry || "Other",
+    size: data.size || "1-10"
   });
   
   useEffect(() => {
-    form.reset(data);
-  }, [form, data]);
-
-  const onSubmit = (values: OrganizationBasicInfo) => {
-    onUpdate(values);
+    setFormState({
+      name: data.name || "",
+      industry: data.industry || "Other",
+      size: data.size || "1-10"
+    });
+  }, [data]);
+  
+  const handleChange = (field: string, value: string) => {
+    const newState = { ...formState, [field]: value };
+    setFormState(newState);
+    onUpdate(newState);
+  };
+  
+  const handleContinue = () => {
+    // Always save current form state before proceeding
+    onUpdate(formState);
     onNext();
   };
   
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Organization Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Acme Inc." {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <label htmlFor="name" className="text-sm font-medium">
+          Organization Name
+        </label>
+        <Input 
+          id="name" 
+          value={formState.name} 
+          onChange={(e) => handleChange('name', e.target.value)}
+          placeholder="Acme Inc." 
         />
-        
-        <FormField
-          control={form.control}
-          name="industry"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Industry</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                value={field.value}
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select Industry" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {industries.map((industry) => (
-                    <SelectItem key={industry} value={industry}>
-                      {industry}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="size"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Organization Size</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                value={field.value}
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select Size" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {sizes.map((size) => (
-                    <SelectItem key={size} value={size}>
-                      {size} employees
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <Button type="submit" className="w-full">
+      </div>
+      
+      <div className="space-y-2">
+        <label htmlFor="industry" className="text-sm font-medium">
+          Industry
+        </label>
+        <Select 
+          value={formState.industry} 
+          onValueChange={(value) => handleChange('industry', value)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select Industry" />
+          </SelectTrigger>
+          <SelectContent>
+            {industries.map((industry) => (
+              <SelectItem key={industry} value={industry}>
+                {industry}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <div className="space-y-2">
+        <label htmlFor="size" className="text-sm font-medium">
+          Organization Size
+        </label>
+        <Select 
+          value={formState.size} 
+          onValueChange={(value) => handleChange('size', value)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select Size" />
+          </SelectTrigger>
+          <SelectContent>
+            {sizes.map((size) => (
+              <SelectItem key={size} value={size}>
+                {size} employees
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <div className="flex gap-2">
+        <Button type="button" onClick={handleContinue} className="flex-1">
           Continue
         </Button>
-      </form>
-    </Form>
+      </div>
+    </div>
   );
 } 
