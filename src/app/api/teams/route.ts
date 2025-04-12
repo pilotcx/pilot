@@ -21,7 +21,8 @@ export const GET = withApi(async (request: NextRequest, context, decoded) => {
   });
 
   return {
-    data: teams,
+    data: teams.docs,
+    pagination: teams,
     message: 'Teams retrieved successfully',
   };
 }, {
@@ -35,16 +36,16 @@ export const POST = withApi(async (request: NextRequest, context, decoded) => {
   }
 
   const body = await request.json();
-  
+
   // Validate the request body against the schema
   const result = createTeamSchema.safeParse(body);
   if (!result.success) {
     throw new ApiError(400, result.error.message);
   }
-  
+
   // Create the team
   const team = await teamService.createTeam(result.data, decoded.id);
-  
+
   return {
     data: team,
     message: 'Team created successfully',

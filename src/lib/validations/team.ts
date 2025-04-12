@@ -3,12 +3,24 @@ import { TeamRole } from '@/lib/types/models/team';
 
 export const createTeamSchema = z.object({
   name: z.string().min(1, { message: "Team name is required" }).max(100),
+  slug: z.string().min(1, { message: "Team slug is required" })
+    .max(100)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
+      message: "Slug must contain only lowercase letters, numbers, and hyphens, and cannot start or end with a hyphen"
+    })
+    .optional(), // Optional because we'll generate it from the name if not provided
   description: z.string().optional(),
   avatar: z.string().optional(),
 }).strict();
 
 export const updateTeamSchema = z.object({
   name: z.string().min(1, { message: "Team name is required" }).max(100).optional(),
+  slug: z.string().min(1, { message: "Team slug is required" })
+    .max(100)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
+      message: "Slug must contain only lowercase letters, numbers, and hyphens, and cannot start or end with a hyphen"
+    })
+    .optional(),
   description: z.string().optional(),
   avatar: z.string().optional(),
 }).strict();

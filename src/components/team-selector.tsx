@@ -38,8 +38,8 @@ export function TeamSelector() {
     router.push("/new-team");
   };
 
-  const handleSelectTeam = (teamId: string) => {
-    router.push(`/t/${teamId}`);
+  const handleSelectTeam = (teamSlug: string) => {
+    router.push(`/t/${teamSlug}`);
   };
 
   return (
@@ -102,10 +102,10 @@ export function TeamSelector() {
                   </p>
                 </CardContent>
                 <CardFooter className="p-6 pt-0">
-                  <Button 
-                    variant="default" 
-                    className="w-full" 
-                    onClick={() => handleSelectTeam(team._id as string)}
+                  <Button
+                    variant="default"
+                    className="w-full"
+                    onClick={() => handleSelectTeam(team.slug)}
                   >
                     Select Team
                   </Button>
@@ -127,9 +127,9 @@ export function TeamSelector() {
                 </p>
               </CardContent>
               <CardFooter className="p-6 pt-0">
-                <Button 
-                  variant="outline" 
-                  className="w-full" 
+                <Button
+                  variant="outline"
+                  className="w-full"
                   onClick={handleCreateTeam}
                 >
                   <PlusCircle className="mr-2 h-4 w-4" />

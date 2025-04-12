@@ -8,6 +8,12 @@ export const TeamSchema = new mongoose.Schema<Team>({
     type: String,
     required: true,
   },
+  slug: {
+    type: String,
+    required: true,
+    unique: true,
+    index: true,
+  },
   description: {
     type: String,
     default: '',

@@ -10,6 +10,7 @@ export enum TeamRole {
 
 export interface Team extends BaseEntity {
   name: string;
+  slug: string;
   description: string;
   avatar: string;
   membersCount: number;
@@ -19,6 +20,8 @@ export interface Team extends BaseEntity {
 export interface TeamMember extends BaseEntity {
   displayName: string;
   role: TeamRole;
+  avatar?: string;
+  email?: string;
   user: string | mongoose.Types.ObjectId | User;
   team: string | mongoose.Types.ObjectId | Team;
 }
