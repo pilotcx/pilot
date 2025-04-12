@@ -35,6 +35,7 @@ export const organizationBasicInfoSchema = z.object({
   size: z.nativeEnum(OrganizationSize).default(OrganizationSize.XSmall),
   organizationStructure: z.nativeEnum(OrganizationStructure).default(OrganizationStructure.MultiTeam),
   avatar: z.string().optional(),
+  allowRegistration: z.boolean().default(false),
   teamCreationPermission: z.object({
     allowAnyUser: z.boolean().default(false),
     allowedRoles: z.array(z.nativeEnum(UserRole)).optional(),
@@ -43,16 +44,14 @@ export const organizationBasicInfoSchema = z.object({
 
 export const organizationContactSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
-  phone: z.string().min(1, { message: "Please enter a phone number" }),
+  phone: z.string().optional(),
   website: z.union([z.string().url({ message: "Please enter a valid URL" }), z.string().max(0)]).optional(),
 }).strict();
 
 export const organizationAddressSchema = z.object({
-  streetAddress: z.string().min(3, { message: "Street address is required" }),
-  city: z.string().min(2, { message: "City is required" }),
-  state: z.string().min(2, { message: "State is required" }),
-  postalCode: z.string().min(3, { message: "Postal code is required" }),
-  country: z.string().min(2, { message: "Country is required" }),
+  address: z.string().optional(),
+  state: z.string().optional(),
+  postalCode: z.string().optional(),
 }).strict();
 
 export const organizationCompleteSchema = organizationBasicInfoSchema
