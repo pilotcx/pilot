@@ -4,14 +4,14 @@ import * as React from "react"
 import {
   AudioWaveform,
   BookOpen,
-  Bot,
+  Bot, CheckCheckIcon, CheckIcon,
   Command,
   Frame,
   GalleryVerticalEnd,
   Map,
   PieChart,
   Settings2,
-  SquareTerminal,
+  SquareTerminal, TargetIcon,
 } from "lucide-react"
 
 import {NavMain} from "@/components/nav-main"
@@ -20,55 +20,28 @@ import {NavUser} from "@/components/nav-user"
 import {TeamSwitcher} from "@/components/team-switcher"
 import {Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail,} from "@/components/ui/sidebar"
 
-// This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
-      title: "Playground",
+      title: "Tasks",
       url: "#",
-      icon: SquareTerminal,
+      icon: CheckCheckIcon,
       isActive: true,
       items: [
         {
-          title: "History",
+          title: "Task List",
           url: "#",
         },
         {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
+          title: "Kanban Board",
           url: "#",
         },
       ],
     },
     {
-      title: "Models",
+      title: "OKRs",
       url: "#",
-      icon: Bot,
+      icon: TargetIcon,
       items: [
         {
           title: "Genesis",
@@ -85,24 +58,16 @@ const data = {
       ],
     },
     {
-      title: "Documentation",
+      title: "Knowledge",
       url: "#",
       icon: BookOpen,
       items: [
         {
-          title: "Introduction",
+          title: "Docs",
           url: "#",
         },
         {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
+          title: "Resources",
           url: "#",
         },
       ],

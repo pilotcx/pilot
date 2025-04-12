@@ -1,5 +1,7 @@
 "use client"
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles,} from "lucide-react"
 
 import {Avatar, AvatarFallback, AvatarImage,} from "@/components/ui/avatar"
@@ -14,10 +16,14 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,} from "@/components/ui/sidebar"
 import {useTeam} from "@/components/providers/team-provider";
+import api from "@/lib/services/api";
+import { toast } from "sonner";
 
 export function NavUser() {
+  const router = useRouter();
   const {isMobile} = useSidebar();
   const {membership: user} = useTeam();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   return (
     <SidebarMenu>
@@ -80,9 +86,22 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator/>
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={isLoggingOut}
+              onClick={async () => {
+                try {
+                  setIsLoggingOut(true);
+                  await api.logout();
+                  toast.success("Logged out successfully");
+                  router.push("/login");
+                } catch (error: any) {
+                  toast.error(error.message || "Failed to log out");
+                  setIsLoggingOut(false);
+                }
+              }}
+            >
               <LogOut/>
-              Log out
+              {isLoggingOut ? "Logging out..." : "Log out"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

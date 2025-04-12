@@ -31,6 +31,10 @@ export class ApiService {
     return this.call('POST', '/auth/login', data);
   };
 
+  logout = async () => {
+    return this.call('POST', '/auth/logout');
+  };
+
   // Team methods
   createTeam = async (data: CreateTeamSchema) => {
     return this.call<Team>('POST', '/teams', data);
