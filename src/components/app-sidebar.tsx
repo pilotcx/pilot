@@ -8,6 +8,7 @@ import {
   Command,
   Frame,
   GalleryVerticalEnd,
+  Info,
   Map,
   PieChart,
   Settings2,
@@ -25,6 +26,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { useParams } from "next/navigation"
 
 // This is sample data.
 const data = {
@@ -120,7 +122,11 @@ const data = {
       items: [
         {
           title: "General",
-          url: "#",
+          url: "/settings/general",
+        },
+        {
+          title:"Security",
+          url: "/settings/security",
         },
         {
           title: "Team",
@@ -157,14 +163,29 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const {teamId} = useParams();
+  const navMainWithTeamUrl = data.navMain.map((item) => ({
+    ...item,
+    url: `/t/${teamId}${item.url}`,
+    items: item.items?.map((subItem) => ({
+      ...subItem,
+      url: `/t/${teamId}${subItem.url}`
+    }))
+  }));
+
+  const projectsWithTeamUrl = data.projects.map((item) => ({
+    ...item,
+    url: `/t/${teamId}${item.url}`
+  }));
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavMain items={navMainWithTeamUrl} />
+        <NavProjects projects={projectsWithTeamUrl} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
