@@ -45,6 +45,7 @@ export function BasicInfoStep({ data, onUpdate, onNext }: BasicInfoStepProps) {
       name: data.name || "",
       industry: data.industry || Industry.Other,
       size: data.size || OrganizationSize.XSmall,
+      avatar: data.avatar || "",
       organizationStructure:
         data.organizationStructure || OrganizationStructure.MultiTeam,
       teamCreationPermission: data.teamCreationPermission || {
@@ -86,7 +87,7 @@ export function BasicInfoStep({ data, onUpdate, onNext }: BasicInfoStepProps) {
           )}
         />
 
-        <div className="grid grid-cols-2 gap-8">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-6 items-start">
           <FormField
             control={form.control}
             name="industry"
@@ -114,8 +115,58 @@ export function BasicInfoStep({ data, onUpdate, onNext }: BasicInfoStepProps) {
               </FormItem>
             )}
           />
-
           <FormField
+            control={form.control}
+            name="avatar"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Avatar link
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="https://example.com/avatar.png"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        
+          <FormField
+            control={form.control}
+            name="organizationStructure"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Organization Structure</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select Organization Structure" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value={OrganizationStructure.MultiTeam}>
+                      Multi-team
+                    </SelectItem>
+                    <SelectItem value={OrganizationStructure.SingleTeam}>
+                      Single-team
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Multi-team allows multiple teams to be created. Single-team
+                  uses only one default team.
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+            <FormField
             control={form.control}
             name="size"
             render={({ field }) => (
@@ -142,59 +193,30 @@ export function BasicInfoStep({ data, onUpdate, onNext }: BasicInfoStepProps) {
               </FormItem>
             )}
           />
-        </div>
 
-        <FormField
-          control={form.control}
-          name="organizationStructure"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Organization Structure</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <FormField
+            control={form.control}
+            name="teamCreationPermission.allowAnyUser"
+            render={({ field }) => (
+              <FormItem className="space-y-3">
+                <FormLabel>Team Creation Permission</FormLabel>
                 <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select Organization Structure" />
-                  </SelectTrigger>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="allowAnyUser"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                    <Label htmlFor="allowAnyUser">
+                      Allow any user to create teams
+                    </Label>
+                  </div>
                 </FormControl>
-                <SelectContent>
-                  <SelectItem value={OrganizationStructure.MultiTeam}>
-                    Multi-team
-                  </SelectItem>
-                  <SelectItem value={OrganizationStructure.SingleTeam}>
-                    Single-team
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-gray-500 mt-1">
-                Multi-team allows multiple teams to be created. Single-team uses
-                only one default team.
-              </p>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="teamCreationPermission.allowAnyUser"
-          render={({ field }) => (
-            <FormItem className="space-y-3">
-              <FormLabel>Team Creation Permission</FormLabel>
-              <FormControl>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="allowAnyUser"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                  <Label htmlFor="allowAnyUser">
-                    Allow any user to create teams
-                  </Label>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         {!form.watch("teamCreationPermission.allowAnyUser") && (
           <div className="space-y-2 ml-6">
