@@ -1,10 +1,11 @@
 import axios, {AxiosRequestConfig, Method} from 'axios';
 import {ApiResponse} from "@/lib/types/common/api";
-import {RegisterSchema, LoginSchema} from "@/lib/validations/auth";
-import {CreateTeamSchema, UpdateTeamSchema, AddTeamMemberSchema, UpdateTeamMemberSchema} from "@/lib/validations/team";
+import {LoginSchema, RegisterSchema} from "@/lib/validations/auth";
+import {AddTeamMemberSchema, CreateTeamSchema, UpdateTeamMemberSchema, UpdateTeamSchema} from "@/lib/validations/team";
 import {Team, TeamMember} from "@/lib/types/models/team";
-import { User } from '@/lib/types/models/user';
-import { UpdateUserSchema } from '@/lib/validations/user';
+import {User} from '@/lib/types/models/user';
+import {UpdateUserSchema} from '@/lib/validations/user';
+import {CreatePostInput, Post, ReactionType} from '@/lib/types/models/post';
 
 export class ApiService {
   api = axios.create({
@@ -91,6 +92,36 @@ export class ApiService {
   // User teams
   getUserTeams = async (page = 1, limit = 10) => {
     return this.call('GET', `/user/teams?page=${page}&limit=${limit}`);
+  };
+
+  // Post methods
+  getTeamPosts = async (teamId: string, options: {
+    limit?: number;
+    skip?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc'
+  } = {}) => {
+    const {limit = 10, skip = 0, sortBy = 'createdAt', sortOrder = 'desc'} = options;
+    return this.call<Post[]>(
+      'GET',
+      `/teams/${teamId}/posts?limit=${limit}&skip=${skip}&sortBy=${sortBy}&sortOrder=${sortOrder}`
+    );
+  };
+
+  createPost = async (teamId: string, data: CreatePostInput) => {
+    return this.call<Post>('POST', `/teams/${teamId}/posts`, data);
+  };
+
+  getPost = async (postId: string) => {
+    return this.call<Post>('GET', `/posts/${postId}`);
+  };
+
+  deletePost = async (postId: string) => {
+    return this.call('DELETE', `/posts/${postId}`);
+  };
+
+  reactToPost = async (postId: string, type: ReactionType) => {
+    return this.call('POST', `/posts/${postId}/reactions`, {type});
   };
 }
 

@@ -3,4 +3,6 @@ export enum Schemas {
   SystemConfig = 'SystemConfig',
   Team = 'Team',
   TeamMember = 'TeamMember',
+  Post = 'Post',
+  Comment = 'Comment',
 }

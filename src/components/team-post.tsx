@@ -8,40 +8,27 @@ import {
   Angry,
   Frown,
   Heart,
-  HeartIcon,
   Laugh,
   Link2,
   MessageSquare,
   MoreHorizontal,
-  PartyPopper, PlusIcon,
+  PartyPopper,
+  PlusIcon,
   ThumbsUp
 } from "lucide-react";
+import {ReactionType} from "@/lib/types/models/post";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,} from "@/components/ui/dropdown-menu";
 import {toast} from "sonner";
-import { cn } from "@/lib/utils";
-
-interface Author {
-  id: string;
-  name: string;
-  avatar: string;
-  role: string;
-}
-
-type ReactionType = 'like' | 'love' | 'laugh' | 'angry' | 'sad' | 'celebrate';
-
-interface Reaction {
-  type: ReactionType;
-  count: number;
-  reacted: boolean;
-}
+import {cn} from "@/lib/utils";
+import {TeamMember} from "@/lib/types/models/team";
 
 interface PostProps {
   id: string;
   title: string;
   content: string;
-  author: Author;
-  createdAt: Date;
-  reactions: Record<ReactionType, Reaction>;
+  author: TeamMember;
+  createdAt: string;
+  reactions: Record<string, any>;
   comments: number;
   currentUserId: string;
   onReact: (id: string, type: ReactionType) => void;
@@ -70,10 +57,12 @@ export function TeamPost({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const isCurrentUserAuthor = author.id === currentUserId;
+  const isCurrentUserAuthor = author._id === currentUserId;
 
   // Get total reactions count
-  const totalReactions = Object.values(reactions).reduce((sum, reaction) => sum + reaction.count, 0);
+  const totalReactions = Object.entries(reactions || {}).reduce((sum, [_, reactions]) => {
+    return sum + (Array.isArray(reactions) ? reactions.length : 0);
+  }, 0);
 
   // Helper function to get reaction icon
   const getReactionIcon = (type: ReactionType) => {
@@ -98,28 +87,29 @@ export function TeamPost({
       <div
         className={"bg-muted/30 w-14 flex flex-col"}
       >
-        <div className={'flex-1 w-full h-full py-2 flex flex-col items-center overflow-y-auto scrollbar-hidden relative'}>
+        <div
+          className={'flex-1 w-full h-full py-2 flex flex-col items-center overflow-y-auto scrollbar-hidden relative'}>
           <div className={'absolute'}>
             {totalReactions > 0 && (
               // Show received reactions
-              Object.entries(reactions)
-                .filter(([_, reaction]) => reaction.count > 0)
-                .map(([type, reaction]) => (
+              Object.entries(reactions || {})
+                .filter(([_, reactionArray]) => Array.isArray(reactionArray) && reactionArray.length > 0)
+                .map(([type, reactionArray]) => (
                   <div
                     key={type}
                     className="relative group mb-2 cursor-pointer transition-transform hover:scale-110"
                     onClick={() => onReact(id, type as ReactionType)}
-                    title={`${reaction.count} ${type}${reaction.count !== 1 ? 's' : ''}`}
+                    title={`${Array.isArray(reactionArray) ? reactionArray.length : 0} ${type}${Array.isArray(reactionArray) && reactionArray.length !== 1 ? 's' : ''}`}
                   >
                     <div className={cn(
                       "flex items-center justify-center h-8 w-8 rounded-full bg-background",
-                      reaction.reacted && "ring-2 ring-primary/10"
+                      Array.isArray(reactionArray) && reactionArray.some(r => r.userId === currentUserId) && "ring-2 ring-primary/10"
                     )}>
                       {getReactionIcon(type as ReactionType)}
                     </div>
                     <span
                       className="absolute -bottom-0 -right-0 text-xs bg-primary text-primary-foreground rounded-full h-4 w-4 flex items-center justify-center">
-                  {reaction.count}
+                  {Array.isArray(reactionArray) ? reactionArray.length : 0}
                 </span>
                   </div>
                 ))
@@ -137,12 +127,12 @@ export function TeamPost({
           <span>Posted by</span>
           <div className="flex items-center gap-1">
             <Avatar className="h-5 w-5">
-              <AvatarImage src={author.avatar} alt={author.name}/>
+              <AvatarImage src={author.avatar} alt={author.displayName}/>
               <AvatarFallback>
-                {author.name.substring(0, 2).toUpperCase()}
+                {author.displayName.substring(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <span className="font-medium text-foreground">{author.name}</span>
+            <span className="font-medium text-foreground">{author.displayName}</span>
           </div>
           <span className="text-xs">{formatDistanceToNow(new Date(createdAt), {addSuffix: true})}</span>
         </div>
@@ -151,7 +141,7 @@ export function TeamPost({
 
         <div className="mb-4 whitespace-pre-line text-sm">{content}</div>
 
-        <div className="flex gap-2 items-center">
+        <div className="flex -mx-3 -mb-2 gap-2 items-center">
           <Button variant="ghost" size="sm" className="h-8 gap-1">
             <MessageSquare className="h-4 w-4"/>
             <span>{comments} Comments</span>

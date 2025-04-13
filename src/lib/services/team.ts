@@ -5,6 +5,7 @@ import {UserRole} from '@/lib/types/models/user';
 import {AddTeamMemberSchema, CreateTeamSchema, UpdateTeamMemberSchema, UpdateTeamSchema} from '@/lib/validations/team';
 import {PaginateOptions} from 'mongoose';
 import {slugify} from '@/lib/utils/slugify';
+import {ObjectId} from "mongodb";
 
 class TeamService {
   /**
@@ -25,17 +26,22 @@ class TeamService {
    * Get a team by slug
    */
   getTeamBySlug(slug: string) {
-    return dbService.team.findOne({ slug });
+    return dbService.team.findOne({slug});
   }
 
   /**
    * Get a team by slug with the current user's membership
    */
-  async getTeamWithMembership(slug: string, userId: string) {
-    const team = await dbService.team.findOne({ slug });
+  async getTeamWithMembership(slugOrId: string, userId: string) {
+    const isObjectId = ObjectId.isValid(slugOrId);
+    const team = await dbService.team.findOne(!isObjectId ? {
+      slug: slugOrId
+    } : {
+      _id: slugOrId
+    });
 
     if (!team) {
-      return null;
+      throw new ApiError(404, 'Team not found');
     }
 
     // Get the user's membership in this team
@@ -54,7 +60,7 @@ class TeamService {
    * Check if a slug is available
    */
   async isSlugAvailable(slug: string): Promise<boolean> {
-    const existingTeam = await dbService.team.findOne({ slug });
+    const existingTeam = await dbService.team.findOne({slug});
     return !existingTeam;
   }
 
