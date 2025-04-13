@@ -23,7 +23,7 @@ export const DELETE = withApi(async (request: NextRequest, {params, user}: {
   user: any
 }, decoded) => {
   // Get the post to check ownership and team access
-  const post = await postService.getPostById(params.postId).populate('author');
+  const post = await postService.getPostById(params.postId);
   if (!post) {
     throw new ApiError(404, 'Post not found');
   }

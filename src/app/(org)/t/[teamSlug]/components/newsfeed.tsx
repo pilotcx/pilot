@@ -25,8 +25,6 @@ export function TeamNewsfeed() {
   // Use API hooks
   const [getTeamPosts, {data: postsData, loading: loadingPosts}] = useApi(api.getTeamPosts);
   const [createPost, {loading: isSubmitting}] = useApi(api.createPost);
-  const [reactToPost] = useApi(api.reactToPost);
-  const [deletePost] = useApi(api.deletePost);
 
   // Load posts from API
   useEffect(() => {
@@ -95,33 +93,6 @@ export function TeamNewsfeed() {
     }
   };
 
-  const handleReactToPost = async (postId: string, type: ReactionType) => {
-    try {
-      await reactToPost(postId, type);
-
-      // Update the local state to reflect the reaction change
-      // In a real app, you might want to refetch the post or update the state more precisely
-      if (team?._id) {
-        const refreshResponse = await getTeamPosts(team._id.toString(), {limit: posts.length, skip: 0});
-        if (refreshResponse) {
-          setPosts(refreshResponse.data || []);
-        }
-      }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to react to post");
-    }
-  };
-
-  const handleDeletePost = async (postId: string) => {
-    try {
-      await deletePost(postId);
-      setPosts(posts.filter(post => post._id !== postId));
-      toast.success("Post deleted successfully");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to delete post");
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div className="bg-card rounded-lg border shadow-sm p-4">
@@ -186,17 +157,7 @@ export function TeamNewsfeed() {
           posts.map((post) => (
             <TeamPost
               key={post._id}
-              id={post._id}
-              title={post.title}
-              content={post.content}
-              author={post.author as TeamMember}
-              createdAt={post.createdAt as string}
-              reactions={post.reactionCounts || {}}
-              comments={post.commentCount || 0}
-              currentUserId={membership.user?._id || ""}
-              userReactions={post.userReactions || []}
-              onReact={handleReactToPost}
-              onDelete={handleDeletePost}
+              post={post}
             />
           ))
         )}

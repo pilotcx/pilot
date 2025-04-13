@@ -1,9 +1,10 @@
 import {NextRequest} from 'next/server';
 import {withApi} from '@/lib/utils/withApi';
-import {createPostSchema} from '@/lib/types/models/post';
+import {createPostSchema, Post} from '@/lib/types/models/post';
 import {ApiError} from '@/lib/types/errors/api.error';
 import {teamService} from '@/lib/services/team';
 import {postService} from '@/lib/services/post';
+import {dbService} from "@/lib/db/service";
 
 export const GET = withApi(async (request: NextRequest, {params}: { params: Promise<{ teamId: string }> }, decoded) => {
   const {searchParams} = new URL(request.url);
@@ -25,8 +26,23 @@ export const GET = withApi(async (request: NextRequest, {params}: { params: Prom
     sortBy,
     sortOrder,
   });
+  let posts: Post[] = [];
+  for await (let post of result.docs) {
+    const reactions = await dbService.reaction.find({
+      post: post._id
+    }).populate('member');
+
+    // Add user reaction information
+    posts.push({
+      ...post.toJSON(),
+      reactions: reactions.map(reaction => ({
+        member: reaction.member,
+        type: reaction.type
+      }))
+    });
+  }
   return {
-    data: result.docs,
+    data: posts,
     pagination: result,
   }
 });
