@@ -8,34 +8,40 @@ import mongoose, {
   UpdateQuery,
   PaginateModel,
   PipelineStage,
-  BulkWriteOptions,
-  BulkWriteResult
-} from 'mongoose';
-
-export interface MixedModel<T> extends PaginateModel<T>, AggregatePaginateModel<T> {
+  MongooseBulkWriteOptions,
+} from "mongoose";
+import mongodb from "mongodb";
+export interface MixedModel<T>
+  extends PaginateModel<T>,
+    AggregatePaginateModel<T> {
   bulkWrite(
     operations: mongoose.AnyBulkWriteOperation<T>[],
-    options?: BulkWriteOptions
-  ): Promise<BulkWriteResult>;
+    options?: MongooseBulkWriteOptions
+  ): Promise<mongodb.BulkWriteResult>;
 }
-
 
 export class BaseRepository<T> {
   private _model: MixedModel<T>;
 
   constructor(name: string, schema: mongoose.Schema<T>) {
-    this._model = mongoose.models[name] as MixedModel<T> || mongoose.model<T>(name, schema) as MixedModel<T>;
+    this._model =
+      (mongoose.models[name] as MixedModel<T>) ||
+      (mongoose.model<T>(name, schema) as MixedModel<T>);
   }
 
-  create(item: Omit<T, '_id'>) {
+  create(item: Omit<T, "_id">) {
     return this._model.create(item);
   }
 
-  insertMany(docs: Array<Omit<T, '_id'>>) {
+  insertMany(docs: Array<Omit<T, "_id">>) {
     return this._model.insertMany(docs);
   }
 
-  findOne(filter: FilterQuery<T>, projection?: ProjectionType<T>, options?: QueryOptions<T>) {
+  findOne(
+    filter: FilterQuery<T>,
+    projection?: ProjectionType<T>,
+    options?: QueryOptions<T>
+  ) {
     return this._model.findOne(this.processFilter(filter), projection, options);
   }
 
@@ -43,7 +49,11 @@ export class BaseRepository<T> {
     return this._model.exists(this.processFilter(filter));
   }
 
-  findOneAndUpdate(filter: FilterQuery<T>, update?: UpdateQuery<T>, options?: QueryOptions<T>) {
+  findOneAndUpdate(
+    filter: FilterQuery<T>,
+    update?: UpdateQuery<T>,
+    options?: QueryOptions<T>
+  ) {
     return this._model.findOneAndUpdate(filter, update, options);
   }
 
@@ -51,7 +61,11 @@ export class BaseRepository<T> {
     return this._model.paginate(this.processFilter(filter), options);
   }
 
-  find(filter: FilterQuery<T>, projection?: ProjectionType<T>, options?: QueryOptions<T>) {
+  find(
+    filter: FilterQuery<T>,
+    projection?: ProjectionType<T>,
+    options?: QueryOptions<T>
+  ) {
     return this._model.find(this.processFilter(filter), projection, options);
   }
 
@@ -59,20 +73,31 @@ export class BaseRepository<T> {
     return this._model.aggregate(pipeline);
   }
 
-  aggregatePaginate(query?: mongoose.Aggregate<T[]>, options?: PaginateOptions) {
+  aggregatePaginate(
+    query?: mongoose.Aggregate<T[]>,
+    options?: PaginateOptions
+  ) {
     return this._model.aggregatePaginate(query, options);
-  };
+  }
 
-  update(filter: FilterQuery<T>, update?: UpdateQuery<T>, options?: QueryOptions<T>) {
-    return this._model.findOneAndUpdate(this.processFilter(filter), update, options);
+  update(
+    filter: FilterQuery<T>,
+    update?: UpdateQuery<T>,
+    options?: QueryOptions<T>
+  ) {
+    return this._model.findOneAndUpdate(
+      this.processFilter(filter),
+      update,
+      options
+    );
   }
 
   delete(filter?: FilterQuery<T>, options?: QueryOptions<T>) {
-    return this._model.findOneAndDelete(this.processFilter(filter), options);
+    return this._model.findOneAndDelete(this.processFilter(filter || {}), options);
   }
 
   count(filter?: FilterQuery<T>) {
-    return this._model.countDocuments(this.processFilter(filter));
+    return this._model.countDocuments(this.processFilter(filter || {}));
   }
 
   findById(_id: string) {
@@ -87,8 +112,8 @@ export class BaseRepository<T> {
    */
   bulkWrite(
     operations: mongoose.AnyBulkWriteOperation<T>[],
-    options?: BulkWriteOptions
-  ): Promise<BulkWriteResult> {
+    options?: MongooseBulkWriteOptions
+  ): Promise<mongodb.BulkWriteResult> {
     return this._model.bulkWrite(operations, options);
   }
 
@@ -111,5 +136,4 @@ export class BaseRepository<T> {
     }
     return processedFilter as FilterQuery<T>;
   }
-
 }

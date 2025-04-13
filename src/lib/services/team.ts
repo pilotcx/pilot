@@ -244,7 +244,7 @@ class TeamService {
     // Add the member
     const newMember = await dbService.teamMember.create({
       displayName: data.displayName,
-      role: data.role,
+      role: data.role || TeamRole.Member,
       user: data.userId,
       team: teamId,
     });
