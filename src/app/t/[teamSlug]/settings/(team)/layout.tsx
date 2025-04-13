@@ -6,7 +6,7 @@ interface SettingsLayoutProps {
   children: React.ReactNode;
 }
 
-export default function SettingsLayout({children}: SettingsLayoutProps) {
+export default function SettingsTeamLayout({children}: SettingsLayoutProps) {
   return (
     <div className="container py-6">
       <div className="max-w-3xl mx-auto">
