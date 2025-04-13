@@ -1,10 +1,7 @@
 import withTeam from "@/lib/utils/withTeam";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Settings, Users } from "lucide-react";
-import { TeamNewsfeed } from "@/components/team-newsfeed";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Link from "next/link";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import {TeamNewsfeed} from "@/components/team-newsfeed";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 
 export default async function TeamPage({params}: { params: any }) {
   const {team} = await withTeam((await params).teamSlug);
@@ -19,7 +16,7 @@ export default async function TeamPage({params}: { params: any }) {
         </TabsList>
 
         <TabsContent value="feed" className="space-y-4">
-          <TeamNewsfeed />
+          <TeamNewsfeed/>
         </TabsContent>
 
         <TabsContent value="projects">

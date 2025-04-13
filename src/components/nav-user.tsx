@@ -1,18 +1,8 @@
 "use client"
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  CreditCard,
-  InfoIcon,
-  LogOut,
-  ShieldIcon,
-  Sparkles,
-  UserIcon,
-} from "lucide-react"
+import {useState} from "react";
+import {useRouter} from "next/navigation";
+import {ChevronsUpDown, LogOut, ShieldIcon, UserIcon,} from "lucide-react"
 
 import {Avatar, AvatarFallback, AvatarImage,} from "@/components/ui/avatar"
 import {
@@ -27,7 +17,8 @@ import {
 import {SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,} from "@/components/ui/sidebar"
 import {useTeam} from "@/components/providers/team-provider";
 import api from "@/lib/services/api";
-import { toast } from "sonner";
+import {toast} from "sonner";
+import Link from "next/link";
 
 export function NavUser() {
   const router = useRouter();
@@ -75,14 +66,18 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator/>
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <UserIcon/>
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <ShieldIcon/>
-                Security
-              </DropdownMenuItem>
+              <Link href={'/settings/general'}>
+                <DropdownMenuItem>
+                  <UserIcon/>
+                  Account
+                </DropdownMenuItem>
+              </Link>
+              <Link href={'/settings/security'}>
+                <DropdownMenuItem>
+                  <ShieldIcon/>
+                  Security
+                </DropdownMenuItem>
+              </Link>
             </DropdownMenuGroup>
             <DropdownMenuSeparator/>
             <DropdownMenuItem
