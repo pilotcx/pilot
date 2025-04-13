@@ -1,10 +1,9 @@
-"use client"
+"use client";
 
-import {useState} from "react";
-import {useRouter} from "next/navigation";
-import {ChevronsUpDown, LogOut, ShieldIcon, UserIcon,} from "lucide-react"
+import { ChevronsUpDown, LogOut, ShieldIcon, UserIcon } from "lucide-react";
 
-import {Avatar, AvatarFallback, AvatarImage,} from "@/components/ui/avatar"
+import { useTeam } from "@/components/providers/team-provider";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,18 +12,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,} from "@/components/ui/sidebar"
-import {useTeam} from "@/components/providers/team-provider";
-import api from "@/lib/services/api";
-import {toast} from "sonner";
+} from "@/components/ui/dropdown-menu";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import Link from "next/link";
+import { LogoutDropdownItem } from "./logout-item";
 
 export function NavUser() {
-  const router = useRouter();
-  const {isMobile} = useSidebar();
-  const {membership: user} = useTeam();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { isMobile } = useSidebar();
+  const { membership: user } = useTeam();
 
   return (
     <SidebarMenu>
@@ -36,14 +36,16 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.displayName}/>
+                <AvatarImage src={user.avatar} alt={user.displayName} />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.displayName}</span>
-                <span className="truncate text-xs">{user.email ?? 'No Email'}</span>
+                <span className="truncate text-xs">
+                  {user.email ?? "No Email"}
+                </span>
               </div>
-              <ChevronsUpDown className="ml-auto size-4"/>
+              <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -55,51 +57,39 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.displayName}/>
+                  <AvatarImage src={user.avatar} alt={user.displayName} />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.displayName}</span>
-                  <span className="truncate text-xs">{user.email ?? 'No Email'}</span>
+                  <span className="truncate font-medium">
+                    {user.displayName}
+                  </span>
+                  <span className="truncate text-xs">
+                    {user.email ?? "No Email"}
+                  </span>
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator/>
+            <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <Link href={'/settings/general'}>
+              <Link href={"/settings/general"}>
                 <DropdownMenuItem>
-                  <UserIcon/>
+                  <UserIcon />
                   Account
                 </DropdownMenuItem>
               </Link>
-              <Link href={'/settings/security'}>
+              <Link href={"/settings/security"}>
                 <DropdownMenuItem>
-                  <ShieldIcon/>
+                  <ShieldIcon />
                   Security
                 </DropdownMenuItem>
               </Link>
             </DropdownMenuGroup>
-            <DropdownMenuSeparator/>
-            <DropdownMenuItem
-              disabled={isLoggingOut}
-              onClick={async () => {
-                try {
-                  setIsLoggingOut(true);
-                  await api.logout();
-                  toast.success("Logged out successfully");
-                  router.push("/login");
-                } catch (error: any) {
-                  toast.error(error.message || "Failed to log out");
-                  setIsLoggingOut(false);
-                }
-              }}
-            >
-              <LogOut/>
-              {isLoggingOut ? "Logging out..." : "Log out"}
-            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <LogoutDropdownItem />
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

@@ -86,7 +86,7 @@ export function TeamSelector() {
         </Card>
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 md:mx-8 mx-4">
             {teams.map((team) => (
               <Card key={team._id?.toString()} className="overflow-hidden">
                 <CardHeader className="p-6">
