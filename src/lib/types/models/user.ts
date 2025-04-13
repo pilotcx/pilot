@@ -14,4 +14,5 @@ export interface User {
   googleId?: string;
   appleId?: string;
   avatar?: string;
+  bio?: string;
 }
