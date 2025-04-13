@@ -38,7 +38,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
                 {team.membersCount} {team.membersCount === 1 ? "member" : "members"}
               </CardDescription>
             </div>
-            <Link href={`/t/${params.teamSlug}/settings`}>
+            <Link href={`/t/${teamSlug}/settings`}>
               <Button variant="outline" size="sm">
                 <Settings className="mr-2 h-4 w-4" />
                 Settings

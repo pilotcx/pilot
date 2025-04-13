@@ -8,13 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ArrowRight,
-  Fingerprint,
-  KeyRound,
-  Shield,
-  Trash,
-} from "lucide-react";
+import { ArrowRight, Fingerprint, KeyRound, Shield, Trash } from "lucide-react";
 import { ChangePasswordForm } from "./components/change-password-form";
 
 export default function SecuritySettingsPage() {
@@ -29,7 +23,7 @@ export default function SecuritySettingsPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 sm:grid-cols-2">
+      <div className="flex flex-col gap-4">
         <SecurityCard
           icon={<Shield className="h-5 w-5 text-primary" />}
           title="Password"
@@ -62,19 +56,6 @@ export default function SecuritySettingsPage() {
             </Button>
           </div>
         </SecurityCard>
-
-        <SecurityCard
-          icon={<Trash className="h-5 w-5 text-primary" />}
-          title="Delete Team"
-          description="Delete your team and all associated data."
-        >
-          <Button
-            variant="outline"
-            className="w-fit border-destructive text-destructive"
-          >
-            Delete Team
-          </Button>
-        </SecurityCard>
       </div>
     </div>
   );
@@ -92,7 +73,7 @@ function SecurityCard({
   children: React.ReactNode;
 }) {
   return (
-    <Card className="flex flex-col justify-between">
+    <Card className="flex flex-col justify-between shadow-none py-0">
       <CardHeader className="pb-3 space-y-1">
         <div className="flex items-center gap-2">
           {icon}

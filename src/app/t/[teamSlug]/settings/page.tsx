@@ -36,7 +36,6 @@ export default function GeneralSettings() {
     mode: "onChange",
   });
 
-  // Fetch team data
   useEffect(() => {
     form.reset({
       name: team.name,
@@ -45,7 +44,6 @@ export default function GeneralSettings() {
     });
   }, [team, form]);
 
-  // Generate slug from name
   useEffect(() => {
     const subscription = form.watch((value, {name}) => {
       if (name === "name") {
