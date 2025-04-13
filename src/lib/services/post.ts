@@ -14,7 +14,7 @@ class PostService {
       title: data.title,
       content: data.content,
       author: data.author,
-      reactions: {},
+      reactionCounts: {},
       commentCount: 0,
     });
   }
@@ -44,8 +44,24 @@ class PostService {
     });
   }
 
-  getPostById(postId: string) {
-    return dbService.post.findById(postId);
+  async getPostById(postId: string) {
+    await dbService.connect();
+    const post = await dbService.post.findById(postId).populate('team');
+
+    if (post) {
+      // Get user reactions for this post
+      const reactions = await dbService.reaction.find({
+        post: postId
+      }).populate('member');
+
+      // Add user reaction information
+      post.reactions = reactions.map(reaction => ({
+        member: reaction.member,
+        type: reaction.type
+      }));
+    }
+
+    return post;
   }
 
   async toggleReaction(postId: string, memberId: string, type: ReactionType): Promise<{ added: boolean }> {
@@ -57,38 +73,47 @@ class PostService {
       throw new Error('Post not found');
     }
 
-    if (!post.reactions) {
-      post.reactions = {};
-    }
-
-    if (!post.reactions[type]) {
-      post.reactions[type] = [];
-    }
-
-    const existingReactionIndex = post.reactions[type].findIndex(
-      (r: any) => r.member.toString() === memberId,
-    );
+    // Check if the user already has this reaction
+    const existingReaction = await dbService.reaction.findOne({
+      post: postId,
+      member: memberId,
+      type
+    });
 
     let added: boolean;
 
-    if (existingReactionIndex >= 0) {
+    if (existingReaction) {
       // User already reacted, so remove the reaction
-      post.reactions[type].splice(existingReactionIndex, 1);
+      await dbService.reaction.deleteOne({_id: existingReaction._id});
       added = false;
     } else {
       // Add the reaction
-      post.reactions[type].push({
-        type,
+      await dbService.reaction.create({
+        post: postId,
         member: memberId,
-        createdAt: new Date(),
+        type,
       });
       added = true;
     }
 
-    console.log(post.reactions);
+    // Update the reaction counts on the post
+    const reactionCounts: { [key in ReactionType]?: number } = {};
+    const reactionTypes = Object.values(ReactionType);
 
-    // Save the updated post
-    await dbService.post.findOneAndUpdate({_id: postId}, {reactions: post.reactions});
+    // Get counts for each reaction type
+    for (const reactionType of reactionTypes) {
+      const count = await dbService.reaction.count({
+        post: postId,
+        type: reactionType
+      });
+
+      if (count > 0) {
+        reactionCounts[reactionType] = count;
+      }
+    }
+
+    // Update the post with the new reaction counts
+    await dbService.post.findOneAndUpdate({_id: postId}, {reactionCounts});
 
     return {added};
   }
@@ -117,6 +142,7 @@ class PostService {
     await dbService.connect();
     await dbService.post.deleteOne({_id: postId});
     await dbService.comment.delete({postId: new ObjectId(postId)});
+    await dbService.reaction.delete({post: postId});
 
     return {deleted: true};
   }

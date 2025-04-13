@@ -5,4 +5,5 @@ export enum Schemas {
   TeamMember = 'TeamMember',
   Post = 'Post',
   Comment = 'Comment',
+  Reaction = 'Reaction',
 }

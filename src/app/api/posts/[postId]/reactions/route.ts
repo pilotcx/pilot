@@ -1,10 +1,10 @@
 import {NextRequest} from 'next/server';
 import {withApi} from '@/lib/utils/withApi';
-import {addReactionSchema} from '@/lib/types/models/post';
 import {ApiError} from '@/lib/types/errors/api.error';
 import {teamService} from '@/lib/services/team';
 import {postService} from '@/lib/services/post';
 import {Team} from "@/lib/types/models/team";
+import {addReactionSchema} from "@/lib/types/models/reaction";
 
 export const POST = withApi(async (request: NextRequest, {params}: {
   params: Promise<{ postId: string }>
@@ -17,7 +17,7 @@ export const POST = withApi(async (request: NextRequest, {params}: {
     throw new ApiError(400, result.error.message);
   }
 
-  const post = await postService.getPostById(postId).populate('team');
+  const post = await postService.getPostById(postId);
   if (!post) {
     throw new ApiError(404, 'Post not found');
   }

@@ -191,9 +191,10 @@ export function TeamNewsfeed() {
               content={post.content}
               author={post.author as TeamMember}
               createdAt={post.createdAt as string}
-              reactions={post.reactions || {}}
+              reactions={post.reactionCounts || {}}
               comments={post.commentCount || 0}
               currentUserId={membership.user?._id || ""}
+              userReactions={post.userReactions || []}
               onReact={handleReactToPost}
               onDelete={handleDeletePost}
             />

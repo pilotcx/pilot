@@ -37,9 +37,9 @@ export const PostSchema = new mongoose.Schema<Post>({
     ref: Schemas.TeamMember,
     required: true,
   },
-  reactions: {
+  reactionCounts: {
     type: Map,
-    of: [ReactionSchema],
+    of: Number,
     default: {},
   },
   commentCount: {

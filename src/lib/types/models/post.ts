@@ -29,9 +29,13 @@ export interface Post extends BaseEntity {
   title: string;
   content: string;
   author: TeamMember | string;
-  reactions: {
-    [key in ReactionType]?: Reaction[];
+  reactionCounts: {
+    [key in ReactionType]?: number;
   };
+  reactions?: {
+    member: TeamMember,
+    type: ReactionType,
+  }[];
   commentCount: number;
 }
 
@@ -47,30 +51,3 @@ export const createCommentSchema = z.object({
 });
 
 export type CreateCommentInput = z.infer<typeof createCommentSchema>;
-
-export const addReactionSchema = z.object({
-  type: z.nativeEnum(ReactionType),
-});
-
-export type AddReactionInput = z.infer<typeof addReactionSchema>;
-
-export function formatReactionsForClient(post: Post) {
-  const reactionCounts: Record<ReactionType, { count: number, reacted: boolean }> = {
-    [ReactionType.Like]: {count: 0, reacted: false},
-    [ReactionType.Love]: {count: 0, reacted: false},
-    [ReactionType.Laugh]: {count: 0, reacted: false},
-    [ReactionType.Angry]: {count: 0, reacted: false},
-    [ReactionType.Sad]: {count: 0, reacted: false},
-    [ReactionType.Celebrate]: {count: 0, reacted: false},
-  };
-
-  // Count reactions and check if current user has reacted
-  Object.entries(post.reactions || {}).forEach(([type, reactions]) => {
-    if (reactions && Array.isArray(reactions)) {
-      reactionCounts[type as ReactionType].count = reactions.length;
-      // Note: We'll set the 'reacted' flag when we have the current user ID
-    }
-  });
-
-  return reactionCounts;
-}

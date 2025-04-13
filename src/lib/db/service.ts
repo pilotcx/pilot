@@ -3,7 +3,8 @@ import {User} from '@/lib/types/models/user';
 import {SystemConfig} from '@/lib/types/models/system-config';
 import {Team} from '@/lib/types/models/team';
 import {TeamMember} from '@/lib/types/models/team';
-import {Post, Comment} from '@/lib/types/models/post';
+import {Post} from '@/lib/types/models/post';
+import {Comment} from '@/lib/types/models/post';
 import dbConnect from '@/lib/db/client';
 import {UserSchema} from '@/lib/db/models/user';
 import {SystemConfigSchema} from '@/lib/db/models/system-config';
@@ -11,6 +12,7 @@ import {TeamSchema} from '@/lib/db/models/team';
 import {TeamMemberSchema} from '@/lib/db/models/team-member';
 import {PostSchema} from '@/lib/db/models/post';
 import {CommentSchema} from '@/lib/db/models/comment';
+import {ReactionSchema} from '@/lib/db/models/reaction';
 import {Schemas} from '@/lib/db/models';
 
 class DBService {
@@ -20,6 +22,7 @@ class DBService {
   teamMember: BaseRepository<TeamMember>;
   post: BaseRepository<Post>;
   comment: BaseRepository<Comment>;
+  reaction: BaseRepository<any>;
 
   constructor() {
     this.user = new BaseRepository<User>(Schemas.User, UserSchema);
@@ -28,6 +31,7 @@ class DBService {
     this.teamMember = new BaseRepository<TeamMember>(Schemas.TeamMember, TeamMemberSchema);
     this.post = new BaseRepository<Post>(Schemas.Post, PostSchema);
     this.comment = new BaseRepository<Comment>(Schemas.Comment, CommentSchema);
+    this.reaction = new BaseRepository<any>(Schemas.Reaction, ReactionSchema);
   }
 
   connect() {

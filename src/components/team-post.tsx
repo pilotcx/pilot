@@ -33,9 +33,10 @@ interface PostProps {
   content: string;
   author: TeamMember;
   createdAt: string;
-  reactions: Record<string, any>;
+  reactions: Record<string, number>;
   comments: number;
   currentUserId: string;
+  userReactions?: { userId: string; type: string }[];
   onReact: (id: string, type: ReactionType) => void;
   onDelete: (id: string) => void;
 }
@@ -49,6 +50,7 @@ export function TeamPost({
                            reactions,
                            comments,
                            currentUserId,
+                           userReactions = [],
                            onReact,
                            onDelete,
                          }: PostProps) {
@@ -67,8 +69,8 @@ export function TeamPost({
   const isCurrentUserAuthor = author._id === currentUserId;
 
   // Get total reactions count
-  const totalReactions = Object.entries(reactions || {}).reduce((sum, [_, reactions]) => {
-    return sum + (Array.isArray(reactions) ? reactions.length : 0);
+  const totalReactions = Object.entries(reactions || {}).reduce((sum, [_, count]) => {
+    return sum + (typeof count === 'number' ? count : 0);
   }, 0);
 
   // Helper function to get reaction icon
@@ -100,23 +102,23 @@ export function TeamPost({
             {totalReactions > 0 && (
               // Show received reactions
               Object.entries(reactions || {})
-                .filter(([_, reactionArray]) => Array.isArray(reactionArray) && reactionArray.length > 0)
-                .map(([type, reactionArray]) => (
+                .filter(([_, count]) => typeof count === 'number' && count > 0)
+                .map(([type, count]) => (
                   <div
                     key={type}
                     className="relative group mb-2 cursor-pointer transition-transform hover:scale-110"
                     onClick={() => onReact(id, type as ReactionType)}
-                    title={`${Array.isArray(reactionArray) ? reactionArray.length : 0} ${type}${Array.isArray(reactionArray) && reactionArray.length !== 1 ? 's' : ''}`}
+                    title={`${count} ${type}${count !== 1 ? 's' : ''}`}
                   >
                     <div className={cn(
                       "flex items-center justify-center h-8 w-8 rounded-full bg-background",
-                      Array.isArray(reactionArray) && reactionArray.some(r => r.userId === currentUserId) && "ring-2 ring-primary/10"
+                      userReactions?.some(r => r.type === type && r.userId === currentUserId) && "ring-2 ring-primary/10"
                     )}>
                       {getReactionIcon(type as ReactionType)}
                     </div>
                     <span
                       className="absolute -bottom-0 -right-0 text-xs bg-primary text-primary-foreground rounded-full h-4 w-4 flex items-center justify-center">
-                  {Array.isArray(reactionArray) ? reactionArray.length : 0}
+                  {count}
                 </span>
                   </div>
                 ))
