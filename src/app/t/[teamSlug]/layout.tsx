@@ -13,12 +13,24 @@ import {ReactNode} from "react";
 import withTeam from "@/lib/utils/withTeam";
 import TeamProvider from "@/components/providers/team-provider";
 import {Team, TeamMember} from "@/lib/types/models/team";
+import type {Metadata} from "next";
+import {systemConfigService} from "@/lib/services/system-config";
+import {SystemConfigKey} from "@/lib/types/models/system-config";
 
 interface TeamLayoutProps {
   children: ReactNode;
   params: {
     teamSlug: string;
   };
+}
+
+export async function generateMetadata({params}: TeamLayoutProps): Promise<Metadata> {
+  const {team} = await withTeam(params);
+  const title = await systemConfigService.get<string>(SystemConfigKey.OrgName) ?? 'Tower';
+
+  return {
+    title: team.name + ' :: ' + title,
+  }
 }
 
 export default async function TeamLayout({children, params}: TeamLayoutProps) {

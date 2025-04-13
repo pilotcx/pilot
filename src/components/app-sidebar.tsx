@@ -4,179 +4,117 @@ import * as React from "react"
 import {
   AudioWaveform,
   BookOpen,
-  Bot,
+  Bot, CheckCheckIcon, CheckIcon,
   Command,
   Frame,
   GalleryVerticalEnd,
-  Info,
   Map,
   PieChart,
   Settings2,
-  SquareTerminal,
+  SquareTerminal, TargetIcon,
 } from "lucide-react"
 
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarRail,
-} from "@/components/ui/sidebar"
+import {NavMain} from "@/components/nav-main"
+import {NavProjects} from "@/components/nav-projects"
+import {NavUser} from "@/components/nav-user"
+import {TeamSwitcher} from "@/components/team-switcher"
+import {Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail,} from "@/components/ui/sidebar"
 import { useParams } from "next/navigation"
 
-// This is sample data.
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
+export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
+  const params = useParams<{ teamSlug?: string }>();
+  const teamSlug = params.teamSlug;
+
+  const data = {
+    navMain: [
+      {
+        title: "Tasks",
+        url: "#",
+        icon: CheckCheckIcon,
+        isActive: true,
+        items: [
+          {
+            title: "Task List",
+            url: "#",
+          },
+          {
+            title: "Kanban Board",
+            url: "#",
+          },
+        ],
+      },
+      {
+        title: "OKRs",
+        url: "#",
+        icon: TargetIcon,
+        items: [
+          {
+            title: "Genesis",
+            url: "#",
+          },
+          {
+            title: "Explorer",
+            url: "#",
+          },
+          {
+            title: "Quantum",
+            url: "#",
+          },
+        ],
+      },
+      {
+        title: "Knowledge",
+        url: "#",
+        icon: BookOpen,
+        items: [
+          {
+            title: "Docs",
+            url: "#",
+          },
+          {
+            title: "Resources",
+            url: "#",
+          },
+        ],
+      },
+      {
+        title: "Settings",
+        url: teamSlug ? `/t/${teamSlug}/settings` : "#",
+        icon: Settings2,
+        items: [
+          {
+            title: "General",
+            url: teamSlug ? `/t/${teamSlug}/settings` : "#",
+          },
+          {
+            title: "Members",
+            url: teamSlug ? `/t/${teamSlug}/settings/members` : "#",
+          },
+          {
+            title: "Integrations",
+            url: teamSlug ? `/t/${teamSlug}/settings/integrations` : "#",
+          },
+        ],
+      },
   ],
-  navMain: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "/settings/general",
-        },
-        {
-          title:"Security",
-          url: "/settings/security",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
+    projects: [
+      {
+        name: "Design Engineering",
+        url: "#",
+        icon: Frame,
+      },
+      {
+        name: "Sales & Marketing",
+        url: "#",
+        icon: PieChart,
+      },
+      {
+        name: "Travel",
+        url: "#",
+        icon: Map,
+      },
   ],
 }
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const {teamSlug} = useParams();
-  const navMainWithTeamUrl = data.navMain.map((item) => ({
-    ...item,
-    url: `/t/${teamSlug}${item.url}`,
-    items: item.items?.map((subItem) => ({
-      ...subItem,
-      url: `/t/${teamSlug}${subItem.url}`
-    }))
-  }));
-
-  const projectsWithTeamUrl = data.projects.map((item) => ({
-    ...item,
-    url: `/t/${teamSlug}${item.url}`
-  }));
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -184,8 +122,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher/>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navMainWithTeamUrl} />
-        <NavProjects projects={projectsWithTeamUrl} />
+        <NavMain items={data.navMain}/>
+        <NavProjects projects={data.projects}/>
       </SidebarContent>
       <SidebarFooter>
         <NavUser/>
