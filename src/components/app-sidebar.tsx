@@ -2,28 +2,39 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
   BookOpen,
-  Bot, CheckCheckIcon, CheckIcon,
-  Command,
+  CheckCheckIcon,
+  FileCheckIcon,
   Frame,
-  GalleryVerticalEnd,
   Map,
+  NewspaperIcon,
   PieChart,
   Settings2,
-  SquareTerminal, TargetIcon,
+  TargetIcon,
 } from "lucide-react"
 
 import {NavMain} from "@/components/nav-main"
 import {NavProjects} from "@/components/nav-projects"
 import {NavUser} from "@/components/nav-user"
 import {TeamSwitcher} from "@/components/team-switcher"
-import {Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail,} from "@/components/ui/sidebar"
-import { useParams } from "next/navigation"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+} from "@/components/ui/sidebar"
+import Link from "next/link";
+import {useTeam} from "@/components/providers/team-provider";
 
 export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
-  const params = useParams<{ teamSlug?: string }>();
-  const teamSlug = params.teamSlug;
+  const {team} = useTeam();
+  const teamSlug = team.slug;
 
   const data = {
     navMain: [
@@ -96,7 +107,7 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
           },
         ],
       },
-  ],
+    ],
     projects: [
       {
         name: "Design Engineering",
@@ -113,8 +124,8 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
         url: "#",
         icon: Map,
       },
-  ],
-}
+    ],
+  }
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -122,6 +133,27 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher/>
       </SidebarHeader>
       <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>General</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href={`/t/${teamSlug}/`}>
+                  <NewspaperIcon/>
+                  <span>Newsfeed</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href={`/t/${teamSlug}/requests`}>
+                  <FileCheckIcon/>
+                  <span>Requests</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
         <NavMain items={data.navMain}/>
         <NavProjects projects={data.projects}/>
       </SidebarContent>

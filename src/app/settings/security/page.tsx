@@ -1,15 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { ArrowRight, Fingerprint, KeyRound, Shield, Trash } from "lucide-react";
-import { ChangePasswordForm } from "./components/change-password-form";
+import {Button} from "@/components/ui/button";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from "@/components/ui/card";
+import {ArrowRight, Fingerprint, KeyRound, Shield} from "lucide-react";
+import {ChangePasswordForm} from "./components/change-password-form";
 
 export default function SecuritySettingsPage() {
   return (
@@ -25,15 +19,15 @@ export default function SecuritySettingsPage() {
 
       <div className="flex flex-col gap-4">
         <SecurityCard
-          icon={<Shield className="h-5 w-5 text-primary" />}
+          icon={<Shield className="h-5 w-5 text-primary"/>}
           title="Password"
           description="Change your password to keep your account secure."
         >
-          <ChangePasswordForm />
+          <ChangePasswordForm/>
         </SecurityCard>
 
         <SecurityCard
-          icon={<Fingerprint className="h-5 w-5 text-primary" />}
+          icon={<Fingerprint className="h-5 w-5 text-primary"/>}
           title="Two-Factor Authentication"
           description="Add an extra layer of security to your account."
         >
@@ -41,7 +35,7 @@ export default function SecuritySettingsPage() {
         </SecurityCard>
 
         <SecurityCard
-          icon={<KeyRound className="h-5 w-5 text-primary" />}
+          icon={<KeyRound className="h-5 w-5 text-primary"/>}
           title="Active Sessions"
           description="Manage your active sessions and devices."
         >
@@ -52,7 +46,7 @@ export default function SecuritySettingsPage() {
             </div>
             <Button variant="outline" size="sm">
               View All
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="ml-2 h-4 w-4"/>
             </Button>
           </div>
         </SecurityCard>
@@ -62,11 +56,11 @@ export default function SecuritySettingsPage() {
 }
 
 function SecurityCard({
-  icon,
-  title,
-  description,
-  children,
-}: {
+                        icon,
+                        title,
+                        description,
+                        children,
+                      }: {
   icon: React.ReactNode;
   title: string;
   description: string;
