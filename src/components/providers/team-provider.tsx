@@ -1,16 +1,16 @@
 'use client';
 
-import {Team, TeamMember} from "@/lib/types/models/team";
+import {Team, TeamMember, TeamMemberMapped} from "@/lib/types/models/team";
 import {createContext, ReactNode, useContext} from "react";
 
 interface TeamProviderType {
   team: Team;
-  membership: TeamMember;
+  membership: TeamMemberMapped;
 }
 
 const TeamProviderContext = createContext<TeamProviderType>({
   team: {} as Team,
-  membership: {} as TeamMember,
+  membership: {} as TeamMemberMapped,
 });
 
 export function useTeam() {
@@ -20,7 +20,7 @@ export function useTeam() {
 export default function TeamProvider({children, team, membership}: {
   children: ReactNode,
   team: Team,
-  membership: TeamMember
+  membership: TeamMemberMapped
 }) {
   return <TeamProviderContext.Provider
     value={{

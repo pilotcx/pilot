@@ -25,3 +25,8 @@ export interface TeamMember extends BaseEntity {
   user: string | mongoose.Types.ObjectId | User;
   team: string | mongoose.Types.ObjectId | Team;
 }
+
+export interface TeamMemberMapped extends TeamMember {
+  user: User;
+  team: Team;
+}

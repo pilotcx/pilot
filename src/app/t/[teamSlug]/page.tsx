@@ -1,77 +1,89 @@
-import { withAuthPage } from "@/lib/utils/withAuthPage";
-import { teamService } from "@/lib/services/team";
-import { notFound } from "next/navigation";
-import Link from "next/link";
+import withTeam from "@/lib/utils/withTeam";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Settings, Users } from "lucide-react";
+import { TeamNewsfeed } from "@/components/team-newsfeed";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from "next/link";
 
-interface TeamPageProps {
-  params: Promise<{
-    teamSlug: string;
-  }>;
-}
+export default async function TeamPage({params}: { params: any }) {
+  const {team} = await withTeam((await params).teamSlug);
 
-export default async function TeamPage({ params }: TeamPageProps) {
-  const {teamSlug} = await params;
-  // Ensure the user is authenticated
-  await withAuthPage({
-    redirectTo: '/login'
-  });
+  return (
+    <div className="container max-w-3xl mx-auto">
+      <Tabs defaultValue="feed" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="feed">Feed</TabsTrigger>
+          <TabsTrigger value="projects">Projects</TabsTrigger>
+          <TabsTrigger value="tasks">Tasks</TabsTrigger>
+        </TabsList>
 
-  try {
-    // Fetch team data by slug
-    const team = await teamService.getTeamBySlug(teamSlug);
+        <TabsContent value="feed" className="space-y-4">
+          <TeamNewsfeed />
+        </TabsContent>
 
-    if (!team) {
-      return notFound();
-    }
+        <TabsContent value="projects">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Project Alpha</CardTitle>
+                <CardDescription>
+                  Website redesign project
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Progress: 60%
+                </p>
+              </CardContent>
+            </Card>
 
-    return (
-      <div className="container py-10">
-        <Card className="mb-8">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-2xl">{team.name}</CardTitle>
-              <CardDescription className="flex items-center">
-                <Users className="mr-2 h-4 w-4" />
-                {team.membersCount} {team.membersCount === 1 ? "member" : "members"}
-              </CardDescription>
-            </div>
-            <Link href={`/t/${params.teamSlug}/settings`}>
-              <Button variant="outline" size="sm">
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </Button>
-            </Link>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              {team.description || "No description provided"}
-            </p>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Project Beta</CardTitle>
+                <CardDescription>
+                  Mobile app development
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Progress: 25%
+                </p>
+              </CardContent>
+            </Card>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Team content will go here */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Project Gamma</CardTitle>
+                <CardDescription>
+                  Marketing campaign
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Progress: 80%
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="tasks">
           <Card>
             <CardHeader>
-              <CardTitle>Team Dashboard</CardTitle>
+              <CardTitle>Team Tasks</CardTitle>
               <CardDescription>
-                Welcome to your team workspace
+                Manage your team's tasks and assignments
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                This is where you'll see your team's activity and manage your projects.
+                Task management features coming soon.
               </p>
             </CardContent>
           </Card>
-        </div>
-      </div>
-    );
-  } catch (error) {
-    console.error("Error fetching team:", error);
-    return notFound();
-  }
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
 }
