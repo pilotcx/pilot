@@ -5,9 +5,17 @@ export enum SystemConfigKey {
   OrgName = 'org_name',
   OrgDesc = 'org_desc',
   OrgAvatar = 'org_avatar',
-  OrgAllowMultiTeam = 'org_allow_multi_team',
-  OrgAllowTeamCreationEveryone = 'org_allow_team_creation_everyone',
-  AllowRegistration = 'allow_registration',
+  OrgIndustry = 'org_industry',
+  OrgSize = 'org_size',
+  OrgStructure = 'org_organization_structure',
+  OrgAllowRegistration = 'org_allow_registration',
+  OrgTeamCreationPermission = 'org_team_creation_permission',
+  OrgEmail = 'org_email',
+  OrgPhone = 'org_phone',
+  OrgWebsite = 'org_website',
+  OrgAddress = 'org_address',
+  OrgState = 'org_state',
+  OrgPostalCode = 'org_postal_code',
 }
 
 export interface SystemConfig extends BaseEntity {

@@ -29,8 +29,25 @@ export enum UserRole {
   TeamLead = "team_lead",
 }
 
+// Admin account schema for the first step
+export const adminAccountSchema = z.object({
+  fullName: z.string().min(1, { message: "Full name is required" }),
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters" })
+    .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
+    .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter" })
+    .regex(/[0-9]/, { message: "Password must contain at least one number" }),
+  confirmPassword: z.string(),
+}).strict().refine(data => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
 export const organizationBasicInfoSchema = z.object({
   name: z.string().min(1, { message: "Organization name is required" }).max(100),
+  description: z.string().optional(),
   industry: z.nativeEnum(Industry).default(Industry.Other),
   size: z.nativeEnum(OrganizationSize).default(OrganizationSize.XSmall),
   organizationStructure: z.nativeEnum(OrganizationStructure).default(OrganizationStructure.MultiTeam),
@@ -58,8 +75,16 @@ export const organizationCompleteSchema = organizationBasicInfoSchema
   .merge(organizationContactSchema)
   .merge(organizationAddressSchema);
 
+// Combined schema for the entire organization setup
+export const organizationSetupSchema = z.object({
+  adminAccount: adminAccountSchema,
+  organization: organizationCompleteSchema,
+}).strict();
+
 // Types
+export type AdminAccount = z.infer<typeof adminAccountSchema>;
 export type OrganizationBasicInfo = z.infer<typeof organizationBasicInfoSchema>;
 export type OrganizationContact = z.infer<typeof organizationContactSchema>;
 export type OrganizationAddress = z.infer<typeof organizationAddressSchema>;
-export type OrganizationComplete = z.infer<typeof organizationCompleteSchema>; 
+export type OrganizationComplete = z.infer<typeof organizationCompleteSchema>;
+export type OrganizationSetup = z.infer<typeof organizationSetupSchema>;

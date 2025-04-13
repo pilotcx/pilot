@@ -14,7 +14,7 @@ export function FormProgress({
 }: FormProgressProps) {
   return (
     <div className="w-full mb-4">
-      <div className="flex justify-between border-gray-200">
+      <div className="flex justify-between border-gray-200 pb-8">
         {steps.map((step, index) => (
           <button
             key={step.id}
@@ -49,10 +49,6 @@ export function FormProgress({
           </button>
         ))}
       </div>
-
-      <p className="text-muted-foreground mt-10 text-center text-sm">
-        {steps[currentStepIndex].description}
-      </p>
     </div>
   );
 }

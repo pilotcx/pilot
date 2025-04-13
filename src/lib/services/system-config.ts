@@ -224,6 +224,9 @@ class SystemConfigService {
 
     try {
       const result = await dbService.systemConfig.bulkWrite(operations);
+      if (this.cacheEnabled) {
+        this.clearCache();
+      }
       return (result.upsertedCount || 0) + (result.modifiedCount || 0);
     } catch (error) {
       // If database operation fails, remove the affected keys from cache

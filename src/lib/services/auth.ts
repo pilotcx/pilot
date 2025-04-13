@@ -54,7 +54,7 @@ class AuthService {
     }
   }
 
-  async register(data: RegistrationFormSchema) {
+  async register(data: RegistrationFormSchema & {role: UserRole}) {
     // Check if user with this email already exists
     const existingUser = await dbService.user.findOne({ email: data.email.toLowerCase() });
     if (existingUser) {
@@ -74,18 +74,18 @@ class AuthService {
     });
 
     // Remove password from the returned user object
-    const { password, ...userWithoutPassword } = user.toObject();
+    const { password, ...userWithoutPassword } = user;
 
-    return userWithoutPassword;
+    return userWithoutPassword as unknown as User;
   }
 
   async changePassword(userId: string, data: PasswordChangeSchema) {
     const user = await dbService.user.findById(userId).select('+password');
-    
+
     if (!user) {
       throw new ApiError(404, 'User not found');
     }
-    
+
     const isCurrentPasswordValid = await comparePassword(data.currentPassword, user.password);
     if (!isCurrentPasswordValid) {
       throw new ApiError(400, 'Current password is incorrect');
@@ -94,12 +94,12 @@ class AuthService {
     if (data.currentPassword === data.newPassword) {
       throw new ApiError(400, 'New password must be different from current password');
     }
-    
+
     const hashedPassword = await hashPassword(data.newPassword);
-    
+
     user.password = hashedPassword;
     await user.save();
-    
+
     return { success: true, message: 'Password changed successfully' };
   }
 }
