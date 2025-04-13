@@ -28,6 +28,7 @@ export const UserSchema = new mongoose.Schema<User>({
   googleId: String,
   appleId: String,
   avatar: String,
+  bio: String,
 });
 
 UserSchema.plugin(mongooseAggregatePaginate);
