@@ -54,7 +54,7 @@ class AuthService {
     }
   }
 
-  async register(data: RegistrationFormSchema & {role: UserRole}) {
+  async register(data: RegistrationFormSchema & {role?: UserRole}) {
     // Check if user with this email already exists
     const existingUser = await dbService.user.findOne({ email: data.email.toLowerCase() });
     if (existingUser) {
