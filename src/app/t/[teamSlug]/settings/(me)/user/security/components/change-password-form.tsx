@@ -55,10 +55,28 @@ export function ChangePasswordForm() {
   });
 
   async function onSubmit(data: PasswordFormValues) {
-    console.log(data);
-    toast.success("Password changed successfully!");
-    setShowPasswordForm(false);
-    form.reset();
+    try {
+      const response = await fetch("/api/user/password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        toast.error(errorData.message || "Failed to change password");
+        return;
+      }
+
+      toast.success("Password changed successfully!");
+      setShowPasswordForm(false);
+      form.reset();
+    } catch (error) {
+      console.error("Error changing password:", error);
+      toast.error("An unexpected error occurred");
+    }
   }
 
   return (

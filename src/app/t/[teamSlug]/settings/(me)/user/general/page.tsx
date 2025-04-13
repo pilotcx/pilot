@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUserProfile } from "@/lib/hooks/useUserProfile";
+import { toast } from "sonner";
 
 const userProfileSchema = z.object({
   fullName: z.string().min(1, { message: "Name is required" }),
@@ -62,7 +63,12 @@ export default function GeneralSettingsPage() {
   }, [profile, form]);
 
   async function onSubmit(data: UserProfileFormValues) {
-    await updateProfile(data);
+    try {
+      await updateProfile(data);
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      toast.error("Failed to update profile");
+    }
   }
 
   return (
