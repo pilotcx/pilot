@@ -1,7 +1,6 @@
 import {z} from 'zod';
 import {Team, TeamMember} from "@/lib/types/models/team";
 import {BaseEntity} from "@/lib/types/models/base";
-import {User} from "@/lib/types/models/user";
 
 export enum ReactionType {
   Like = 'like',
@@ -14,7 +13,7 @@ export enum ReactionType {
 
 export interface Reaction extends BaseEntity {
   type: ReactionType;
-  user: User | string;
+  member: TeamMember | string;
 }
 
 export interface Comment extends BaseEntity {

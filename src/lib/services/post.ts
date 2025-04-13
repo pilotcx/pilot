@@ -48,7 +48,7 @@ class PostService {
     return dbService.post.findById(postId);
   }
 
-  async toggleReaction(postId: string, userId: string, type: ReactionType): Promise<{ added: boolean }> {
+  async toggleReaction(postId: string, memberId: string, type: ReactionType): Promise<{ added: boolean }> {
     await dbService.connect();
 
     const post = await dbService.post.findById(postId);
@@ -66,7 +66,7 @@ class PostService {
     }
 
     const existingReactionIndex = post.reactions[type].findIndex(
-      (r: any) => r.userId.toString() === userId,
+      (r: any) => r.member.toString() === memberId,
     );
 
     let added: boolean;
@@ -79,11 +79,13 @@ class PostService {
       // Add the reaction
       post.reactions[type].push({
         type,
-        user: userId,
+        member: memberId,
         createdAt: new Date(),
       });
       added = true;
     }
+
+    console.log(post.reactions);
 
     // Save the updated post
     await dbService.post.findOneAndUpdate({_id: postId}, {reactions: post.reactions});

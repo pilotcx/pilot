@@ -1,6 +1,6 @@
 "use client";
 
-import {useState} from "react";
+import {useState, useRef} from "react";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Button} from "@/components/ui/button";
 import {formatDistanceToNow} from "date-fns";
@@ -18,6 +18,11 @@ import {
 } from "lucide-react";
 import {ReactionType} from "@/lib/types/models/post";
 import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,} from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {toast} from "sonner";
 import {cn} from "@/lib/utils";
 import {TeamMember} from "@/lib/types/models/team";
@@ -48,6 +53,8 @@ export function TeamPost({
                            onDelete,
                          }: PostProps) {
   const [copied, setCopied] = useState(false);
+  const [isReactionPopoverOpen, setIsReactionPopoverOpen] = useState(false);
+  const popoverTriggerRef = useRef<HTMLDivElement>(null);
 
   const handleCopyLink = () => {
     // In a real app, this would copy the actual post URL
@@ -116,9 +123,43 @@ export function TeamPost({
             )}
           </div>
         </div>
-        <div className={'flex flex-col items-center py-3 cursor-pointer bg-muted/80'}>
-          <PlusIcon className={'w-6 h-6 text-muted-foreground/80'}/>
-        </div>
+        <Popover open={isReactionPopoverOpen} onOpenChange={setIsReactionPopoverOpen}>
+          <PopoverTrigger asChild>
+            <div
+              ref={popoverTriggerRef}
+              className={'flex flex-col items-center py-3 cursor-pointer bg-muted/80 hover:bg-muted/90 transition-colors'}
+              onMouseEnter={() => setIsReactionPopoverOpen(true)}
+              onMouseLeave={() => setIsReactionPopoverOpen(false)}
+            >
+              <PlusIcon className={'w-6 h-6 text-muted-foreground/80'}/>
+            </div>
+          </PopoverTrigger>
+          <PopoverContent
+            side="right"
+            align="start"
+            className="p-2 w-auto"
+            onMouseEnter={() => setIsReactionPopoverOpen(true)}
+            onMouseLeave={() => setIsReactionPopoverOpen(false)}
+          >
+            <div className="flex gap-1">
+              {Object.values(ReactionType).map((type) => (
+                <Button
+                  key={type}
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 w-9 p-0 rounded-full hover:bg-muted"
+                  onClick={() => {
+                    onReact(id, type);
+                    setIsReactionPopoverOpen(false);
+                  }}
+                  title={type.charAt(0).toUpperCase() + type.slice(1)}
+                >
+                  {getReactionIcon(type)}
+                </Button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Post content */}
