@@ -1,7 +1,6 @@
 import { LogoutDropdownItem } from "@/components/logout-item";
 import { TeamSelector } from "@/components/team-selector";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +13,6 @@ import {
 import { withAuthPage } from "@/lib/utils/withAuthPage";
 import { ShieldIcon, UserIcon } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
 
 export default async function HomePage() {
   await withAuthPage({
