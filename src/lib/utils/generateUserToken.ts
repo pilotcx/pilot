@@ -9,8 +9,8 @@ export default function generateUserToken(user: User) {
       fullName: user.fullName,
       email: user.email,
       role: user.role,
-      photo: user.photo,
-      phoneNumber: user.phoneNumber,
+      avatar: user.avatar || '',
+      phoneNumber: user.phoneNumber || '',
     },
   });
 }

@@ -21,7 +21,7 @@ export function TeamSelector() {
     const fetchTeams = async () => {
       try {
         setLoading(true);
-        const response = await api.getUserTeams();
+        const response = await api.getUserTeams() as {data: {docs: Team[]}, message: string};
         setTeams(response.data.docs || []);
       } catch (error: any) {
         toast.error(error.message || "Failed to load teams");
@@ -88,7 +88,7 @@ export function TeamSelector() {
         <>
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
             {teams.map((team) => (
-              <Card key={team._id} className="overflow-hidden">
+              <Card key={team._id?.toString()} className="overflow-hidden">
                 <CardHeader className="p-6">
                   <CardTitle className="line-clamp-1">{team.name}</CardTitle>
                   <CardDescription className="flex items-center">

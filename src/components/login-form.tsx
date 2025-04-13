@@ -22,7 +22,7 @@ export function LoginForm({
   const router = useRouter();
   const [login, {loading}] = useApi(api.login);
 
-  const form = useForm<LoginSchema>({
+  const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       identifier: "",

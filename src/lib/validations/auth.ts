@@ -21,7 +21,7 @@ export const oAuthSignInSchema = z.object({
 export const loginSchema = z.object({
   identifier: z.string(),
   password: z.string().min(6),
-  issuer: z.enum(['web', 'mobile']).default('web').optional(),
+  issuer: z.enum(['web', 'mobile']).default('web').optional().default('web'),
 }).strict();
 
 export const resetPasswordSchema = z.object({

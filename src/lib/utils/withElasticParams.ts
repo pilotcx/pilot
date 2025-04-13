@@ -1,10 +1,10 @@
 import dayjs from 'dayjs';
 
 export default function withElasticParams<T>(params: URLSearchParams) {
-  let processedParams = {};
+  let processedParams: Record<string, any> = {};
   for (const key of params.keys() as any) {
     const rawValue = params.get(key);
-    if (rawValue.trim() === '') continue;
+    if (!rawValue || rawValue.trim() === '') continue;
     console.log(rawValue);
     if (!dayjs(rawValue).isValid() && rawValue.includes(':')) {
       const [operator, value] = rawValue.split(':');

@@ -13,7 +13,7 @@ export function verifyGoogleIdToken(idToken: string) {
         if (err) {
           return callback(err);
         }
-        const signingKey = key.getPublicKey();
+        const signingKey = key?.getPublicKey();
         callback(null, signingKey);
       });
     }, {
