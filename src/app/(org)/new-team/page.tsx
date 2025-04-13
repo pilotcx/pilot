@@ -8,7 +8,7 @@ export default async function NewTeamPage() {
   });
 
   return (
-    <main className="min-h-screen bg-background py-10">
+    <main className="min-h-screen flex justify-center bg-background py-10">
       <div className="container">
         <CreateTeamForm />
       </div>
