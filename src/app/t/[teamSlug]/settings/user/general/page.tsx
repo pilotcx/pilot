@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { toast } from "sonner";
+import { useEffect } from "react";
 
 import {
   Form,
@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUserProfile } from "@/lib/hooks/useUserProfile";
 
 const userProfileSchema = z.object({
   fullName: z.string().min(1, { message: "Name is required" }),
@@ -29,9 +30,11 @@ const userProfileSchema = z.object({
 type UserProfileFormValues = z.infer<typeof userProfileSchema>;
 
 export default function GeneralSettingsPage() {
+  const { profile, isLoading, isSubmitting, updateProfile } = useUserProfile();
+  
   const defaultValues: Partial<UserProfileFormValues> = {
-    fullName: "John Doe",
-    email: "john@example.com",
+    fullName: "",
+    email: "",
     phoneNumber: "",
     avatar: "",
     bio: "",
@@ -44,10 +47,22 @@ export default function GeneralSettingsPage() {
   });
 
   const avatarUrl = form.watch("avatar");
+  console.log(avatarUrl);
+
+  useEffect(() => {
+    if (profile) {
+      form.reset({
+        fullName: profile.fullName || "",
+        email: profile.email || "",
+        phoneNumber: profile.phoneNumber || "",
+        avatar: profile.avatar || "",
+        bio: profile.bio || "",
+      });
+    }
+  }, [profile, form]);
 
   async function onSubmit(data: UserProfileFormValues) {
-    console.log(data);
-    toast.success("Profile updated successfully!");
+    await updateProfile(data);
   }
 
   return (
@@ -73,7 +88,7 @@ export default function GeneralSettingsPage() {
         <div className="flex-1">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-6 items-start">
                 <FormField
                   control={form.control}
                   name="fullName"
@@ -98,6 +113,7 @@ export default function GeneralSettingsPage() {
                           type="email"
                           placeholder="your.email@example.com"
                           {...field}
+                          disabled
                         />
                       </FormControl>
                       <FormMessage />
@@ -106,7 +122,7 @@ export default function GeneralSettingsPage() {
                 />
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-6 items-start">
                 <FormField
                   control={form.control}
                   name="phoneNumber"
@@ -157,7 +173,9 @@ export default function GeneralSettingsPage() {
               />
 
               <div className="flex justify-end">
-                <Button type="submit">Save Changes</Button>
+                <Button type="submit" disabled={isLoading || isSubmitting}>
+                  {isSubmitting ? "Saving..." : "Save Changes"}
+                </Button>
               </div>
             </form>
           </Form>

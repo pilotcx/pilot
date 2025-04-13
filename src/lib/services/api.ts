@@ -3,6 +3,8 @@ import {ApiResponse} from "@/lib/types/common/api";
 import {RegisterSchema, LoginSchema} from "@/lib/validations/auth";
 import {CreateTeamSchema, UpdateTeamSchema, AddTeamMemberSchema, UpdateTeamMemberSchema} from "@/lib/validations/team";
 import {Team, TeamMember} from "@/lib/types/models/team";
+import { User } from '@/lib/types/models/user';
+import { UpdateUserSchema } from '@/lib/validations/user';
 
 export class ApiService {
   api = axios.create({
@@ -33,6 +35,15 @@ export class ApiService {
 
   logout = async () => {
     return this.call('POST', '/auth/logout');
+  };
+
+  // User profile methods
+  getUserProfile = async () => {
+    return this.call<User>('GET', '/user/profile');
+  };
+
+  updateUserProfile = async (data: UpdateUserSchema) => {
+    return this.call<User>('PATCH', '/user/profile', data);
   };
 
   // Team methods
