@@ -25,9 +25,16 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  await dbService.connect();
+  const avatar = await systemConfigService.get<string>(SystemConfigKey.OrgAvatar);
+  const title = await systemConfigService.get<string>(SystemConfigKey.OrgName);
   return (
     <html lang="en">
+      <head>
+        <title>{title}</title>
+        <link rel="icon" href={avatar ?? "/favicon.ico"} sizes="any" />
+      </head>
       <body className={`${interFont.variable} antialiased`}>
         {children}
         <Toaster position="top-right" />
