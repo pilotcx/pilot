@@ -29,7 +29,7 @@ export const PATCH = withApi(async (request: NextRequest, context, decoded) => {
   }
   
   const { password, ...userWithoutPassword } = updatedUser.toObject();
-  return userWithoutPassword;
+  return {data: userWithoutPassword, message: 'Profile updated successfully'};
 }, {
   preventDb: false,
   protected: true,
@@ -47,7 +47,7 @@ export const GET = withApi(async (_request: NextRequest, context, decoded) => {
   }
   
   const { password, ...userWithoutPassword } = user.toObject();
-  return userWithoutPassword;
+  return {data: userWithoutPassword, message: 'Profile retrieved successfully'};
 }, {
   preventDb: false,
   protected: true,

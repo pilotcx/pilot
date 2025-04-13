@@ -32,7 +32,7 @@ type UserProfileFormValues = z.infer<typeof userProfileSchema>;
 
 export default function GeneralSettingsPage() {
   const { profile, isLoading, isSubmitting, updateProfile } = useUserProfile();
-  
+
   const defaultValues: Partial<UserProfileFormValues> = {
     fullName: "",
     email: "",
@@ -63,12 +63,7 @@ export default function GeneralSettingsPage() {
   }, [profile, form]);
 
   async function onSubmit(data: UserProfileFormValues) {
-    try {
-      await updateProfile(data);
-      toast.success("Profile updated successfully");
-    } catch (error) {
-      toast.error("Failed to update profile");
-    }
+    await updateProfile(data);
   }
 
   return (

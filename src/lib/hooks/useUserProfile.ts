@@ -31,7 +31,7 @@ export function useUserProfile() {
     try {
       const response = await apiService.updateUserProfile(data);
       setProfile(response.data);
-      toast.success('Profile updated successfully!');
+      toast.success(response?.message || 'Profile updated successfully!');
       return true;
     } catch (err: any) {
       const message = err.message || 'Failed to update profile';

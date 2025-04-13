@@ -11,13 +11,11 @@ export const POST = withApi(async (request: NextRequest, context, decoded) => {
 
   const body = await request.json();
   
-  // Validate the request body against the schema
   const result = passwordChangeSchema.safeParse(body);
   if (!result.success) {
     throw new ApiError(400, result.error.message);
   }
   
-  // Change the password
   return await authService.changePassword(decoded.id, result.data);
 }, {
   preventDb: false,
