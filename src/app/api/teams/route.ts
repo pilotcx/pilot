@@ -14,14 +14,14 @@ export const GET = withApi(async (request: NextRequest, context, decoded) => {
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '10');
 
-  const teams = await teamService.getTeams({
+  const teams = await teamService.getJoinedTeamMemberships(decoded.id, {
     page,
     limit,
     sort: { createdAt: -1 },
   });
 
   return {
-    data: teams.docs,
+    data: teams.docs.map(doc => doc.team),
     pagination: teams,
     message: 'Teams retrieved successfully',
   };

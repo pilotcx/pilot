@@ -15,6 +15,15 @@ class TeamService {
     return dbService.team.paginate({}, pagination);
   }
 
+  getJoinedTeamMemberships(userId: string, pagination: PaginateOptions) {
+    return dbService.teamMember.paginate({
+      user: userId,
+    }, {
+      ...pagination,
+      populate: ['team']
+    });
+  }
+
   /**
    * Get a team by ID
    */
