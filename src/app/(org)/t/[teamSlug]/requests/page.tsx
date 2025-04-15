@@ -106,12 +106,6 @@ export default function TeamRequestsPage() {
           ) : (
             <TeamRequestList
               requests={requests}
-              isManager={isManagerOrOwner}
-              onRequestUpdated={(updatedRequest) => {
-                setRequests((prev) =>
-                  prev.map((req) => (req._id === updatedRequest._id ? updatedRequest : req))
-                );
-              }}
             />
           )}
         </TabsContent>
@@ -124,12 +118,6 @@ export default function TeamRequestsPage() {
           ) : (
             <TeamRequestList
               requests={requests}
-              isManager={isManagerOrOwner}
-              onRequestUpdated={(updatedRequest) => {
-                setRequests((prev) =>
-                  prev.map((req) => (req._id === updatedRequest._id ? updatedRequest : req))
-                );
-              }}
             />
           )}
         </TabsContent>
@@ -142,12 +130,6 @@ export default function TeamRequestsPage() {
           ) : (
             <TeamRequestList
               requests={requests}
-              isManager={isManagerOrOwner}
-              onRequestUpdated={(updatedRequest) => {
-                setRequests((prev) =>
-                  prev.map((req) => (req._id === updatedRequest._id ? updatedRequest : req))
-                );
-              }}
             />
           )}
         </TabsContent>
@@ -160,12 +142,6 @@ export default function TeamRequestsPage() {
           ) : (
             <TeamRequestList
               requests={requests}
-              isManager={isManagerOrOwner}
-              onRequestUpdated={(updatedRequest) => {
-                setRequests((prev) =>
-                  prev.map((req) => (req._id === updatedRequest._id ? updatedRequest : req))
-                );
-              }}
             />
           )}
         </TabsContent>
@@ -178,12 +154,6 @@ export default function TeamRequestsPage() {
           ) : (
             <TeamRequestList
               requests={requests}
-              isManager={isManagerOrOwner}
-              onRequestUpdated={(updatedRequest) => {
-                setRequests((prev) =>
-                  prev.map((req) => (req._id === updatedRequest._id ? updatedRequest : req))
-                );
-              }}
             />
           )}
         </TabsContent>
