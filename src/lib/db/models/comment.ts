@@ -17,7 +17,7 @@ export const CommentSchema = new mongoose.Schema<Comment>({
   },
   author: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: Schemas.User,
+    ref: Schemas.TeamMember,
     required: true,
   },
 }, {

@@ -120,7 +120,7 @@ class PostService {
 
   async addComment(postId: string, data: {
     content: string;
-    authorId: string;
+    teamMemberId: string;
   }): Promise<any> {
     await dbService.connect();
 
@@ -128,7 +128,7 @@ class PostService {
     const comment = await dbService.comment.create({
       post: postId,
       content: data.content,
-      author: data.authorId,
+      author: data.teamMemberId,
     });
 
     await dbService.post.findOneAndUpdate({_id: postId}, {

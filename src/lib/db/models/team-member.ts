@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { TeamMember, TeamRole } from '@/lib/types/models/team';
 import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 import mongoosePaginate from 'mongoose-paginate-v2';
+import {Schemas} from "@/lib/db/models/index";
 
 export const TeamMemberSchema = new mongoose.Schema<TeamMember>({
   displayName: {
@@ -15,12 +16,12 @@ export const TeamMemberSchema = new mongoose.Schema<TeamMember>({
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: Schemas.User,
     required: true,
   },
   team: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team',
+    ref: Schemas.Team,
     required: true,
   },
 }, {

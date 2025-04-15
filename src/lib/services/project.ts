@@ -1,9 +1,8 @@
-import { dbService } from '@/lib/db/service';
-import { Project, ProjectMember, ProjectRole } from '@/lib/types/models/project';
-import { CreateProjectInput, UpdateProjectInput } from '@/lib/validations/project';
-import { ApiError } from '@/lib/types/errors/api.error';
-import { PaginateOptions } from 'mongoose';
-import { TeamRole } from '@/lib/types/models/team';
+import {dbService} from '@/lib/db/service';
+import {ProjectRole} from '@/lib/types/models/project';
+import {CreateProjectInput, UpdateProjectInput} from '@/lib/validations/project';
+import {ApiError} from '@/lib/types/errors/api.error';
+import {PaginateOptions} from 'mongoose';
 
 class ProjectService {
   /**
@@ -13,7 +12,7 @@ class ProjectService {
     await dbService.connect();
 
     // Check if project code is unique
-    const existingProject = await dbService.project.findOne({ code: data.code });
+    const existingProject = await dbService.project.findOne({code: data.code});
     if (existingProject) {
       throw new ApiError(400, 'Project code already exists');
     }
@@ -51,11 +50,11 @@ class ProjectService {
     await dbService.connect();
 
     const defaultOptions = {
-      sort: { createdAt: -1 },
+      sort: {createdAt: -1},
       ...options,
     };
 
-    return dbService.project.paginate({ team: teamId }, defaultOptions);
+    return dbService.project.paginate({team: teamId}, defaultOptions);
   }
 
   /**
@@ -71,7 +70,7 @@ class ProjectService {
    */
   async getProjectByCode(code: string) {
     await dbService.connect();
-    return dbService.project.findOne({ code });
+    return dbService.project.findOne({code});
   }
 
   /**
@@ -88,7 +87,7 @@ class ProjectService {
 
     // If code is being changed, check if it's unique
     if (data.code && data.code !== project.code) {
-      const existingProject = await dbService.project.findOne({ code: data.code });
+      const existingProject = await dbService.project.findOne({code: data.code});
       if (existingProject) {
         throw new ApiError(400, 'Project code already exists');
       }
@@ -101,7 +100,7 @@ class ProjectService {
     if (data.avatar !== undefined) updateData.avatar = data.avatar;
     if (data.code) updateData.code = data.code;
 
-    return dbService.project.update({ _id: projectId }, updateData, { new: true });
+    return dbService.project.update({_id: projectId}, updateData, {new: true});
   }
 
   /**
@@ -119,35 +118,41 @@ class ProjectService {
     // Project deletion logic is handled here
 
     // Delete all project members first
-    await dbService.projectMember.delete({ project: projectId });
+    await dbService.projectMember.delete({project: projectId});
 
     // Delete the project
-    await dbService.project.delete({ _id: projectId });
+    await dbService.project.delete({_id: projectId});
 
-    return { deleted: true };
+    return {deleted: true};
   }
 
   /**
    * Get project members
    */
   async getProjectMembers(projectId: string, options: PaginateOptions = {}) {
-    await dbService.connect();
-
     const defaultOptions = {
-      sort: { createdAt: -1 },
+      sort: {createdAt: -1},
       populate: 'teamMember',
       ...options,
     };
 
-    return dbService.projectMember.paginate({ project: projectId }, defaultOptions);
+    return dbService.projectMember.paginate({project: projectId}, defaultOptions);
+  }
+
+  /**
+   * Get joined project of a member
+   */
+  async getJoinedProjects(memberId: string) {
+    const tickets = await dbService.projectMember.find({
+      teamMember: memberId,
+    }).populate('project');
+    return (tickets || []).map((ticket) => ticket.project);
   }
 
   /**
    * Add a member to a project
    */
   async addProjectMember(projectId: string, teamMemberId: string, role: ProjectRole = ProjectRole.Member) {
-    await dbService.connect();
-
     // Check if project exists
     const project = await dbService.project.findById(projectId);
     if (!project) {
@@ -204,9 +209,9 @@ class ProjectService {
 
     // Update the role
     return dbService.projectMember.update(
-      { _id: projectMember._id },
-      { role },
-      { new: true }
+      {_id: projectMember._id},
+      {role},
+      {new: true}
     );
   }
 
@@ -238,9 +243,9 @@ class ProjectService {
     }
 
     // Remove the member
-    await dbService.projectMember.delete({ _id: projectMember._id });
+    await dbService.projectMember.delete({_id: projectMember._id});
 
-    return { deleted: true };
+    return {deleted: true};
   }
 
   /**
@@ -266,7 +271,7 @@ class ProjectService {
     const projectMember = await dbService.projectMember.findOne({
       project: projectId,
       teamMember: teamMemberId,
-      role: { $in: roles },
+      role: {$in: roles},
     });
 
     return !!projectMember;

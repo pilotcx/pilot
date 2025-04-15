@@ -34,7 +34,7 @@ import Link from "next/link";
 import {useTeam} from "@/components/providers/team-provider";
 
 export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
-  const {team} = useTeam();
+  const {team, projects} = useTeam();
   const teamSlug = team.slug;
 
   const data = {
@@ -47,7 +47,7 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
         items: [
           {
             title: "Task List",
-            url: "#",
+            url: `/t/${team.slug}/tasks`,
           },
           {
             title: "Kanban Board",
@@ -109,23 +109,6 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
         ],
       },
     ],
-    projects: [
-      {
-        name: "Design Engineering",
-        url: "#",
-        icon: Frame,
-      },
-      {
-        name: "Sales & Marketing",
-        url: "#",
-        icon: PieChart,
-      },
-      {
-        name: "Travel",
-        url: "#",
-        icon: Map,
-      },
-    ],
   }
 
   return (
@@ -153,26 +136,10 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link href={`/t/${teamSlug}/projects`}>
-                  <FolderKanbanIcon/>
-                  <span>Projects</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link href={`/t/${teamSlug}/tasks`}>
-                  <CheckCheckIcon/>
-                  <span>Tasks</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
         <NavMain items={data.navMain}/>
-        <NavProjects projects={data.projects}/>
+        <NavProjects/>
       </SidebarContent>
       <SidebarFooter>
         <NavUser/>

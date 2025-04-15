@@ -128,6 +128,10 @@ export class ApiService {
     return this.call('POST', `/posts/${postId}/reactions`, {type});
   };
 
+  commentOnPost = async (postId: string, content: string) => {
+    return this.call('POST', `/posts/${postId}/comments`, {content});
+  };
+
   // Task methods
   getTeamTasks = async (teamId: string, options: {
     page?: number;
