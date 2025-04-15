@@ -6,4 +6,7 @@ export enum Schemas {
   Post = 'Post',
   Comment = 'Comment',
   Reaction = 'Reaction',
+  Task = 'Task',
+  Project = 'Project',
+  ProjectMember = 'ProjectMember',
 }

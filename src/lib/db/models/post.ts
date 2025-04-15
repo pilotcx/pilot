@@ -1,21 +1,8 @@
 import mongoose from 'mongoose';
-import {Post, Reaction, ReactionType} from '@/lib/types/models/post';
+import {Post} from '@/lib/types/models/post';
 import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 import mongoosePaginate from 'mongoose-paginate-v2';
 import {Schemas} from "@/lib/db/models/index";
-
-const ReactionSchema = new mongoose.Schema<Reaction>({
-  type: {
-    type: String,
-    enum: Object.values(ReactionType),
-    required: true,
-  },
-  member: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: Schemas.TeamMember,
-    required: true,
-  },
-}, {timestamps: true});
 
 export const PostSchema = new mongoose.Schema<Post>({
   team: {

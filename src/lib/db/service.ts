@@ -5,6 +5,8 @@ import {Team} from '@/lib/types/models/team';
 import {TeamMember} from '@/lib/types/models/team';
 import {Post} from '@/lib/types/models/post';
 import {Comment} from '@/lib/types/models/post';
+import {Task} from '@/lib/types/models/task';
+import {Project, ProjectMember} from '@/lib/types/models/project';
 import dbConnect from '@/lib/db/client';
 import {UserSchema} from '@/lib/db/models/user';
 import {SystemConfigSchema} from '@/lib/db/models/system-config';
@@ -13,7 +15,11 @@ import {TeamMemberSchema} from '@/lib/db/models/team-member';
 import {PostSchema} from '@/lib/db/models/post';
 import {CommentSchema} from '@/lib/db/models/comment';
 import {ReactionSchema} from '@/lib/db/models/reaction';
+import {TaskSchema} from '@/lib/db/models/task';
+import {ProjectSchema} from '@/lib/db/models/project';
+import {ProjectMemberSchema} from '@/lib/db/models/project-member';
 import {Schemas} from '@/lib/db/models';
+import {Reaction} from "@/lib/types/models/reaction";
 
 class DBService {
   user: BaseRepository<User>;
@@ -22,7 +28,10 @@ class DBService {
   teamMember: BaseRepository<TeamMember>;
   post: BaseRepository<Post>;
   comment: BaseRepository<Comment>;
-  reaction: BaseRepository<any>;
+  reaction: BaseRepository<Reaction>;
+  task: BaseRepository<Task>;
+  project: BaseRepository<Project>;
+  projectMember: BaseRepository<ProjectMember>;
 
   constructor() {
     this.user = new BaseRepository<User>(Schemas.User, UserSchema);
@@ -32,6 +41,9 @@ class DBService {
     this.post = new BaseRepository<Post>(Schemas.Post, PostSchema);
     this.comment = new BaseRepository<Comment>(Schemas.Comment, CommentSchema);
     this.reaction = new BaseRepository<any>(Schemas.Reaction, ReactionSchema);
+    this.task = new BaseRepository<Task>(Schemas.Task, TaskSchema);
+    this.project = new BaseRepository<Project>(Schemas.Project, ProjectSchema);
+    this.projectMember = new BaseRepository<ProjectMember>(Schemas.ProjectMember, ProjectMemberSchema);
   }
 
   connect() {
