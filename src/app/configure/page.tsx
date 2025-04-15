@@ -1,4 +1,3 @@
-import { OrganizationSetupForm } from "@/app/configure/components/OrganizationSetupForm";
 import { dbService } from "@/lib/db/service";
 import { systemConfigService } from "@/lib/services/system-config";
 import { SystemConfigKey } from "@/lib/types/models/system-config";
@@ -8,17 +7,26 @@ export default async function ConfigurePage() {
   await dbService.connect();
 
   const isConfigured = await systemConfigService.get<boolean>(SystemConfigKey.SystemConfigured, false);
-  console.log('is configured', isConfigured);
 
   if (isConfigured) {
     redirect('/');
   }
 
-  return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-indigo-950 p-4">
-      <div className="w-full max-w-4xl">
-        <OrganizationSetupForm />
-      </div>
-    </div>
-  );
+  // Check which configuration steps have been completed
+  const adminCompleted = await systemConfigService.get<boolean>(SystemConfigKey.ConfigStepAdminCompleted, false);
+  const orgCompleted = await systemConfigService.get<boolean>(SystemConfigKey.ConfigStepOrgCompleted, false);
+  const featuresCompleted = await systemConfigService.get<boolean>(SystemConfigKey.ConfigStepFeaturesCompleted, false);
+
+  // Redirect to the appropriate step
+  if (!adminCompleted) {
+    redirect('/configure/admin');
+  } else if (!orgCompleted) {
+    redirect('/configure/organization');
+  } else if (!featuresCompleted) {
+    redirect('/configure/features');
+  } else {
+    // If all steps are completed but SystemConfigured is false, set it to true
+    await systemConfigService.set(SystemConfigKey.SystemConfigured, true);
+    redirect('/');
+  }
 }

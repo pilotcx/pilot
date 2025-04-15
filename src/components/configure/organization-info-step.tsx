@@ -114,18 +114,6 @@ export function OrganizationInfoStep({
                         <Input
                           placeholder="Acme Corporation"
                           {...field}
-                          onAnimationStart={(e) => {
-                            // This catches the animation that browsers use for autofill
-                            // Chrome adds animation 'onAutoFillStart'
-                            const animationName = e.animationName;
-                            if (animationName.includes('AutoFill') || animationName.includes('autofill')) {
-                              // Update the form value when autofill is detected
-                              const input = e.target as HTMLInputElement;
-                              if (input.value && formMounted) {
-                                form.setValue('name', input.value, { shouldValidate: true, shouldDirty: true });
-                              }
-                            }
-                          }}
                         />
                       </FormControl>
                       <FormDescription>
@@ -297,15 +285,6 @@ export function OrganizationInfoStep({
                           type="email"
                           placeholder="contact@example.com"
                           {...field}
-                          onAnimationStart={(e) => {
-                            const animationName = e.animationName;
-                            if (animationName.includes('AutoFill') || animationName.includes('autofill')) {
-                              const input = e.target as HTMLInputElement;
-                              if (input.value && formMounted) {
-                                form.setValue('email', input.value, { shouldValidate: true, shouldDirty: true });
-                              }
-                            }
-                          }}
                         />
                       </FormControl>
                       <FormDescription>
@@ -327,15 +306,6 @@ export function OrganizationInfoStep({
                           <Input
                             placeholder="+1 (555) 123-4567"
                             {...field}
-                            onAnimationStart={(e) => {
-                              const animationName = e.animationName;
-                              if (animationName.includes('AutoFill') || animationName.includes('autofill')) {
-                                const input = e.target as HTMLInputElement;
-                                if (input.value && formMounted) {
-                                  form.setValue('phone', input.value, { shouldValidate: true, shouldDirty: true });
-                                }
-                              }
-                            }}
                           />
                         </FormControl>
                         <FormDescription>
@@ -356,15 +326,6 @@ export function OrganizationInfoStep({
                           <Input
                             placeholder="https://example.com"
                             {...field}
-                            onAnimationStart={(e) => {
-                              const animationName = e.animationName;
-                              if (animationName.includes('AutoFill') || animationName.includes('autofill')) {
-                                const input = e.target as HTMLInputElement;
-                                if (input.value && formMounted) {
-                                  form.setValue('website', input.value, { shouldValidate: true, shouldDirty: true });
-                                }
-                              }
-                            }}
                           />
                         </FormControl>
                         <FormDescription>

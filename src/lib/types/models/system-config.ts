@@ -2,6 +2,11 @@ import {BaseEntity} from "@/lib/types/models/base";
 
 export enum SystemConfigKey {
   SystemConfigured = 'system_configured',
+  // Configuration step tracking
+  ConfigStepAdminCompleted = 'config_step_admin_completed',
+  ConfigStepOrgCompleted = 'config_step_org_completed',
+  ConfigStepFeaturesCompleted = 'config_step_features_completed',
+  // Organization info
   OrgName = 'org_name',
   OrgDesc = 'org_desc',
   OrgAvatar = 'org_avatar',

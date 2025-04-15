@@ -7,6 +7,10 @@ import {authService} from '@/lib/services/auth';
 import {organizationSetupSchema} from '@/lib/validations/organization';
 import {UserRole} from '@/lib/types/models/user';
 
+/**
+ * Legacy endpoint for the old configuration flow.
+ * This is kept for backward compatibility but new code should use the step-by-step endpoints.
+ */
 export const POST = withApi(async (request: NextRequest) => {
   const isConfigured = await systemConfigService.get<boolean>(SystemConfigKey.SystemConfigured, false);
 
@@ -25,13 +29,14 @@ export const POST = withApi(async (request: NextRequest) => {
   const {adminAccount, organization} = result.data;
 
   try {
+    // Create admin user
     const adminUser = await authService.register({
       ...adminAccount,
       role: UserRole.Admin,
     });
 
+    // Save organization info
     await systemConfigService.setMultiple({
-      [SystemConfigKey.SystemConfigured]: true,
       [SystemConfigKey.OrgName]: organization.name,
       [SystemConfigKey.OrgDesc]: organization.description || '',
       [SystemConfigKey.OrgIndustry]: organization.industry,
@@ -47,9 +52,24 @@ export const POST = withApi(async (request: NextRequest) => {
       [SystemConfigKey.OrgPostalCode]: organization.postalCode || '',
     });
 
+    // Mark all steps as completed
+    await systemConfigService.setMultiple({
+      [SystemConfigKey.ConfigStepAdminCompleted]: true,
+      [SystemConfigKey.ConfigStepOrgCompleted]: true,
+      [SystemConfigKey.ConfigStepFeaturesCompleted]: true,
+      [SystemConfigKey.SystemConfigured]: true,
+    });
+
     return await authService.login(adminUser, 'web');
   } catch (error: any) {
-    await systemConfigService.set(SystemConfigKey.SystemConfigured, false);
+    // Reset configuration state
+    await systemConfigService.setMultiple({
+      [SystemConfigKey.ConfigStepAdminCompleted]: false,
+      [SystemConfigKey.ConfigStepOrgCompleted]: false,
+      [SystemConfigKey.ConfigStepFeaturesCompleted]: false,
+      [SystemConfigKey.SystemConfigured]: false,
+    });
+
     throw new ApiError(500, error.message || 'Failed to configure system');
   }
 }, {

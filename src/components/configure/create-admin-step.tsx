@@ -21,9 +21,10 @@ import { useState } from "react";
 interface CreateAdminStepProps {
   defaultValues?: Partial<AdminAccount>;
   onSubmit: (data: AdminAccount) => void;
+  isSubmitting?: boolean;
 }
 
-export function CreateAdminStep({ defaultValues, onSubmit }: CreateAdminStepProps) {
+export function CreateAdminStep({ defaultValues, onSubmit, isSubmitting = false }: CreateAdminStepProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -153,7 +154,9 @@ export function CreateAdminStep({ defaultValues, onSubmit }: CreateAdminStepProp
           />
 
           <div className="flex justify-end">
-            <Button type="submit">Continue</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating..." : "Continue"}
+            </Button>
           </div>
         </form>
       </Form>
