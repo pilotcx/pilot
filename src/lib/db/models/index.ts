@@ -9,4 +9,6 @@ export enum Schemas {
   Task = 'Task',
   Project = 'Project',
   ProjectMember = 'ProjectMember',
+  TeamRequest = 'TeamRequest',
+  TeamRequestComment = 'TeamRequestComment',
 }

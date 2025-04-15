@@ -10,6 +10,7 @@ import {CreateTaskInput, UpdateTaskInput} from '@/lib/validations/task';
 import {CreateProjectInput, UpdateProjectInput} from '@/lib/validations/project';
 import {Project} from '@/lib/types/models/project';
 import {Task} from "@/lib/types/models/task";
+import {CreateTeamRequestInput, TeamRequest, TeamRequestComment, UpdateTeamRequestInput} from "@/lib/types/models/team-request";
 
 export class ApiService {
   api = axios.create({
@@ -96,6 +97,47 @@ export class ApiService {
   // User teams
   getUserTeams = async (page = 1, limit = 10) => {
     return this.call('GET', `/user/teams?page=${page}&limit=${limit}`);
+  };
+
+  // Team requests methods
+  getTeamRequests = async (teamId: string, options: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    requesterId?: string;
+  } = {}) => {
+    const {page = 1, limit = 10, status, requesterId} = options;
+    let url = `/teams/${teamId}/requests?page=${page}&limit=${limit}`;
+
+    if (status) url += `&status=${status}`;
+    if (requesterId) url += `&requesterId=${requesterId}`;
+
+    return this.call<TeamRequest[]>('GET', url);
+  };
+
+  createTeamRequest = async (teamId: string, data: CreateTeamRequestInput) => {
+    return this.call<TeamRequest>('POST', `/teams/${teamId}/requests`, data);
+  };
+
+  getTeamRequest = async (teamId: string, requestId: string) => {
+    return this.call<TeamRequest>('GET', `/teams/${teamId}/requests/${requestId}`);
+  };
+
+  updateTeamRequest = async (teamId: string, requestId: string, data: UpdateTeamRequestInput) => {
+    return this.call<TeamRequest>('PUT', `/teams/${teamId}/requests/${requestId}`, data);
+  };
+
+  deleteTeamRequest = async (teamId: string, requestId: string) => {
+    return this.call('DELETE', `/teams/${teamId}/requests/${requestId}`);
+  };
+
+  // Team request comments methods
+  getTeamRequestComments = async (teamId: string, requestId: string, page = 1, limit = 10) => {
+    return this.call<TeamRequestComment[]>('GET', `/teams/${teamId}/requests/${requestId}/comments?page=${page}&limit=${limit}`);
+  };
+
+  addTeamRequestComment = async (teamId: string, requestId: string, content: string) => {
+    return this.call<TeamRequestComment>('POST', `/teams/${teamId}/requests/${requestId}/comments`, {content});
   };
 
   // Post methods
