@@ -6,7 +6,7 @@ import {
   CheckCheckIcon,
   FileCheckIcon,
   FolderKanbanIcon,
-  Frame,
+  Frame, MailIcon,
   Map,
   NewspaperIcon,
   PieChart,
@@ -133,6 +133,14 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                 <Link href={`/t/${teamSlug}/requests`}>
                   <FileCheckIcon/>
                   <span>Requests</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href={`/t/${teamSlug}/mailing`}>
+                  <MailIcon/>
+                  <span>Mailing</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
