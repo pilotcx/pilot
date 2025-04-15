@@ -90,17 +90,74 @@ tower/
 
 ## Docker Deployment
 
-This project includes Docker support for easy deployment. See [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md) for detailed instructions on building and deploying with Docker.
+This project includes Docker and Docker Compose support for easy deployment. You can either pull the pre-built image from GitHub Container Registry or build it yourself.
 
-### Quick Docker Commands
+### Option 1: Pull Pre-built Image
 
 ```bash
-# Build the Docker image
-docker build -t tower:latest .
+# Pull the latest image from GitHub Container Registry
+docker pull ghcr.io/monokaijs/tower:latest
 
-# Run the Docker container
-docker run -p 3000:3000 tower:latest
+# Run the container
+docker run -p 3000:3000 -e MONGO_URI=your_mongodb_uri -e NEXTAUTH_SECRET=your_secret -e NEXTAUTH_URL=http://localhost:3000 ghcr.io/monokaijs/tower:latest
 ```
+
+### Option 2: Docker Compose Setup (Recommended)
+
+The Docker Compose setup includes the Next.js application (pulled from GitHub Container Registry), MongoDB, and MongoDB Express admin interface.
+
+1. Clone this repository or download the docker-compose.yml file:
+
+```bash
+# If cloning the repository
+git clone https://github.com/monokaijs/tower.git
+cd tower
+
+# Or if you just want the docker-compose.yml file
+curl -O https://raw.githubusercontent.com/monokaijs/tower/main/docker-compose.yml
+```
+
+2. Start all services:
+
+```bash
+docker-compose up -d
+```
+
+3. Access the application at http://localhost:3000 and MongoDB Express admin at http://localhost:8081
+
+### Configuration
+
+The Docker Compose setup includes the following services:
+
+- **App**: Next.js application running on port 3000
+- **MongoDB**: Database running on port 27017 with data persistence
+- **MongoDB Express**: Admin interface running on port 8081
+
+### Common Docker Commands
+
+```bash
+# View running containers
+docker-compose ps
+
+# View logs
+docker-compose logs -f app
+
+# Stop all services
+docker-compose down
+
+# Rebuild and restart the app after code changes
+docker-compose build app
+docker-compose up -d
+```
+
+### Production Deployment
+
+For production, it's recommended to:
+
+1. Enable MongoDB authentication in docker-compose.yml
+2. Use a strong NEXTAUTH_SECRET
+3. Set up HTTPS with a proper domain in NEXTAUTH_URL
+4. Consider using a reverse proxy like Nginx
 
 ## GitHub Actions
 
@@ -109,6 +166,12 @@ The project includes a GitHub Actions workflow for continuous integration and de
 - Automatically builds and pushes Docker images to GitHub Container Registry
 - Runs on pushes to the main branch, pull requests, or manual triggers
 - No additional secrets required - uses GitHub's built-in GITHUB_TOKEN
+
+To use the GitHub Container Registry images:
+
+1. Make sure you have access to the repository
+2. Pull the image: `docker pull ghcr.io/monokaijs/tower:latest`
+3. Run it with the required environment variables
 
 ## Development
 
