@@ -213,34 +213,23 @@ class TeamService {
   /**
    * Add a member to a team
    */
-  async addTeamMember(teamId: string, data: AddTeamMemberSchema, userId: string) {
+  async addTeamMember(teamId: string, data: AddTeamMemberSchema) {
     // Check if team exists
-    const team = await dbService.team.findById(teamId);
+    const team = await teamService.getTeam(teamId);
     if (!team) {
       throw new ApiError(404, 'Team not found');
     }
 
-    // Check if user is an owner or manager of the team
-    const member = await dbService.teamMember.findOne({
-      team: teamId,
-      user: userId,
-      role: {$in: [TeamRole.Owner, TeamRole.Manager]},
-    });
-
-    if (!member) {
-      throw new ApiError(403, 'You do not have permission to add members to this team');
-    }
-
     // Check if user to be added exists
-    const userToAdd = await dbService.user.findById(data.userId);
-    if (!userToAdd) {
-      throw new ApiError(404, 'User not found');
-    }
+    const userToAdd = await dbService.user.findOne({
+      email: data.userId,
+    });
+    if (!userToAdd) throw new ApiError(404, 'User not found');
 
     // Check if user is already a member
     const existingMember = await dbService.teamMember.findOne({
       team: teamId,
-      user: data.userId,
+      user: userToAdd._id,
     });
 
     if (existingMember) {
@@ -251,7 +240,7 @@ class TeamService {
     const newMember = await dbService.teamMember.create({
       displayName: data.displayName,
       role: data.role || TeamRole.Member,
-      user: data.userId,
+      user: userToAdd._id,
       team: teamId,
     });
 
