@@ -8,6 +8,7 @@ import {Comment} from '@/lib/types/models/post';
 import {Task} from '@/lib/types/models/task';
 import {Project, ProjectMember} from '@/lib/types/models/project';
 import {TeamRequest, TeamRequestComment} from '@/lib/types/models/team-request';
+import {Email, EmailLabel, EmailConversation} from '@/lib/types/models/email';
 import dbConnect from '@/lib/db/client';
 import {UserSchema} from '@/lib/db/models/user';
 import {SystemConfigSchema} from '@/lib/db/models/system-config';
@@ -21,6 +22,9 @@ import {ProjectSchema} from '@/lib/db/models/project';
 import {ProjectMemberSchema} from '@/lib/db/models/project-member';
 import {TeamRequestSchema} from '@/lib/db/models/team-request';
 import {TeamRequestCommentSchema} from '@/lib/db/models/team-request-comment';
+import {EmailSchema} from '@/lib/db/models/email';
+import {EmailLabelSchema} from '@/lib/db/models/email-label';
+import {EmailConversationSchema} from '@/lib/db/models/email-conversation';
 import {Schemas} from '@/lib/db/models';
 import {Reaction} from "@/lib/types/models/reaction";
 
@@ -37,6 +41,9 @@ class DBService {
   projectMember: BaseRepository<ProjectMember>;
   teamRequest: BaseRepository<TeamRequest>;
   teamRequestComment: BaseRepository<TeamRequestComment>;
+  email: BaseRepository<Email>;
+  emailLabel: BaseRepository<EmailLabel>;
+  emailConversation: BaseRepository<EmailConversation>;
 
   constructor() {
     this.user = new BaseRepository<User>(Schemas.User, UserSchema);
@@ -51,6 +58,9 @@ class DBService {
     this.projectMember = new BaseRepository<ProjectMember>(Schemas.ProjectMember, ProjectMemberSchema);
     this.teamRequest = new BaseRepository<TeamRequest>(Schemas.TeamRequest, TeamRequestSchema);
     this.teamRequestComment = new BaseRepository<TeamRequestComment>(Schemas.TeamRequestComment, TeamRequestCommentSchema);
+    this.email = new BaseRepository<Email>(Schemas.Email, EmailSchema);
+    this.emailLabel = new BaseRepository<EmailLabel>(Schemas.EmailLabel, EmailLabelSchema);
+    this.emailConversation = new BaseRepository<EmailConversation>(Schemas.EmailConversation, EmailConversationSchema);
   }
 
   connect() {

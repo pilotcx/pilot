@@ -11,4 +11,7 @@ export enum Schemas {
   ProjectMember = 'ProjectMember',
   TeamRequest = 'TeamRequest',
   TeamRequestComment = 'TeamRequestComment',
+  Email = 'Email',
+  EmailLabel = 'EmailLabel',
+  EmailConversation = 'EmailConversation',
 }
