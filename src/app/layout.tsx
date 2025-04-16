@@ -6,6 +6,7 @@ import { systemConfigService } from "@/lib/services/system-config";
 import { SystemConfigKey } from "@/lib/types/models/system-config";
 import { dbService } from "@/lib/db/service";
 import { Toaster } from "sonner";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
 
 const interFont = Inter({
   variable: "--font-inter",
@@ -14,7 +15,10 @@ const interFont = Inter({
 
 export async function generateMetadata(): Promise<Metadata> {
   await dbService.connect();
-  const title = await systemConfigService.get<string>(SystemConfigKey.OrgName, "Pilot");
+  const title = await systemConfigService.get<string>(
+    SystemConfigKey.OrgName,
+    "Pilot"
+  );
   const description = await systemConfigService.get<string>(
     SystemConfigKey.OrgDesc
   );
@@ -25,20 +29,29 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   await dbService.connect();
-  const avatar = await systemConfigService.get<string>(SystemConfigKey.OrgAvatar);
-  const title = await systemConfigService.get<string>(SystemConfigKey.OrgName, "Pilot");
+  const avatar = await systemConfigService.get<string>(
+    SystemConfigKey.OrgAvatar
+  );
+  const title = await systemConfigService.get<string>(
+    SystemConfigKey.OrgName,
+    "Pilot"
+  );
   return (
     <html lang="en">
-    <head>
-      <title>{title}</title>
-      <link rel="icon" href={avatar ?? "/favicon.ico"} sizes="any" />
-    </head>
-    <body className={`${interFont.variable} antialiased`}>
-    {children}
-    <Toaster position="top-right" />
-    </body>
+      <head>
+        <title>{title}</title>
+        <link rel="icon" href={avatar ?? "/favicon.ico"} sizes="any" />
+      </head>
+      <body className={`${interFont.variable} antialiased`}>
+        <TooltipProvider delayDuration={100}>{children}</TooltipProvider>
+        <Toaster position="top-right" />
+      </body>
     </html>
   );
 }
