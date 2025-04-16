@@ -89,6 +89,10 @@ export class ApiService {
     return this.call<TeamMember[]>('GET', `/teams/${teamId}/members?page=${page}&limit=${limit}`);
   };
 
+  getTeamMember = async (teamId: string, memberId: string) => {
+    return this.call<TeamMember>('GET', `/teams/${teamId}/members/${memberId}/get`);
+  };
+
   addTeamMember = async (teamId: string, data: AddTeamMemberSchema) => {
     return this.call('POST', `/teams/${teamId}/members`, data);
   };
