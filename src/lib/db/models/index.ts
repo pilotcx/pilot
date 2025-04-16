@@ -16,4 +16,5 @@ export enum Schemas {
   EmailConversation = 'EmailConversation',
   Integration = 'Integration',
   Domain = 'Domain',
+  EmailAddress = 'EmailAddress',
 }

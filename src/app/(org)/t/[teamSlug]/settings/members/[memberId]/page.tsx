@@ -3,11 +3,14 @@ import {notFound, redirect} from "next/navigation";
 import {dbService} from "@/lib/db/service";
 import {TeamRole} from "@/lib/types/models/team";
 import {MemberDetailForm} from "@/components/teams/members/member-detail-form";
+import {MemberEmailAddresses} from "@/components/teams/members/member-email-addresses";
 import {Separator} from "@/components/ui/separator";
 import {Button} from "@/components/ui/button";
 import {ArrowLeft} from "lucide-react";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import Link from "next/link";
 import withTeam from "@/lib/utils/withTeam";
+import {User} from "@/lib/types/models/user";
 
 export const metadata: Metadata = {
   title: "Member Details",
@@ -55,12 +58,30 @@ export default async function MemberDetailPage({
 
       <Separator/>
 
-      <MemberDetailForm
-        teamId={team._id.toString()}
-        member={JSON.parse(JSON.stringify(member))}
-        currentUserRole={membership.role as TeamRole}
-        teamSlug={team.slug}
-      />
+      <Tabs defaultValue="profile" className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="email-addresses">Email Addresses</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="profile">
+          <MemberDetailForm
+            teamId={team._id.toString()}
+            member={JSON.parse(JSON.stringify(member))}
+            currentUserRole={membership.role as TeamRole}
+            teamSlug={team.slug}
+          />
+        </TabsContent>
+
+        <TabsContent value="email-addresses">
+          <MemberEmailAddresses
+            teamId={team._id.toString()}
+            memberId={member._id.toString()}
+            currentUserRole={membership.role as TeamRole}
+            teamSlug={team.slug}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

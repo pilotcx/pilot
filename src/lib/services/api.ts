@@ -18,6 +18,7 @@ import {
 } from "@/lib/types/models/team-request";
 import {Integration} from "@/lib/types/models/integration";
 import {Domain} from "@/lib/types/models/domain";
+import {EmailAddress} from "@/lib/types/models/email-address";
 
 export class ApiService {
   api = axios.create({
@@ -372,11 +373,30 @@ export class ApiService {
     return this.call('DELETE', `/teams/${teamId}/domains/${domainId}`);
   };
 
-  // Domain verification is disabled
-
   // Verify Mailgun API key and fetch domains
   verifyMailgunApiKey = async (apiKey: string) => {
     return this.call<any>('POST', '/integrations/mailgun/verify', { apiKey });
+  };
+
+  // Email address methods for team members
+  getMemberEmailAddresses = async (teamId: string, memberId: string) => {
+    return this.call<EmailAddress[]>('GET', `/teams/${teamId}/members/${memberId}/email-addresses`);
+  };
+
+  getMemberEmailAddressById = async (teamId: string, memberId: string, emailAddressId: string) => {
+    return this.call('GET', `/teams/${teamId}/members/${memberId}/email-addresses/${emailAddressId}`);
+  };
+
+  createMemberEmailAddress = async (teamId: string, memberId: string, data: any) => {
+    return this.call('POST', `/teams/${teamId}/members/${memberId}/email-addresses`, data);
+  };
+
+  updateMemberEmailAddress = async (teamId: string, memberId: string, emailAddressId: string, data: any) => {
+    return this.call('PATCH', `/teams/${teamId}/members/${memberId}/email-addresses/${emailAddressId}`, data);
+  };
+
+  deleteMemberEmailAddress = async (teamId: string, memberId: string, emailAddressId: string) => {
+    return this.call('DELETE', `/teams/${teamId}/members/${memberId}/email-addresses/${emailAddressId}`);
   };
 }
 
