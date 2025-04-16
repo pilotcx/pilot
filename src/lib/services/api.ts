@@ -10,7 +10,14 @@ import {CreateTaskInput, UpdateTaskInput} from '@/lib/validations/task';
 import {CreateProjectInput, UpdateProjectInput} from '@/lib/validations/project';
 import {Project} from '@/lib/types/models/project';
 import {Task} from "@/lib/types/models/task";
-import {CreateTeamRequestInput, TeamRequest, TeamRequestComment, UpdateTeamRequestInput} from "@/lib/types/models/team-request";
+import {
+  CreateTeamRequestInput,
+  TeamRequest,
+  TeamRequestComment,
+  UpdateTeamRequestInput
+} from "@/lib/types/models/team-request";
+import {Integration} from "@/lib/types/models/integration";
+import {Domain} from "@/lib/types/models/domain";
 
 export class ApiService {
   api = axios.create({
@@ -317,6 +324,55 @@ export class ApiService {
 
   deleteProject = async (projectId: string) => {
     return this.call('DELETE', `/projects/${projectId}`);
+  };
+
+  // Integration methods
+  getTeamIntegrations = async (teamId: string) => {
+    return this.call<Integration[]>('GET', `/teams/${teamId}/integrations`);
+  };
+
+  getMailgunIntegration = async (teamId: string) => {
+    return this.call('GET', `/teams/${teamId}/integrations/mailgun`);
+  };
+
+  createOrUpdateMailgunIntegration = async (teamId: string, data: any) => {
+    return this.call('POST', `/teams/${teamId}/integrations/mailgun`, data);
+  };
+
+  deleteMailgunIntegration = async (teamId: string) => {
+    return this.call('DELETE', `/teams/${teamId}/integrations/mailgun`);
+  };
+
+  sendEmailWithMailgun = async (emailId: string, teamId: string) => {
+    return this.call('POST', `/emails/${emailId}/send-with-mailgun`, {teamId});
+  };
+
+  // Domain methods
+  getTeamDomains = async (teamId: string) => {
+    return this.call<Domain[]>('GET', `/teams/${teamId}/domains`);
+  };
+
+  createDomain = async (teamId: string, data: any) => {
+    return this.call('POST', `/teams/${teamId}/domains`, data);
+  };
+
+  getDomainById = async (teamId: string, domainId: string) => {
+    return this.call('GET', `/teams/${teamId}/domains/${domainId}`);
+  };
+
+  updateDomain = async (teamId: string, domainId: string, data: any) => {
+    return this.call('PATCH', `/teams/${teamId}/domains/${domainId}`, data);
+  };
+
+  deleteDomain = async (teamId: string, domainId: string) => {
+    return this.call('DELETE', `/teams/${teamId}/domains/${domainId}`);
+  };
+
+  // Domain verification is disabled
+
+  // Verify Mailgun API key and fetch domains
+  verifyMailgunApiKey = async (apiKey: string) => {
+    return this.call<any>('POST', '/integrations/mailgun/verify', { apiKey });
   };
 }
 

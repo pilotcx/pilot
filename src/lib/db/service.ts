@@ -9,6 +9,8 @@ import {Task} from '@/lib/types/models/task';
 import {Project, ProjectMember} from '@/lib/types/models/project';
 import {TeamRequest, TeamRequestComment} from '@/lib/types/models/team-request';
 import {Email, EmailLabel, EmailConversation} from '@/lib/types/models/email';
+import {Integration} from '@/lib/types/models/integration';
+import {Domain} from '@/lib/types/models/domain';
 import dbConnect from '@/lib/db/client';
 import {UserSchema} from '@/lib/db/models/user';
 import {SystemConfigSchema} from '@/lib/db/models/system-config';
@@ -25,6 +27,8 @@ import {TeamRequestCommentSchema} from '@/lib/db/models/team-request-comment';
 import {EmailSchema} from '@/lib/db/models/email';
 import {EmailLabelSchema} from '@/lib/db/models/email-label';
 import {EmailConversationSchema} from '@/lib/db/models/email-conversation';
+import {IntegrationSchema} from '@/lib/db/models/integration';
+import {DomainSchema} from '@/lib/db/models/domain';
 import {Schemas} from '@/lib/db/models';
 import {Reaction} from "@/lib/types/models/reaction";
 
@@ -44,6 +48,8 @@ class DBService {
   email: BaseRepository<Email>;
   emailLabel: BaseRepository<EmailLabel>;
   emailConversation: BaseRepository<EmailConversation>;
+  integration: BaseRepository<Integration>;
+  domain: BaseRepository<Domain>;
 
   constructor() {
     this.user = new BaseRepository<User>(Schemas.User, UserSchema);
@@ -61,6 +67,8 @@ class DBService {
     this.email = new BaseRepository<Email>(Schemas.Email, EmailSchema);
     this.emailLabel = new BaseRepository<EmailLabel>(Schemas.EmailLabel, EmailLabelSchema);
     this.emailConversation = new BaseRepository<EmailConversation>(Schemas.EmailConversation, EmailConversationSchema);
+    this.integration = new BaseRepository<Integration>(Schemas.Integration, IntegrationSchema);
+    this.domain = new BaseRepository<Domain>(Schemas.Domain, DomainSchema);
   }
 
   connect() {

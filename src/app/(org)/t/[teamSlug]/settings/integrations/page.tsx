@@ -1,31 +1,76 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { toast } from "sonner";
-import { 
-  Github, 
-  Slack, 
-  Trello, 
-  FileText, 
-  Calendar, 
+import {useEffect, useState} from "react";
+import {Button} from "@/components/ui/button";
+import {Separator} from "@/components/ui/separator";
+import {Switch} from "@/components/ui/switch";
+import {toast} from "sonner";
+import useApi from "@/hooks/use-api";
+import api from "@/lib/services/api";
+import {
+  AlertCircle,
+  Calendar,
+  ExternalLink,
+  FileText,
+  Github,
+  Loader2,
+  Mail,
   MessageSquare,
-  ExternalLink
+  Slack,
+  Trello
 } from "lucide-react";
+import {Badge} from "@/components/ui/badge";
+import {IntegrationStatus, IntegrationType} from "@/lib/types/models/integration";
+import {useTeam} from "@/components/providers/team-provider";
 
-interface Integration {
+interface IntegrationItem {
   id: string;
   name: string;
   description: string;
   icon: React.ElementType;
   connected: boolean;
   comingSoon?: boolean;
+  type?: IntegrationType;
+  configurable?: boolean;
+}
+
+interface RealIntegration {
+  _id: string;
+  name: string;
+  type: IntegrationType;
+  status: IntegrationStatus;
+  config: any;
+  enabled: boolean;
+  errorMessage?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function IntegrationsSettings() {
-  const [integrations, setIntegrations] = useState<Integration[]>([
+  const {team} = useTeam();
+  const [getIntegrations, {data: loadedIntegrations, loading: isLoadingIntegrations}] = useApi(api.getTeamIntegrations);
+  const integrations = loadedIntegrations ?? [];
+
+  // Fetch real integrations once we have the team ID
+  useEffect(() => {
+    getIntegrations(team._id as string).then(() => {
+
+    });
+  }, [team, getIntegrations]);
+
+  // Find Mailgun integration if it exists
+  const mailgunIntegration = integrations.find(i => i.type === IntegrationType.Mailgun);
+
+  const [integrationItems, setIntegrationItems] = useState<IntegrationItem[]>([
+    {
+      id: "mailgun",
+      name: "Mailgun",
+      description: "Send and receive emails using Mailgun's email service.",
+      icon: Mail,
+      connected: !!mailgunIntegration,
+      type: IntegrationType.Mailgun,
+      configurable: true,
+    },
     {
       id: "github",
       name: "GitHub",
@@ -73,26 +118,39 @@ export default function IntegrationsSettings() {
     },
   ]);
 
-  const handleToggleIntegration = (id: string) => {
+  // Update integration items when real integrations change
+  useEffect(() => {
+    setIntegrationItems(prev =>
+      prev.map(item => {
+        if (item.type) {
+          const realIntegration = integrations.find(ri => ri.type === item.type);
+          return {...item, connected: !!realIntegration};
+        }
+        return item;
+      })
+    );
+  }, [integrations]);
+
+  const handleToggleIntegration = async (id: string) => {
     // Find the integration
-    const integration = integrations.find((i) => i.id === id);
-    
+    const integration = integrationItems.find((i) => i.id === id);
+
     if (integration?.comingSoon) {
       toast.info(`${integration.name} integration is coming soon!`);
       return;
     }
-    
-    // Toggle the connected state
-    setIntegrations(
-      integrations.map((integration) =>
-        integration.id === id
-          ? { ...integration, connected: !integration.connected }
-          : integration
+
+    // For other integrations, use the mock behavior
+    setIntegrationItems(
+      integrationItems.map((item) =>
+        item.id === id
+          ? {...item, connected: !item.connected}
+          : item
       )
     );
-    
+
     // Show a toast message
-    const isConnecting = !integrations.find((i) => i.id === id)?.connected;
+    const isConnecting = !integrationItems.find((i) => i.id === id)?.connected;
     toast.success(
       isConnecting
         ? `Connected to ${id} successfully!`
@@ -102,27 +160,46 @@ export default function IntegrationsSettings() {
 
   const handleConnectIntegration = (id: string) => {
     // Find the integration
-    const integration = integrations.find((i) => i.id === id);
-    
+    const integration = integrationItems.find((i) => i.id === id);
+
     if (integration?.comingSoon) {
       toast.info(`${integration.name} integration is coming soon!`);
       return;
     }
-    
-    // In a real app, this would open an OAuth flow or similar
-    toast.info(`Opening ${id} authorization...`);
-    
+
+    // For Mailgun, navigate to the configuration page
+    if (integration?.type === IntegrationType.Mailgun) {
+      if (team._id) {
+        window.location.href = `/t/${team.slug}/settings/integrations/mailgun`;
+      } else {
+        toast.error('Could not determine team ID');
+      }
+      return;
+    }
+
     // Simulate a successful connection after a delay
     setTimeout(() => {
-      setIntegrations(
-        integrations.map((integration) =>
-          integration.id === id
-            ? { ...integration, connected: true }
-            : integration
+      setIntegrationItems(
+        integrationItems.map((item) =>
+          item.id === id
+            ? {...item, connected: true}
+            : item
         )
       );
       toast.success(`Connected to ${id} successfully!`);
     }, 1500);
+  };
+
+  const handleConfigureIntegration = (id: string) => {
+    // Find the integration
+    const integration = integrationItems.find((i) => i.id === id);
+
+    if (integration?.type === IntegrationType.Mailgun) {
+      window.location.href = `/t/${team.slug}/settings/integrations/mailgun`;
+    } else {
+      // For other integrations, just show a toast
+      toast.info(`Opening ${id} configuration...`);
+    }
   };
 
   return (
@@ -133,65 +210,104 @@ export default function IntegrationsSettings() {
           Connect your team with third-party services
         </p>
       </div>
-      
-      <Separator />
-      
-      <div className="space-y-8">
-        {integrations.map((integration) => (
-          <div
-            key={integration.id}
-            className="flex items-start justify-between space-x-4"
-          >
-            <div className="flex items-start space-x-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md border">
-                <integration.icon className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="flex items-center">
-                  <h4 className="font-medium">{integration.name}</h4>
-                  {integration.comingSoon && (
-                    <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs font-medium">
-                      Coming Soon
-                    </span>
+
+      <Separator/>
+
+      {isLoadingIntegrations ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground"/>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {integrationItems.map((integration) => {
+            // For Mailgun, get the real integration status if connected
+            let status = null;
+            let errorMessage = null;
+
+            if (integration.type === IntegrationType.Mailgun && integration.connected) {
+              const realIntegration = integrations.find(ri => ri.type === IntegrationType.Mailgun);
+              if (realIntegration) {
+                status = realIntegration.status;
+                errorMessage = realIntegration.errorMessage;
+              }
+            }
+
+            return (
+              <div
+                key={integration.id}
+                className="flex items-start justify-between space-x-4"
+              >
+                <div className="flex items-start space-x-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-md border">
+                    <integration.icon className="h-5 w-5"/>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-medium">{integration.name}</h4>
+                      {integration.comingSoon && (
+                        <Badge variant="outline" className="ml-1">
+                          Coming Soon
+                        </Badge>
+                      )}
+                      {status === IntegrationStatus.Active && (
+                        <Badge variant="success" className="ml-1">
+                          Active
+                        </Badge>
+                      )}
+                      {status === IntegrationStatus.Failed && (
+                        <Badge variant="destructive" className="ml-1">
+                          Failed
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {integration.description}
+                    </p>
+                    {status === IntegrationStatus.Failed && errorMessage && (
+                      <p className="text-sm text-destructive flex items-center gap-1 mt-1">
+                        <AlertCircle className="h-3 w-3"/>
+                        {errorMessage}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {integration.connected ? (
+                    <>
+                      <Switch
+                        checked={integration.connected}
+                        onCheckedChange={() => handleToggleIntegration(integration.id)}
+                        disabled={integration.comingSoon}
+                      />
+                      {integration.configurable && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="ml-2"
+                          onClick={() => handleConfigureIntegration(integration.id)}
+                        >
+                          Configure
+                          <ExternalLink className="ml-1 h-3 w-3"/>
+                        </Button>
+                      )}
+                    </>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleConnectIntegration(integration.id)}
+                      disabled={integration.comingSoon}
+                    >
+                      Connect
+                    </Button>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {integration.description}
-                </p>
               </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              {integration.connected ? (
-                <>
-                  <Switch
-                    checked={integration.connected}
-                    onCheckedChange={() => handleToggleIntegration(integration.id)}
-                    disabled={integration.comingSoon}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="ml-2"
-                    onClick={() => window.open("#", "_blank")}
-                  >
-                    Configure
-                    <ExternalLink className="ml-1 h-3 w-3" />
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleConnectIntegration(integration.id)}
-                  disabled={integration.comingSoon}
-                >
-                  Connect
-                </Button>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+            );
+          })}
+        </div>
+      )}
+      {/* No dialog needed for separate pages */}
     </div>
   );
 }

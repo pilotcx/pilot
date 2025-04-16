@@ -1,6 +1,8 @@
 import {dbService} from '@/lib/db/service';
 import {ApiError} from '@/lib/types/errors/api.error';
-import {Email, EmailLabel, EmailStatus} from '@/lib/types/models/email';
+import {Email, EmailLabel, EmailPriority, EmailRecipient, EmailStatus} from '@/lib/types/models/email';
+import {IntegrationType} from '@/lib/types/models/integration';
+import {mailgunService} from '@/lib/services/mailgun';
 import mongoose from 'mongoose';
 
 class EmailService {
@@ -673,6 +675,48 @@ class EmailService {
     }
 
     return conversation;
+  }
+
+  /**
+   * Send an email using Mailgun integration
+   */
+  async sendEmailWithMailgun(emailId: string, teamId: string): Promise<Email> {
+    await dbService.connect();
+
+    // Get the email
+    const email = await this.getEmailById(emailId);
+    if (!email) {
+      throw new ApiError(404, 'Email not found');
+    }
+
+    // Get the team's Mailgun integration
+    const integration = await dbService.integration.findOne({
+      team: teamId,
+      type: IntegrationType.Mailgun,
+      enabled: true,
+      status: 'active'
+    });
+
+    if (!integration) {
+      throw new ApiError(404, 'No active Mailgun integration found for this team');
+    }
+
+    // Send the email using Mailgun
+    await mailgunService.sendEmail(emailId, integration._id.toString());
+
+    // Update the email status
+    const updatedEmail = await dbService.email.update(
+      {_id: emailId},
+      {
+        $set: {
+          status: EmailStatus.Sent,
+          sentAt: new Date()
+        }
+      },
+      { new: true }
+    );
+
+    return updatedEmail as Email;
   }
 }
 
