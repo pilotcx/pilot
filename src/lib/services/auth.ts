@@ -69,7 +69,7 @@ class AuthService {
       fullName: data.fullName,
       email: data.email.toLowerCase(),
       password: hashedPassword,
-      role: UserRole.Reader,
+      role: data.role ?? UserRole.User,
       emailVerified: false,
     });
 
