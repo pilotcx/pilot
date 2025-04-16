@@ -19,7 +19,7 @@ interface TeamLayoutProps {
 
 export async function generateMetadata({params}: TeamLayoutProps): Promise<Metadata> {
   const {team} = await withTeam(params);
-  const title = await systemConfigService.get<string>(SystemConfigKey.OrgName) ?? 'Tower';
+  const title = await systemConfigService.get<string>(SystemConfigKey.OrgName) ?? 'Pilot';
 
   return {
     title: team.name + ' :: ' + title,

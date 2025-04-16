@@ -1,6 +1,6 @@
-# Tower - Team Management & Collaboration Software
+# Pilot - Team Management & Collaboration Software
 
-Tower is a comprehensive team management and collaboration platform built with Next.js. It provides a unified solution for team communication, task management, project tracking, and more.
+Pilot is a comprehensive team management and collaboration platform built with Next.js. It provides a unified solution for team communication, task management, project tracking, and more.
 
 ## Features
 
@@ -37,8 +37,8 @@ Tower is a comprehensive team management and collaboration platform built with N
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/tower.git
-cd tower
+git clone https://github.com/yourusername/pilot.git
+cd pilot
 ```
 
 2. Install dependencies:
@@ -73,7 +73,7 @@ yarn dev
 ## Project Structure
 
 ```
-tower/
+pilot/
 ├── .github/           # GitHub Actions workflows
 ├── public/            # Static assets
 ├── src/
@@ -96,10 +96,10 @@ This project includes Docker and Docker Compose support for easy deployment. You
 
 ```bash
 # Pull the latest image from GitHub Container Registry
-docker pull ghcr.io/monokaijs/tower:latest
+docker pull ghcr.io/monokaijs/pilot:latest
 
 # Run the container
-docker run -p 3000:3000 -e MONGO_URI=your_mongodb_uri -e NEXTAUTH_SECRET=your_secret -e NEXTAUTH_URL=http://localhost:3000 ghcr.io/monokaijs/tower:latest
+docker run -p 3000:3000 -e MONGO_URI=your_mongodb_uri -e NEXTAUTH_SECRET=your_secret -e NEXTAUTH_URL=http://localhost:3000 ghcr.io/monokaijs/pilot:latest
 ```
 
 ### Option 2: Docker Compose Setup (Recommended)
@@ -110,11 +110,11 @@ The Docker Compose setup includes the Next.js application (pulled from GitHub Co
 
 ```bash
 # If cloning the repository
-git clone https://github.com/monokaijs/tower.git
-cd tower
+git clone https://github.com/monokaijs/pilot.git
+cd pilot
 
 # Or if you just want the docker-compose.yml file
-curl -O https://raw.githubusercontent.com/monokaijs/tower/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/monokaijs/pilot/main/docker-compose.yml
 ```
 
 2. Start all services:
@@ -170,7 +170,7 @@ The project includes a GitHub Actions workflow for continuous integration and de
 To use the GitHub Container Registry images:
 
 1. Make sure you have access to the repository
-2. Pull the image: `docker pull ghcr.io/monokaijs/tower:latest`
+2. Pull the image: `docker pull ghcr.io/monokaijs/pilot:latest`
 3. Run it with the required environment variables
 
 ## Development

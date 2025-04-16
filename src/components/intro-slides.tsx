@@ -27,8 +27,8 @@ export function IntroSlides({
   slides,
   onComplete,
   onSkip,
-  logoSrc = "/tower-logo.svg",
-  appName = "Tower",
+  logoSrc = "/pilot-logo.svg",
+  appName = "Pilot",
   className,
 }: IntroSlidesProps) {
   const [currentSlide, setCurrentSlide] = useState(0);

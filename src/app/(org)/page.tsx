@@ -28,7 +28,7 @@ export default async function HomePage() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Avatar className="h-8 w-8 rounded-lg cursor-pointer">
-              <AvatarImage src={user.avatar} alt={user?.fullName ?? "@tower"} />
+              <AvatarImage src={user.avatar} alt={user?.fullName ?? "@pilot"} />
               <AvatarFallback className="rounded-lg">CN</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>

@@ -42,8 +42,8 @@ const teamMembers: TeamMember[] = [
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "About Tower",
-    description: "About Tower project and the team behind it...",
+    title: "About Pilot",
+    description: "About Pilot project and the team behind it...",
   };
 }
 
@@ -52,7 +52,7 @@ export default function AboutPage() {
     <div className="container max-w-4xl py-16 space-y-20 mx-auto">
       <section className="space-y-8">
         <div className="space-y-2">
-          <h1 className="text-3xl font-medium tracking-tight">About Tower</h1>
+          <h1 className="text-3xl font-medium tracking-tight">About Pilot</h1>
           <p className="text-xl text-muted-foreground">
             A team management and collaboration platform
           </p>
@@ -60,7 +60,7 @@ export default function AboutPage() {
 
         <div className="space-y-6">
           <p className="text-muted-foreground leading-relaxed">
-            Tower was created with a simple mission: to make team collaboration seamless and efficient.
+            Pilot was created with a simple mission: to make team collaboration seamless and efficient.
             We believe that when teams have the right tools to communicate, organize, and track their work,
             they can achieve incredible results.
           </p>

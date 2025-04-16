@@ -3,14 +3,14 @@ version: '3.8'
 services:
   # Next.js application
   app:
-    image: ghcr.io/monokaijs/tower:latest
-    container_name: tower-app
+    image: ghcr.io/monokaijs/pilot:latest
+    container_name: pilot-app
     restart: always
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - MONGO_URI=mongodb://mongo:27017/tower
+      - MONGO_URI=mongodb://mongo:27017/pilot
       - NEXTAUTH_URL=http://localhost:3000
       - NEXTAUTH_SECRET=your_nextauth_secret_key_here
       # Add other environment variables as needed
@@ -19,24 +19,24 @@ services:
     depends_on:
       - mongo
     networks:
-      - tower-network
+      - pilot-network
 
   # MongoDB database
   mongo:
     image: mongo:latest
-    container_name: tower-mongo
+    container_name: pilot-mongo
     restart: always
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
     networks:
-      - tower-network
+      - pilot-network
 
   # MongoDB Express admin interface
   mongo-express:
     image: mongo-express:latest
-    container_name: tower-mongo-express
+    container_name: pilot-mongo-express
     restart: always
     ports:
       - "8081:8081"
@@ -50,10 +50,10 @@ services:
     depends_on:
       - mongo
     networks:
-      - tower-network
+      - pilot-network
 
 networks:
-  tower-network:
+  pilot-network:
     driver: bridge
 
 volumes:

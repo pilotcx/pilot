@@ -14,7 +14,7 @@ const interFont = Inter({
 
 export async function generateMetadata(): Promise<Metadata> {
   await dbService.connect();
-  const title = await systemConfigService.get<string>(SystemConfigKey.OrgName, "Tower");
+  const title = await systemConfigService.get<string>(SystemConfigKey.OrgName, "Pilot");
   const description = await systemConfigService.get<string>(
     SystemConfigKey.OrgDesc
   );
@@ -28,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: { children: ReactNode }) {
   await dbService.connect();
   const avatar = await systemConfigService.get<string>(SystemConfigKey.OrgAvatar);
-  const title = await systemConfigService.get<string>(SystemConfigKey.OrgName, "Tower");
+  const title = await systemConfigService.get<string>(SystemConfigKey.OrgName, "Pilot");
   return (
     <html lang="en">
     <head>

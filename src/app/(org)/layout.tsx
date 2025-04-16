@@ -7,7 +7,7 @@ import {redirect} from "next/navigation";
 
 export async function generateMetadata(): Promise<Metadata> {
   await dbService.connect();
-  const title = await systemConfigService.get<string>(SystemConfigKey.OrgName, 'Tower');
+  const title = await systemConfigService.get<string>(SystemConfigKey.OrgName, 'Pilot');
   const description = await systemConfigService.get<string>(
     SystemConfigKey.OrgDesc
   );
