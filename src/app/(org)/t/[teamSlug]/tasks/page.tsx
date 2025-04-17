@@ -32,7 +32,7 @@ export default function TasksPage() {
     if (team._id) {
       fetchTasks();
     }
-  }, [team._id, getUserTeamTasks]);
+  }, [team._id]);
 
   useEffect(() => {
     if (tasksData) {

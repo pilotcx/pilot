@@ -9,12 +9,12 @@ import { projectService } from '@/lib/services/project';
 import { TeamRole } from '@/lib/types/models/team';
 
 // Get a specific task
-export const GET = withApi(async (request: NextRequest, { params }: { params: { taskId: string } }, decoded) => {
+export const GET = withApi(async (request: NextRequest, { params }: { params: Promise<{ taskId: string }> }, decoded) => {
   if (!decoded) {
     throw new ApiError(401, 'Unauthorized');
   }
 
-  const taskId = params.taskId;
+  const taskId = (await params).taskId;
   const task = await taskService.getTaskById(taskId);
 
   if (!task) {

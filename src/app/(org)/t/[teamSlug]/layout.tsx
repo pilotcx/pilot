@@ -9,6 +9,7 @@ import {systemConfigService} from "@/lib/services/system-config";
 import {SystemConfigKey} from "@/lib/types/models/system-config";
 import {projectService} from "@/lib/services/project";
 import TeamHeader from "@/app/(org)/t/[teamSlug]/team-header";
+import { cn } from "@/lib/utils";
 
 interface TeamLayoutProps {
   children: ReactNode;
@@ -25,6 +26,7 @@ export async function generateMetadata({params}: TeamLayoutProps): Promise<Metad
     title: team.name + ' :: ' + title,
   }
 }
+const RoutesHiddenOverFlow = ["kanban-task"];
 
 export default async function TeamLayout({children, params}: TeamLayoutProps) {
   const {team, membership} = await withTeam(params);
@@ -41,7 +43,7 @@ export default async function TeamLayout({children, params}: TeamLayoutProps) {
     >
       <SidebarProvider className={'h-full'}>
         <AppSidebar/>
-        <SidebarInset className={'flex-1'}>
+        <SidebarInset overflowHidden={RoutesHiddenOverFlow} className={"flex-1"}>
           <TeamHeader/>
           {children}
         </SidebarInset>

@@ -7,12 +7,13 @@ import { SystemConfigKey } from "@/lib/types/models/system-config";
 import { dbService } from "@/lib/db/service";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
-
+import dayjs from "dayjs";
+import relativeTime from 'dayjs/plugin/relativeTime';
 const interFont = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
 });
-
+dayjs.extend(relativeTime);
 export async function generateMetadata(): Promise<Metadata> {
   await dbService.connect();
   const title = await systemConfigService.get<string>(
