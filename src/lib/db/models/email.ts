@@ -54,6 +54,9 @@ export const EmailSchema = new mongoose.Schema<Email>({
     enum: ['text', 'html'],
     default: 'html',
   },
+  summary: {
+    type: String,
+  },
   sender: {
     type: mongoose.Schema.Types.ObjectId,
     ref: Schemas.User,
@@ -87,7 +90,7 @@ export const EmailSchema = new mongoose.Schema<Email>({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'EmailLabel',
   }],
-  
+
   // For email threading/conversation
   conversationId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -97,7 +100,7 @@ export const EmailSchema = new mongoose.Schema<Email>({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Email',
   },
-  
+
   // Metadata
   readBy: [{
     type: mongoose.Schema.Types.ObjectId,

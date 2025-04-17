@@ -31,7 +31,7 @@ class MailgunService {
     }
 
     // Validate the Mailgun credentials
-    const { valid } = await this.validateMailgunCredentials(config.apiKey);
+    const {valid} = await this.validateMailgunCredentials(config.apiKey);
 
     if (!valid) {
       // Create integration with failed status
@@ -89,7 +89,7 @@ class MailgunService {
 
     // If API key changed, validate the credentials
     if (updates.apiKey && updates.apiKey !== integration.config.apiKey) {
-      const { valid } = await this.validateMailgunCredentials(updates.apiKey);
+      const {valid} = await this.validateMailgunCredentials(updates.apiKey);
 
       if (!valid) {
         // Update integration with failed status
@@ -287,8 +287,6 @@ class MailgunService {
    * Process an inbound email from Mailgun webhook
    */
   async processInboundEmail(payload: MailgunInboundMessage, teamId: string): Promise<Email> {
-    await dbService.connect();
-
     // Get the team's Mailgun integration
     const integration = await this.getIntegrationByTeam(teamId);
     if (!integration) {
@@ -311,20 +309,6 @@ class MailgunService {
       throw new ApiError(401, 'Invalid webhook signature');
     }
 
-    // Parse sender information
-    const senderMatch = payload.from.match(/^(?:([^<]*)<)?([^>]*)>?$/);
-    const senderName = senderMatch ? senderMatch[1]?.trim() : '';
-    const senderEmail = senderMatch ? senderMatch[2]?.trim() : payload.from;
-
-    // Find or create the sender user
-    // In a real implementation, you would need to handle this differently
-    // This is a simplified version that uses a system user
-    const systemUser = await dbService.user.findOne({email: senderEmail}) ||
-      await dbService.user.findOne({role: 'admin'});
-    if (!systemUser) {
-      throw new ApiError(404, 'Could not find a suitable user to handle this email');
-    }
-
     // Prepare recipients
     const recipients: EmailRecipient[] = [
       {
@@ -337,8 +321,7 @@ class MailgunService {
     const emailData: Partial<Email> = {
       subject: payload.subject,
       body: payload.bodyHtml || payload.bodyPlain,
-      bodyType: payload.bodyHtml ? 'html' : 'text',
-      sender: systemUser._id,
+      from: payload.from,
       recipients,
       status: EmailStatus.Sent,
       priority: EmailPriority.Normal,
@@ -347,9 +330,7 @@ class MailgunService {
     };
 
     // Create the email using the email service
-    const email = await emailService.createEmail(emailData);
-
-    return email;
+    return await emailService.createEmail(emailData);
   }
 
   /**
@@ -384,9 +365,9 @@ class MailgunService {
     try {
       // Try to get domains to validate the API key
       const domains = await mg.domains.list();
-      return { valid: true, domains: domains || [] };
+      return {valid: true, domains: domains || []};
     } catch (error) {
-      return { valid: false, domains: [] };
+      return {valid: false, domains: []};
     }
   }
 }

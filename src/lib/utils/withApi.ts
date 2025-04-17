@@ -2,7 +2,6 @@ import {NextRequest, NextResponse} from 'next/server';
 import {dbService} from '@/lib/db/service';
 import {UserRole} from '@/lib/types/models/user';
 import {decode, JWT} from 'next-auth/jwt';
-import {cookies} from 'next/headers';
 
 interface WithApiOptions {
   preventDb?: boolean;
@@ -10,11 +9,11 @@ interface WithApiOptions {
   protected?: boolean;
 }
 
-export function withApi<T>(
-  handler: (request: NextRequest, context: any, decoded?: JWT) => Promise<T> | T,
+export function withApi<T, K>(
+  handler: (request: NextRequest, context: { params: K }, decoded?: JWT) => Promise<T> | T,
   options: WithApiOptions = {},
 ) {
-  return async function wrappedHandler(request: NextRequest, context: any): Promise<Response> {
+  return async function wrappedHandler(request: NextRequest, context: { params: K }): Promise<Response> {
     const {roles = [], preventDb = false, protected: isProtected = false} = options;
     let decoded: JWT | undefined, token: string | undefined;
     const authHeader = request.headers.get('Authorization');
@@ -70,7 +69,7 @@ export function withApi<T>(
           );
         }
       }
-
+      context.params = await context.params;
       const result: any = await handler(request, context, decoded);
 
       if (result instanceof NextResponse) {

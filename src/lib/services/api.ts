@@ -19,6 +19,7 @@ import {
 import {Integration} from "@/lib/types/models/integration";
 import {Domain} from "@/lib/types/models/domain";
 import {EmailAddress} from "@/lib/types/models/email-address";
+import {Email, EmailConversation} from "@/lib/types/models/email";
 
 export class ApiService {
   api = axios.create({
@@ -375,7 +376,7 @@ export class ApiService {
 
   // Verify Mailgun API key and fetch domains
   verifyMailgunApiKey = async (apiKey: string) => {
-    return this.call<any>('POST', '/integrations/mailgun/verify', { apiKey });
+    return this.call<any>('POST', '/integrations/mailgun/verify', {apiKey});
   };
 
   // Email address methods for team members
@@ -397,6 +398,46 @@ export class ApiService {
 
   deleteMemberEmailAddress = async (teamId: string, memberId: string, emailAddressId: string) => {
     return this.call('DELETE', `/teams/${teamId}/members/${memberId}/email-addresses/${emailAddressId}`);
+  };
+
+  getConversationsWithLatestEmail = async (teamId: string, memberId: string, options: {
+    page?: number;
+    limit?: number;
+    labelId?: string;
+    search?: string;
+    isStarred?: boolean;
+    isRead?: boolean;
+    status?: string;
+    emailAddress?: string;
+  } = {}) => {
+    const {
+      page = 1,
+      limit = 20,
+      labelId,
+      search,
+      isStarred,
+      isRead,
+      status,
+      emailAddress
+    } = options;
+
+    let url = `/teams/${teamId}/members/${memberId}/conversations?page=${page}&limit=${limit}`;
+
+    if (labelId) url += `&labelId=${labelId}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (isStarred !== undefined) url += `&isStarred=${isStarred}`;
+    if (isRead !== undefined) url += `&isRead=${isRead}`;
+    if (status) url += `&status=${status}`;
+    if (emailAddress) url += `&emailAddress=${encodeURIComponent(emailAddress)}`;
+
+    return this.call<{
+      conversation: EmailConversation,
+      email: Email,
+    }[]>('GET', url);
+  };
+
+  getConversationEmails = async (conversationId: string) => {
+    return this.call('GET', `/email-conversations/${conversationId}/emails`);
   };
 }
 

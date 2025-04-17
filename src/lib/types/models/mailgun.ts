@@ -57,29 +57,3 @@ export interface MailgunEvent extends BaseEntity {
   eventData: any;
   processed: boolean;
 }
-
-/**
- * Mailgun inbound message interface
- */
-export interface MailgunInboundMessage {
-  recipient: string;
-  sender: string;
-  from: string;
-  subject: string;
-  bodyPlain: string;
-  bodyHtml?: string;
-  strippedText?: string;
-  strippedHtml?: string;
-  attachments?: {
-    name: string;
-    contentType: string;
-    size: number;
-    url: string;
-  }[];
-  messageHeaders: any;
-  contentIdMap?: any;
-  timestamp: number;
-  token: string;
-  signature: string;
-  messageId?: string;
-}

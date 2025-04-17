@@ -1,10 +1,13 @@
-import { BaseEntity } from "@/lib/types/models/base";
-import { User } from "@/lib/types/models/user";
+import {BaseEntity} from "@/lib/types/models/base";
+import {User} from "@/lib/types/models/user";
 import mongoose from "mongoose";
+import {TeamMember} from "@/lib/types/models/team";
 
-/**
- * Email status enum
- */
+export enum EmailType {
+  Incoming = 'incoming',
+  Outgoing = 'outgoing'
+}
+
 export enum EmailStatus {
   Draft = 'draft',
   Sent = 'sent',
@@ -12,38 +15,26 @@ export enum EmailStatus {
   Failed = 'failed'
 }
 
-/**
- * Email priority enum
- */
 export enum EmailPriority {
   Low = 'low',
   Normal = 'normal',
   High = 'high'
 }
 
-/**
- * Email label interface
- */
 export interface EmailLabel extends BaseEntity {
   name: string;
   color: string;
   description?: string;
   user: string | mongoose.Types.ObjectId | User;
-  isSystem: boolean; // System labels like Inbox, Sent, Drafts, etc.
+  isSystem: boolean;
 }
 
-/**
- * Email recipient interface
- */
 export interface EmailRecipient {
   email: string;
   name?: string;
   type: 'to' | 'cc' | 'bcc';
 }
 
-/**
- * Email attachment interface
- */
 export interface EmailAttachment {
   filename: string;
   path: string;
@@ -51,39 +42,39 @@ export interface EmailAttachment {
   size: number;
 }
 
-/**
- * Email interface
- */
 export interface Email extends BaseEntity {
+  owner: mongoose.Schema.Types.ObjectId | string;
+  labels?: string[];
+  type: EmailType;
+  messageId: string;
+  inReplyTo?: string;
+  references?: string[];
+  from: string;
+  to: string;
+  cc?: string[];
+  bcc?: string[];
+  sender: string;
+  recipient: string;
   subject: string;
   body: string;
-  bodyType: 'text' | 'html';
-  sender: string | mongoose.Types.ObjectId | User;
-  recipients: EmailRecipient[];
-  attachments?: EmailAttachment[];
-  status: EmailStatus;
-  priority: EmailPriority;
-  labels?: (string | mongoose.Types.ObjectId | EmailLabel)[];
-  
-  // For email threading/conversation
-  conversationId?: string | mongoose.Types.ObjectId; // Group related emails
-  parentEmail?: string | mongoose.Types.ObjectId | Email; // Reference to the email being replied to
-  
-  // Metadata
-  readBy?: (string | mongoose.Types.ObjectId | User)[]; // Track who has read the email
-  isStarred?: boolean;
-  isRead?: boolean;
-  sentAt?: Date;
-  scheduledFor?: Date;
+  headers: string[];
+  strippedText: string;
+  replyTo?: string;
+  seen?: boolean;
+  dkimSignature?: string;
+  contentType?: string;
+  raw: any;
+  claimed?: boolean;
+  member?: TeamMember | string;
+  attachments?: EmailAttachment[] | string[];
+  conversationId?: string;
 }
 
-/**
- * Email conversation interface
- */
 export interface EmailConversation extends BaseEntity {
   subject: string;
-  participants: (string | mongoose.Types.ObjectId | User)[];
   lastEmailAt: Date;
   emailCount: number;
+  participants: string[];
+  lastEmail?: string | mongoose.Types.ObjectId | Email;
   labels?: (string | mongoose.Types.ObjectId | EmailLabel)[];
 }

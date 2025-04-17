@@ -1,83 +1,53 @@
 import {dbService} from '@/lib/db/service';
 import {ApiError} from '@/lib/types/errors/api.error';
-import {Email, EmailLabel, EmailPriority, EmailRecipient, EmailStatus} from '@/lib/types/models/email';
+import {Email, EmailLabel, EmailStatus} from '@/lib/types/models/email';
 import {IntegrationType} from '@/lib/types/models/integration';
 import {mailgunService} from '@/lib/services/mailgun';
-import mongoose from 'mongoose';
+import mongoose, {FilterQuery} from 'mongoose';
+import {emailAddressService} from "@/lib/services/email-address";
+import {generateEmailSummary} from "@/lib/utils/generateEmailSummary";
 
 class EmailService {
-  /**
-   * Create a new email
-   */
-  async createEmail(emailData: Partial<Email>): Promise<Email> {
-    await dbService.connect();
-
-    // If this is a reply to an existing email, handle conversation
-    if (emailData.parentEmail) {
-      const parentEmail = await dbService.email.findById(emailData.parentEmail as string);
-      if (!parentEmail) {
-        throw new ApiError(404, 'Parent email not found');
-      }
-
-      // If parent has a conversation, use that, otherwise create a new one
-      if (parentEmail.conversationId) {
-        emailData.conversationId = parentEmail.conversationId;
-
-        // Update conversation with new data
-        await dbService.emailConversation.update({
-            _id: parentEmail.conversationId
-          }, {
-            $inc: {emailCount: 1},
-            $set: {lastEmailAt: new Date()},
-            $addToSet: {participants: emailData.sender}
-          }
-        );
-      } else {
-        // Create a new conversation for this thread
-        const conversation = await dbService.emailConversation.create({
-          subject: parentEmail.subject,
-          participants: [
-            parentEmail.sender,
-            ...(emailData.sender ? [emailData.sender] : [])
-          ],
-          lastEmailAt: new Date(),
-          emailCount: 2 // Parent + this email
-        });
-
-        emailData.conversationId = conversation._id;
-
-        // Update parent email with the new conversation ID
-        await dbService.email.findOneAndUpdate({
-          _id: parentEmail._id,
-        }, {$set: {conversationId: conversation._id}});
-      }
-    } else if (!emailData.conversationId) {
-      // If this is a new email (not a reply) and no conversation ID is provided, create a new conversation
-      const conversation = await dbService.emailConversation.create({
-        subject: emailData.subject || '',
-        participants: emailData.sender ? [emailData.sender] : [],
-        lastEmailAt: new Date(),
-        emailCount: 1
+  async prepareEmailConversation(emailData: Partial<Email>) {
+    const parentEmail = await dbService.email.findOne({
+      messageId: emailData.inReplyTo,
+    });
+    const createConversation = () => dbService.emailConversation.create({
+      subject: emailData.subject || '',
+      lastEmailAt: emailData.createdAt as Date,
+      emailCount: 0
+    });
+    if (!parentEmail) {
+      // create conversation
+      return await createConversation();
+    } else {
+      const conversation = await dbService.emailConversation.findOne({
+        _id: parentEmail.conversationId,
       });
-
-      emailData.conversationId = conversation._id;
+      if (!conversation) return await createConversation();
     }
-
-    // Create the email
-    return await dbService.email.create(emailData as Email);
   }
 
-  /**
-   * Get an email by ID
-   */
+  async createEmail(emailData: Partial<Email>): Promise<Email> {
+    const conversation = await this.prepareEmailConversation(emailData);
+    if (!conversation) throw new ApiError(400, 'Failed to prepare conversation');
+    const newEmail = await dbService.email.create({
+      ...emailData,
+      summary: generateEmailSummary(emailData.body ?? ''),
+      conversationId: conversation!._id,
+    } as Email);
+    conversation.lastEmail = newEmail._id as string;
+    conversation.lastEmailAt = new Date();
+    conversation.emailCount = conversation.emailCount + 1;
+    await conversation.save();
+    return newEmail;
+  }
+
   async getEmailById(emailId: string): Promise<Email | null> {
     await dbService.connect();
     return dbService.email.findById(emailId);
   }
 
-  /**
-   * Get emails for a user with pagination and filtering
-   */
   async getUserEmails(
     userId: string,
     options: {
@@ -582,18 +552,22 @@ class EmailService {
     );
   }
 
-  // Conversation Management
-
   /**
-   * Get all conversations for a user with pagination
+   * Get conversations with the latest email from each conversation
+   * This is used for displaying a conversation list where only the latest email in each thread is shown
    */
-  async getUserConversations(
-    userId: string,
+  async getConversationsWithLatestEmail(
+    teamId: string,
+    memberId: string,
     options: {
       page?: number;
       limit?: number;
       labelId?: string;
       search?: string;
+      isStarred?: boolean;
+      isRead?: boolean;
+      status?: EmailStatus;
+      emailAddress?: string; // Filter by specific email address
     } = {}
   ) {
     await dbService.connect();
@@ -602,41 +576,60 @@ class EmailService {
       page = 1,
       limit = 20,
       labelId,
-      search
+      search,
+      isStarred,
+      isRead,
+      status,
+      emailAddress
     } = options;
 
     // Get user's email addresses
-    const userEmails = await this.getUserEmailAddresses(userId);
+    const userEmails = await emailAddressService.getTeamMemberEmailAddresses(teamId, memberId);
+
+    if (!userEmails.find(x => x.fullAddress?.toLowerCase() === emailAddress?.toLowerCase())) {
+      throw new ApiError(403, 'You do not have access to this email address');
+    }
 
     // First, find all emails where the user is a participant
-    const emailQuery: any = {
-      $or: [
-        {sender: userId},
-        {'recipients.email': {$in: userEmails}}
-      ]
+    const emailQuery: FilterQuery<Email> = {
+      'recipients.email': emailAddress?.toLowerCase()
     };
 
     if (labelId) {
       emailQuery.labels = labelId;
     }
 
+    if (isStarred !== undefined) {
+      emailQuery.isStarred = isStarred;
+    }
+
+    if (isRead !== undefined) {
+      emailQuery.isRead = isRead;
+    }
+
+    if (status) {
+      emailQuery.status = status;
+    }
+
+    if (search) {
+      emailQuery.$or = [
+        {subject: {$regex: search, $options: 'i'}},
+        {body: {$regex: search, $options: 'i'}}
+      ];
+    }
+
     // Get all conversation IDs where the user is a participant
-    const emails = await dbService.email.find(emailQuery, {conversationId: 1});
-    const conversationIds = emails
-      .map(email => email.conversationId)
-      .filter(id => id) as mongoose.Types.ObjectId[];
+
 
     // Build query for conversations
     const query: any = {
       _id: {$in: conversationIds}
     };
 
-    if (search) {
-      query.subject = {$regex: search, $options: 'i'};
-    }
-
     // Get conversations with pagination
-    return dbService.emailConversation.paginate(query, {
+    const conversations = await dbService.emailConversation.paginate({
+
+    }, {
       page,
       limit,
       sort: {lastEmailAt: -1},
@@ -644,6 +637,35 @@ class EmailService {
         {path: 'participants', select: 'fullName email avatar'}
       ]
     });
+
+    return {
+      ...conversations,
+      docs: await Promise.all(conversations.docs.map(async (conversation) => {
+        // Get the latest email in this conversation
+        const email = await dbService.email.findOne(
+          {
+            conversationId: conversation._id,
+            $or: [
+              {'recipients.email': emailAddress}
+            ]
+          },
+          {},
+          {
+            sort: {createdAt: -1},
+            populate: [
+              {path: 'sender', select: 'fullName email avatar'},
+              {path: 'labels', select: 'name color'},
+              {path: 'parentEmail', select: 'subject'}
+            ]
+          }
+        );
+
+        return {
+          conversation,
+          email
+        };
+      }))
+    };
   }
 
   /**
@@ -713,7 +735,7 @@ class EmailService {
           sentAt: new Date()
         }
       },
-      { new: true }
+      {new: true}
     );
 
     return updatedEmail as Email;
