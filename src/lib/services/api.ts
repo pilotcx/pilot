@@ -10,7 +10,15 @@ import {CreateTaskInput, UpdateTaskInput} from '@/lib/validations/task';
 import {CreateProjectInput, UpdateProjectInput} from '@/lib/validations/project';
 import {Project} from '@/lib/types/models/project';
 import {Task} from "@/lib/types/models/task";
-import {CreateTeamRequestInput, TeamRequest, TeamRequestComment, UpdateTeamRequestInput} from "@/lib/types/models/team-request";
+import {
+  CreateTeamRequestInput,
+  TeamRequest,
+  TeamRequestComment,
+  UpdateTeamRequestInput
+} from "@/lib/types/models/team-request";
+import {Integration} from "@/lib/types/models/integration";
+import {Domain} from "@/lib/types/models/domain";
+import {EmailAddress} from "@/lib/types/models/email-address";
 
 export class ApiService {
   api = axios.create({
@@ -80,6 +88,10 @@ export class ApiService {
   // Team members methods
   getTeamMembers = async (teamId: string, page = 1, limit = 10) => {
     return this.call<TeamMember[]>('GET', `/teams/${teamId}/members?page=${page}&limit=${limit}`);
+  };
+
+  getTeamMember = async (teamId: string, memberId: string) => {
+    return this.call<TeamMember>('GET', `/teams/${teamId}/members/${memberId}/get`);
   };
 
   addTeamMember = async (teamId: string, data: AddTeamMemberSchema) => {
@@ -317,6 +329,74 @@ export class ApiService {
 
   deleteProject = async (projectId: string) => {
     return this.call('DELETE', `/projects/${projectId}`);
+  };
+
+  // Integration methods
+  getTeamIntegrations = async (teamId: string) => {
+    return this.call<Integration[]>('GET', `/teams/${teamId}/integrations`);
+  };
+
+  getMailgunIntegration = async (teamId: string) => {
+    return this.call('GET', `/teams/${teamId}/integrations/mailgun`);
+  };
+
+  createOrUpdateMailgunIntegration = async (teamId: string, data: any) => {
+    return this.call('POST', `/teams/${teamId}/integrations/mailgun`, data);
+  };
+
+  deleteMailgunIntegration = async (teamId: string) => {
+    return this.call('DELETE', `/teams/${teamId}/integrations/mailgun`);
+  };
+
+  sendEmailWithMailgun = async (emailId: string, teamId: string) => {
+    return this.call('POST', `/emails/${emailId}/send-with-mailgun`, {teamId});
+  };
+
+  // Domain methods
+  getTeamDomains = async (teamId: string) => {
+    return this.call<Domain[]>('GET', `/teams/${teamId}/domains`);
+  };
+
+  createDomain = async (teamId: string, data: any) => {
+    return this.call('POST', `/teams/${teamId}/domains`, data);
+  };
+
+  getDomainById = async (teamId: string, domainId: string) => {
+    return this.call('GET', `/teams/${teamId}/domains/${domainId}`);
+  };
+
+  updateDomain = async (teamId: string, domainId: string, data: any) => {
+    return this.call('PATCH', `/teams/${teamId}/domains/${domainId}`, data);
+  };
+
+  deleteDomain = async (teamId: string, domainId: string) => {
+    return this.call('DELETE', `/teams/${teamId}/domains/${domainId}`);
+  };
+
+  // Verify Mailgun API key and fetch domains
+  verifyMailgunApiKey = async (apiKey: string) => {
+    return this.call<any>('POST', '/integrations/mailgun/verify', { apiKey });
+  };
+
+  // Email address methods for team members
+  getMemberEmailAddresses = async (teamId: string, memberId: string) => {
+    return this.call<EmailAddress[]>('GET', `/teams/${teamId}/members/${memberId}/email-addresses`);
+  };
+
+  getMemberEmailAddressById = async (teamId: string, memberId: string, emailAddressId: string) => {
+    return this.call('GET', `/teams/${teamId}/members/${memberId}/email-addresses/${emailAddressId}`);
+  };
+
+  createMemberEmailAddress = async (teamId: string, memberId: string, data: any) => {
+    return this.call('POST', `/teams/${teamId}/members/${memberId}/email-addresses`, data);
+  };
+
+  updateMemberEmailAddress = async (teamId: string, memberId: string, emailAddressId: string, data: any) => {
+    return this.call('PATCH', `/teams/${teamId}/members/${memberId}/email-addresses/${emailAddressId}`, data);
+  };
+
+  deleteMemberEmailAddress = async (teamId: string, memberId: string, emailAddressId: string) => {
+    return this.call('DELETE', `/teams/${teamId}/members/${memberId}/email-addresses/${emailAddressId}`);
   };
 }
 

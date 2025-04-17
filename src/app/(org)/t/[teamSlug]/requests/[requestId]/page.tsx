@@ -142,7 +142,6 @@ export default function TeamRequestDetailPage({params: _params}: {
               </CardHeader>
               <CardContent>
                 <TeamRequestCommentList
-                  teamId={team._id as string}
                   requestId={params.requestId}
                 />
               </CardContent>

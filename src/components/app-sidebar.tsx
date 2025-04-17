@@ -106,6 +106,10 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
             title: "Integrations",
             url: teamSlug ? `/t/${teamSlug}/settings/integrations` : "#",
           },
+          {
+            title: "Domains",
+            url: teamSlug ? `/t/${teamSlug}/settings/domains` : "#",
+          },
         ],
       },
     ],
@@ -141,6 +145,14 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                 <Link href={`/t/${teamSlug}/mailing`}>
                   <MailIcon/>
                   <span>Mailing</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Link href={`/teams/${teamSlug}/integrations`}>
+                  <Settings2/>
+                  <span>Integrations</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
