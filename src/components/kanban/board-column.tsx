@@ -88,7 +88,7 @@ export const BoardContainer = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className={containerStyles()}>
-      <div className="flex w-full h-full flex-row gap-4 overflow-x-auto p-4">
+      <div className="flex w-full h-full flex-row gap-4 overflow-x-auto">
         {children}
       </div>
     </div>

@@ -185,7 +185,7 @@ export default function KanbanBoard() {
     try {
       console.log(`Updating task ${taskId} to status: ${newStatus}`);
 
-      const result = await api.updateTask(taskId, { status: newStatus });
+      const result = await api.updateTask(team._id as string, taskId, { status: newStatus });
 
       if (result && result.data) {
         toast.success(`Task moved to ${getStatusLabel(newStatus)}`);
