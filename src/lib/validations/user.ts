@@ -4,7 +4,7 @@ export const updateUserSchema = z.object({
   fullName: z.string().min(1, { message: "Name is required" }),
   email: z.string().email({ message: "Invalid email address" }),
   phoneNumber: z.string().optional(),
-  avatar: z.string().url({ message: "Please enter a valid URL" }).optional(),
+  avatar: z.string().optional(),
   bio: z.string().optional(),
 }).strict();
 

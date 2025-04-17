@@ -257,12 +257,12 @@ export class ApiService {
     return this.call<Task>('POST', `/teams/${teamId}/projects/${projectCode}/tasks`, data);
   };
 
-  getTask = async (taskId: string) => {
-    return this.call<Task>('GET', `/tasks/${taskId}`);
+  getTask = async (teamId: string, taskId: string) => {
+    return this.call<Task>('GET', `/teams/${teamId}/tasks/${taskId}`);
   };
 
-  updateTask = async (taskId: string, data: UpdateTaskInput) => {
-    return this.call<Task>('PUT', `/tasks/${taskId}`, data);
+  updateTask = async (teamId: string, taskId: string, data: UpdateTaskInput) => {
+    return this.call<Task>('PUT', `/teams/${teamId}/tasks/${taskId}`, data);
   };
 
   deleteTask = async (taskId: string) => {

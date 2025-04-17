@@ -1,6 +1,14 @@
-"use client"
+"use client";
 
-import {Folder, FolderIcon, Forward, MoreHorizontal, Trash2,} from "lucide-react"
+import {
+  EyeIcon,
+  Folder,
+  FolderIcon,
+  Forward,
+  MoreHorizontal,
+  PlusIcon,
+  Trash2,
+} from "lucide-react";
 
 import {
   DropdownMenu,
@@ -8,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -17,24 +25,51 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 import Link from "next/link";
-import {useTeam} from "@/components/providers/team-provider";
+import { useTeam } from "@/components/providers/team-provider";
+import { useRouter } from "next/navigation";
+import { TeamRole } from "@/lib/types/models/team";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export function NavProjects() {
-  const {team, projects} = useTeam();
-  const {isMobile} = useSidebar()
-
+  const { team, projects, membership } = useTeam();
+  const { isMobile } = useSidebar();
+  const router = useRouter();
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>Projects</SidebarGroupLabel>
+      <SidebarGroupLabel className="flex flex-row items-center justify-between gap-2">
+        Projects
+        <div className="flex flex-row items-center gap-3">
+          {membership.role === TeamRole.Owner && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <PlusIcon
+                  className="w-4 h-4 cursor-pointer"
+                  onClick={() => router.push(`/t/${team.slug}/projects/new`)}
+                />
+              </TooltipTrigger>
+              <TooltipContent>Create Project</TooltipContent>
+            </Tooltip>
+          )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <EyeIcon
+                className="w-4 h-4 cursor-pointer"
+                onClick={() => router.push(`/t/${team.slug}/projects`)}
+              />
+            </TooltipTrigger>
+            <TooltipContent>View All Projects</TooltipContent>
+          </Tooltip>
+        </div>
+      </SidebarGroupLabel>
       <SidebarMenu>
-        {projects.map((item) => (
+        {projects.slice(0, 5).map((item) => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
               <Link href={`/t/${team.slug}/projects/${item.code}`}>
-                <div className={'w-6 h-6 rounded-md border flex'}>
-                  <FolderIcon className="w-3 h-3 m-auto"/>
+                <div className={"w-6 h-6 rounded-md border flex"}>
+                  <FolderIcon className="w-3 h-3 m-auto" />
                 </div>
                 <span>{item.name}</span>
               </Link>
@@ -42,7 +77,7 @@ export function NavProjects() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuAction showOnHover>
-                  <MoreHorizontal/>
+                  <MoreHorizontal />
                   <span className="sr-only">More</span>
                 </SidebarMenuAction>
               </DropdownMenuTrigger>
@@ -52,16 +87,16 @@ export function NavProjects() {
                 align={isMobile ? "end" : "start"}
               >
                 <DropdownMenuItem>
-                  <Folder className="text-muted-foreground"/>
+                  <Folder className="text-muted-foreground" />
                   <span>View Project</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <Forward className="text-muted-foreground"/>
+                  <Forward className="text-muted-foreground" />
                   <span>Share Project</span>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator/>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem>
-                  <Trash2 className="text-muted-foreground"/>
+                  <Trash2 className="text-muted-foreground" />
                   <span>Delete Project</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -70,5 +105,5 @@ export function NavProjects() {
         ))}
       </SidebarMenu>
     </SidebarGroup>
-  )
+  );
 }

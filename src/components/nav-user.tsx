@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsUpDown, LogOut, ShieldIcon, UserIcon } from "lucide-react";
+import { ChevronsUpDown, ShieldIcon, UserIcon } from "lucide-react";
 
 import { useTeam } from "@/components/providers/team-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -72,13 +72,13 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <Link href={"/settings/general"}>
+              <Link href={"/me/settings/general"}>
                 <DropdownMenuItem>
                   <UserIcon />
                   Account
                 </DropdownMenuItem>
               </Link>
-              <Link href={"/settings/security"}>
+              <Link href={"/me/settings/security"}>
                 <DropdownMenuItem>
                   <ShieldIcon />
                   Security

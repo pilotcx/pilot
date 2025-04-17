@@ -98,8 +98,8 @@ export function CreateAdminStep({ defaultValues, onSubmit, isSubmitting = false 
                     />
                     <Button
                       type="button"
-                      variant="ghost"
-                      size="sm"
+                      variant="link"
+                      size="icon"
                       className="absolute right-0 top-0 h-full px-3"
                       onClick={() => setShowPassword(!showPassword)}
                     >
@@ -133,7 +133,7 @@ export function CreateAdminStep({ defaultValues, onSubmit, isSubmitting = false 
                     />
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="link"
                       size="sm"
                       className="absolute right-0 top-0 h-full px-3"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
