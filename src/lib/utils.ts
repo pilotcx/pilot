@@ -1,11 +1,11 @@
-import { CheckCircle } from 'lucide-react';
 import { ColumnDragData } from "@/components/kanban/board-column";
 import { TaskDragData } from "@/components/kanban/task-item";
 import { Active, DataRef, Over } from "@dnd-kit/core";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { Task, TaskStatus } from "./types/models/task";
+import { TaskStatus } from "./types/models/task";
 import { OrganizationSize } from "./validations/organization";
+import dayjs from "dayjs";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -63,5 +63,13 @@ export const getStatusLabel = (status: TaskStatus) => {
       return "Overdue";
     default:
       return "Todo";
+  }
+};
+
+export const getFormattedDate = (dateString: string) => {
+  try {
+    return dayjs(dateString).format("DD/MM/YYYY");
+  } catch (error) {
+    return "Invalid date";
   }
 };
