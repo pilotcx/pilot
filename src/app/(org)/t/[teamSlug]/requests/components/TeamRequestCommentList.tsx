@@ -14,11 +14,12 @@ import {Skeleton} from "@/components/ui/skeleton";
 import {TeamMember} from "@/lib/types/models/team";
 
 interface TeamRequestCommentListProps {
-  teamId: string;
   requestId: string;
 }
 
-export function TeamRequestCommentList({teamId, requestId}: TeamRequestCommentListProps) {
+export function TeamRequestCommentList({requestId}: TeamRequestCommentListProps) {
+  const {team} = useTeam();
+  const teamId = team._id as string;
   const {membership} = useTeam();
   const [comments, setComments] = useState<TeamRequestComment[]>([]);
   const [newComment, setNewComment] = useState("");

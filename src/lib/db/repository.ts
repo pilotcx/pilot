@@ -92,6 +92,18 @@ export class BaseRepository<T> {
     );
   }
 
+  updateOne(
+    id: string | mongoose.Types.ObjectId,
+    update?: UpdateQuery<T>,
+    options?: QueryOptions<T>
+  ) {
+    return this._model.findOneAndUpdate(
+      {_id: id},
+      update,
+      options
+    );
+  }
+
   delete(filter?: FilterQuery<T>, options?: QueryOptions<T>) {
     return this._model.findOneAndDelete(this.processFilter(filter || {}), options);
   }

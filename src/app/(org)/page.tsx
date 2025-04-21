@@ -56,13 +56,13 @@ export default async function HomePage() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <Link href={"/settings/general"}>
+              <Link href={"/me/settings/general"}>
                 <DropdownMenuItem>
                   <UserIcon />
                   Account
                 </DropdownMenuItem>
               </Link>
-              <Link href={"/settings/security"}>
+              <Link href={"/me/settings/security"}>
                 <DropdownMenuItem>
                   <ShieldIcon />
                   Security
