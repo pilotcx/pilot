@@ -182,8 +182,32 @@ export class ApiService {
     return this.call('POST', `/posts/${postId}/reactions`, {type});
   };
 
-  commentOnPost = async (postId: string, content: string) => {
-    return this.call('POST', `/posts/${postId}/comments`, {content});
+  commentOnPost = async (teamId: string, postId: string, content: string, parentId?: string) => {
+    return this.call('POST', `/teams/${teamId}/posts/${postId}/comments`, { content, parentId });
+  };
+
+  getPostComments = async (teamId: string, postId: string, options: {
+    limit?: number;
+    skip?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc'
+  } = {}) => {
+    const { limit = 10, skip = 0, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+    return this.call('GET', 
+      `/teams/${teamId}/posts/${postId}/comments?limit=${limit}&skip=${skip}&sortBy=${sortBy}&sortOrder=${sortOrder}`
+    );
+  };
+  
+  getCommentReplies = async (teamId: string, commentId: string, options: {
+    limit?: number;
+    skip?: number;
+  } = {}) => {
+    const { limit = 10, skip = 0 } = options;
+    return this.call('GET', `/teams/${teamId}/comments/${commentId}/replies?limit=${limit}&skip=${skip}`);
+  };
+  
+  deleteComment = async (teamId: string, commentId: string) => {
+    return this.call('DELETE', `/teams/${teamId}/comments/${commentId}`);
   };
 
   // Task methods

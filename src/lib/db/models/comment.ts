@@ -20,6 +20,16 @@ export const CommentSchema = new mongoose.Schema<Comment>({
     ref: Schemas.TeamMember,
     required: true,
   },
+  parentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Schemas.Comment,
+    index: true,
+    default: null,
+  },
+  replyCount: {
+    type: Number,
+    default: 0
+  }
 }, {
   timestamps: true,
 });
@@ -29,4 +39,12 @@ CommentSchema.plugin(mongoosePaginate);
 
 CommentSchema.set('toJSON', {virtuals: true});
 CommentSchema.set('toObject', {virtuals: true});
+
+// Virtual for populating replies
+CommentSchema.virtual('replies', {
+  ref: Schemas.Comment,
+  localField: '_id',
+  foreignField: 'parentId',
+  options: { sort: { createdAt: 1 } }
+});
 
