@@ -36,7 +36,7 @@ export const GET = withApi(async (request: NextRequest, {params}: { params: Prom
     posts.push({
       ...post.toJSON(),
       reactions: reactions.map(reaction => ({
-        member: reaction.member,
+        member: (reaction as any).member,
         type: reaction.type
       }))
     });
