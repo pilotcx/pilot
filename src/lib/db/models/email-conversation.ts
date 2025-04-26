@@ -5,27 +5,11 @@ import mongoosePaginate from 'mongoose-paginate-v2';
 import { Schemas } from "@/lib/db/models/index";
 
 export const EmailConversationSchema = new mongoose.Schema<EmailConversation>({
-  subject: {
-    type: String,
-    required: true,
-  },
-  participants: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: Schemas.User,
-    required: true,
-  }],
-  lastEmailAt: {
+  lastMessageAt: {
     type: Date,
     default: Date.now,
+    required: true,
   },
-  emailCount: {
-    type: Number,
-    default: 1,
-  },
-  labels: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'EmailLabel',
-  }],
 }, {
   timestamps: true,
 });
@@ -39,6 +23,4 @@ EmailConversationSchema.set('toJSON', { virtuals: true });
 EmailConversationSchema.set('toObject', { virtuals: true });
 
 // Create indexes for common queries
-EmailConversationSchema.index({ participants: 1 });
-EmailConversationSchema.index({ lastEmailAt: -1 });
-EmailConversationSchema.index({ labels: 1 });
+EmailConversationSchema.index({ lastMessageAt: -1 });

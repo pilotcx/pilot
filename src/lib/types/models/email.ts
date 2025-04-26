@@ -29,52 +29,36 @@ export interface EmailLabel extends BaseEntity {
   isSystem: boolean;
 }
 
-export interface EmailRecipient {
-  email: string;
-  name?: string;
-  type: 'to' | 'cc' | 'bcc';
-}
-
 export interface EmailAttachment {
   filename: string;
-  path: string;
+  url: string;
   mimetype: string;
   size: number;
 }
 
 export interface Email extends BaseEntity {
-  owner: mongoose.Schema.Types.ObjectId | string;
-  labels?: string[];
-  type: EmailType;
-  messageId: string;
-  inReplyTo?: string;
-  references?: string[];
+  conversation: mongoose.Types.ObjectId | EmailConversation | string;
+
+  recipient: string;
+
   from: string;
-  to: string;
+  to: string[];
   cc?: string[];
   bcc?: string[];
-  sender: string;
-  recipient: string;
+
   subject: string;
-  body: string;
-  headers: string[];
-  strippedText: string;
-  replyTo?: string;
-  seen?: boolean;
-  dkimSignature?: string;
-  contentType?: string;
-  raw: any;
-  claimed?: boolean;
-  member?: TeamMember | string;
-  attachments?: EmailAttachment[] | string[];
-  conversationId?: string;
+  text: string;
+  html: string;
+
+  attachments?: EmailAttachment[];
+
+  messageId: string;
+  inReplyTo?: string;
+
+  isRead: boolean;
+  direction: 'incoming' | 'outgoing';
 }
 
 export interface EmailConversation extends BaseEntity {
-  subject: string;
-  lastEmailAt: Date;
-  emailCount: number;
-  participants: string[];
-  lastEmail?: string | mongoose.Types.ObjectId | Email;
-  labels?: (string | mongoose.Types.ObjectId | EmailLabel)[];
+  lastMessageAt: Date | string;
 }

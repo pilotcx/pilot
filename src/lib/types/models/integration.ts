@@ -70,6 +70,13 @@ export enum MailgunEventType {
 /**
  * Mailgun inbound message interface
  */
+export interface MailgunAttachment {
+  name: string;
+  contentType: string;
+  size: number;
+  url: string;
+}
+
 export interface MailgunInboundMessage {
   recipient: string;
   sender: string;
@@ -79,14 +86,9 @@ export interface MailgunInboundMessage {
   bodyHtml?: string;
   strippedText?: string;
   strippedHtml?: string;
-  attachments?: {
-    name: string;
-    contentType: string;
-    size: number;
-    url: string;
-  }[];
-  messageHeaders: any;
-  contentIdMap?: any;
+  attachments?: MailgunAttachment[];
+  messageHeaders: Array<[string, string]>; // To store headers in a key-value object (lowercase keys)
+  contentIdMap?: Record<string, string>; // Optional mapping for inline content IDs
   timestamp: number;
   token: string;
   signature: string;

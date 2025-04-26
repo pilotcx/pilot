@@ -1,24 +1,10 @@
 import mongoose from 'mongoose';
-import { Email, EmailPriority, EmailStatus } from '@/lib/types/models/email';
+import { Email, EmailPriority, EmailStatus, EmailType } from '@/lib/types/models/email';
 import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 import mongoosePaginate from 'mongoose-paginate-v2';
 import { Schemas } from "@/lib/db/models/index";
 
-// Email recipient schema
-const EmailRecipientSchema = new mongoose.Schema({
-  email: {
-    type: String,
-    required: true,
-  },
-  name: {
-    type: String,
-  },
-  type: {
-    type: String,
-    enum: ['to', 'cc', 'bcc'],
-    required: true,
-  },
-}, { _id: false });
+
 
 // Email attachment schema
 const EmailAttachmentSchema = new mongoose.Schema({
@@ -26,7 +12,7 @@ const EmailAttachmentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  path: {
+  url: {
     type: String,
     required: true,
   },
@@ -41,84 +27,83 @@ const EmailAttachmentSchema = new mongoose.Schema({
 }, { _id: false });
 
 export const EmailSchema = new mongoose.Schema<Email>({
-  subject: {
-    type: String,
-    required: true,
-  },
-  body: {
-    type: String,
-    required: true,
-  },
-  bodyType: {
-    type: String,
-    enum: ['text', 'html'],
-    default: 'html',
-  },
-  summary: {
-    type: String,
-  },
-  sender: {
+  // Conversation reference
+  conversation: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: Schemas.User,
+    ref: 'EmailConversation',
     required: true,
   },
-  recipients: {
-    type: [EmailRecipientSchema],
+
+  // Recipient information
+  recipient: {
+    type: String,
+    required: true,
+  },
+
+  // Email addresses
+  from: {
+    type: String,
+    required: true,
+  },
+  to: {
+    type: [String],
     required: true,
     validate: {
-      validator: function(recipients: any[]) {
-        return recipients.length > 0;
+      validator: function(to: string[]) {
+        return to.length > 0;
       },
       message: 'At least one recipient is required',
     },
   },
+  cc: {
+    type: [String],
+    default: [],
+  },
+  bcc: {
+    type: [String],
+    default: [],
+  },
+
+  // Content
+  subject: {
+    type: String,
+    required: true,
+  },
+  text: {
+    type: String,
+    required: true,
+  },
+  html: {
+    type: String,
+    required: true,
+  },
+
+  // Attachments
   attachments: {
     type: [EmailAttachmentSchema],
     default: [],
   },
-  status: {
-    type: String,
-    enum: Object.values(EmailStatus),
-    default: EmailStatus.Draft,
-  },
-  priority: {
-    type: String,
-    enum: Object.values(EmailPriority),
-    default: EmailPriority.Normal,
-  },
-  labels: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'EmailLabel',
-  }],
 
-  // For email threading/conversation
-  conversationId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'EmailConversation',
+  // Message IDs for threading
+  messageId: {
+    type: String,
+    required: true,
+    index: true,
   },
-  parentEmail: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Email',
+  inReplyTo: {
+    type: String,
+    index: true,
   },
 
-  // Metadata
-  readBy: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: Schemas.User,
-  }],
-  isStarred: {
-    type: Boolean,
-    default: false,
-  },
+  // Status
   isRead: {
     type: Boolean,
     default: false,
   },
-  sentAt: {
-    type: Date,
-  },
-  scheduledFor: {
-    type: Date,
+  direction: {
+    type: String,
+    enum: ['incoming', 'outgoing'],
+    required: true,
   },
 }, {
   timestamps: true,
@@ -133,8 +118,8 @@ EmailSchema.set('toJSON', { virtuals: true });
 EmailSchema.set('toObject', { virtuals: true });
 
 // Create indexes for common queries
-EmailSchema.index({ sender: 1 });
-EmailSchema.index({ conversationId: 1 });
-EmailSchema.index({ 'recipients.email': 1 });
-EmailSchema.index({ status: 1 });
-EmailSchema.index({ labels: 1 });
+EmailSchema.index({ conversation: 1 });
+EmailSchema.index({ from: 1 });
+EmailSchema.index({ to: 1 });
+EmailSchema.index({ direction: 1 });
+EmailSchema.index({ isRead: 1 });
