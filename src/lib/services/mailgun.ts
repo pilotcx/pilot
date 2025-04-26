@@ -185,6 +185,7 @@ class MailgunService {
         recipient,
         subject: payload.subject,
         html: payload.bodyHtml || payload.bodyPlain,
+        summary: this.generateEmailSummary(payload.bodyHtml ? payload.bodyHtml : payload.bodyPlain),
         from: payload.from,
         inReplyTo: headers['in-reply-to'],
         direction: EmailType.Incoming,
@@ -195,6 +196,15 @@ class MailgunService {
       };
       return await emailService.createEmail(emailData);
     }))
+  }
+
+  generateEmailSummary(body: string, maxLength: number = 100): string {
+    function stripHtmlTags(html: string): string {
+      return html.replace(/<[^>]*>/g, ''); // Remove all HTML tags
+    }
+    const bodyText = body.startsWith('<') ? stripHtmlTags(body) : body;
+    const summary = bodyText.substring(0, maxLength);
+    return bodyText.length > maxLength ? `${summary}...` : summary;
   }
 
   parseEmailList(addressList?: string): string[] {

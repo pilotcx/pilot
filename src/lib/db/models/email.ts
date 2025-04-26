@@ -69,7 +69,7 @@ export const EmailSchema = new mongoose.Schema<Email>({
     type: String,
     required: true,
   },
-  text: {
+  summary: {
     type: String,
     required: true,
   },

@@ -47,7 +47,7 @@ export interface Email extends BaseEntity {
   bcc?: string[];
 
   subject: string;
-  text: string;
+  summary: string;
   html: string;
 
   attachments?: EmailAttachment[];
