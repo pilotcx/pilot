@@ -21,6 +21,9 @@ export interface Comment extends BaseEntity {
   post: string | Post;
   content: string;
   author: string | TeamMember;
+  parentId?: string | Comment;
+  replies?: Comment[];
+  replyCount: number;
 }
 
 export interface Post extends BaseEntity {
@@ -48,6 +51,7 @@ export type CreatePostInput = z.infer<typeof createPostSchema>;
 
 export const createCommentSchema = z.object({
   content: z.string().min(1, 'Comment is required').max(1000, 'Comment cannot exceed 1000 characters'),
+  parentId: z.string().optional(),
 });
 
 export type CreateCommentInput = z.infer<typeof createCommentSchema>;

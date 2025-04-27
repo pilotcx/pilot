@@ -25,6 +25,7 @@ import {useTeam} from "@/components/providers/team-provider";
 import {TeamMember} from "@/lib/types/models/team";
 import useApi from "@/hooks/use-api";
 import api from "@/lib/services/api";
+import { CommentSection } from "@/components/comment-section";
 
 interface PostProps {
   post: Post;
@@ -199,22 +200,7 @@ export function TeamPost({post}: PostProps) {
 
         <div className="mb-4 whitespace-pre-line text-sm">{post.content}</div>
 
-        <div className="flex -mx-3 -mb-2 gap-2 items-center">
-          <Button variant="ghost" size="sm" className="h-8 gap-1">
-            <MessageSquare className="h-4 w-4"/>
-            <span>{post.commentCount} Comments</span>
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 gap-1 ml-auto"
-            onClick={handleCopyLink}
-          >
-            <Link2 className="h-4 w-4"/>
-            <span>{copied ? "Copied!" : "Copy Link"}</span>
-          </Button>
-        </div>
+        <CommentSection key={`comments-${post._id}`} postId={post._id} initialCommentsCount={post.commentCount} />
       </div>
     </div>
   );
