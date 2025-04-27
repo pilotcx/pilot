@@ -34,6 +34,8 @@ export const POST = withApi(async (request: NextRequest) => {
     
     // Mark the system as configured
     await systemConfigService.set(SystemConfigKey.SystemConfigured, true);
+    
+    systemConfigService.clearCache();
 
     return {
       message: 'Configuration completed successfully',

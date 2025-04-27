@@ -13,7 +13,8 @@ export default async function ConfigureLayout({
 
   const isConfigured = await systemConfigService.get<boolean>(
     SystemConfigKey.SystemConfigured,
-    false
+    false,
+    true
   );
 
   if (isConfigured) {
