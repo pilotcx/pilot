@@ -8,12 +8,13 @@ import { MoreHorizontal, Reply, Trash2 } from "lucide-react";
 import { Comment } from "@/lib/types/models/post";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { Textarea } from "@/components/ui/textarea";
 import { useTeam } from "@/components/providers/team-provider";
 import { TeamMember } from "@/lib/types/models/team";
 import useApi from "@/hooks/use-api";
 import api from "@/lib/services/api";
 import { cn } from "@/lib/utils";
+import { MarkdownDisplay } from "@/components/ui/markdown-display";
+import { InlineMarkdownEditor } from "@/components/ui/inline-markdown-editor";
 
 interface CommentItemProps {
   comment: Comment;
@@ -198,7 +199,7 @@ export function CommentItem({ comment, postId, teamId, onDelete, onReply, isRepl
             )}
           </div>
           
-          <p className="text-sm break-words whitespace-pre-line leading-relaxed">{comment.content}</p>
+          <MarkdownDisplay content={comment.content} className="text-sm" />
         </div>
         
         {!isReply && (
@@ -232,12 +233,14 @@ export function CommentItem({ comment, postId, teamId, onDelete, onReply, isRepl
         )}
         
         {replyMode && !isReply && (
-          <div className="mt-2">
-            <Textarea
-              placeholder="Write a reply..."
+          <div className="mt-2" style={{ contain: "content" }}>
+            <InlineMarkdownEditor
               value={replyContent}
-              onChange={(e) => setReplyContent(e.target.value)}
-              className="min-h-[60px] text-sm"
+              onChange={setReplyContent}
+              placeholder="Write a reply..."
+              minHeight="60px"
+              height="60px"
+              className="mb-2"
             />
             <div className="flex justify-end gap-2 mt-2">
               <Button 
@@ -252,6 +255,7 @@ export function CommentItem({ comment, postId, teamId, onDelete, onReply, isRepl
                 size="sm"
                 className="h-7 text-xs px-3"
                 onClick={submitReply}
+                disabled={!replyContent.trim()}
               >
                 Reply
               </Button>
