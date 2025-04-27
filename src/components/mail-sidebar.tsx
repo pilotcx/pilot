@@ -9,15 +9,18 @@ import {Switch} from "@/components/ui/switch";
 import {useMailing} from "@/components/providers/mailing-provider";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import Link from "next/link";
+import {useTeam} from "@/components/providers/team-provider";
 
 dayjs.extend(relativeTime);
 
 export function MailSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
   const {addresses, activeAddress, setActiveAddress, conversations} = useMailing();
+  const {team} = useTeam();
 
   return (
-    <div className={'max-w-[300px] border-r flex flex-col h-full'} style={{height: '100%', maxHeight: '100%'}}>
-      <div className={'p-4 border-b flex-shrink-0 flex flex-col gap-2 bg-sidebar'}>
+    <div className={'w-[300px] border-r flex flex-col h-full'} style={{height: '100%', maxHeight: '100%'}}>
+      <div className={'p-4 pb-0 border-b flex-shrink-0 flex flex-col gap-2 bg-sidebar'}>
         <div>
           <Select
             onValueChange={(value) => setActiveAddress?.(addresses.find(x => x._id === value)!)}
@@ -34,7 +37,7 @@ export function MailSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
             </SelectContent>
           </Select>
         </div>
-        <div className={'flex flex-row -mx-2 -mb-2 items-center justify-between'}>
+        <div className={'flex flex-row -mx-2 items-center justify-between'}>
           <Select>
             <SelectTrigger
               className={'border-none cursor-pointer h-6 bg-transparent font-semibold shadow-none'}
@@ -80,20 +83,20 @@ export function MailSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
       </div>
       <div className={'flex-1 h-full overflow-y-auto scrollbar-hidden'}>
         {(conversations ?? []).map((conv) => (
-          <a
-            href="#"
+          <Link
+            href={`/t/${team.slug}/mailing/${conv.conversation._id}`}
             key={conv.conversation._id as string}
             className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
           >
             <div className="flex w-full items-center gap-2">
-              <span>{(conv.email.sender as any).fullName}</span>{" "}
+              <span>{conv.email.from.split('<')[0].trim()}</span>
               <span className="ml-auto text-xs">{dayjs(conv.email.createdAt as string).fromNow()}</span>
             </div>
             <span className="font-medium">{conv.email?.subject}</span>
             <span className="line-clamp-2 w-[260px] text-xs whitespace-break-spaces">
               {conv.email.summary ?? "(Empty email)"}
             </span>
-          </a>
+          </Link>
         ))}
       </div>
     </div>

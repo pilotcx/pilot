@@ -3,6 +3,7 @@ import {ReactNode} from "react";
 import withTeam from "@/lib/utils/withTeam";
 import {emailAddressService} from "@/lib/services/email-address";
 import {EmailAddress} from "@/lib/types/models/email-address";
+import {MailSidebar} from "@/components/mail-sidebar";
 
 export default async function MailingLayout({children, params}: {
   children: ReactNode,
@@ -14,6 +15,11 @@ export default async function MailingLayout({children, params}: {
   return <MailingProvider
     addresses={JSON.parse(JSON.stringify(addresses)) as EmailAddress[]}
   >
-    {children}
+    <div className={'relative h-full flex flex-row'} style={{ height: '100%', overflow: 'hidden' }}>
+      <MailSidebar/>
+      <div className={'flex-1 flex flex-col items-center justify-center'}>
+        {children}
+      </div>
+    </div>
   </MailingProvider>
 }
