@@ -180,7 +180,7 @@ class MailgunService {
 
     const headers = this.parseMessageHeaders(payload.messageHeaders);
     const recipients = this.parseEmailList(payload.recipient);
-    return await Promise.all(recipients.map(async (recipient) => {
+    for await (const recipient of recipients) {
       const emailData: Partial<Email> = {
         recipient,
         subject: payload.subject,
@@ -194,14 +194,15 @@ class MailgunService {
         cc: this.parseEmailList(headers['cc']),
         bcc: this.parseEmailList(headers['bcc']),
       };
-      return await emailService.createEmail(emailData);
-    }))
+      await emailService.createEmail(emailData);
+    }
   }
 
   generateEmailSummary(body: string, maxLength: number = 100): string {
     function stripHtmlTags(html: string): string {
       return html.replace(/<[^>]*>/g, ''); // Remove all HTML tags
     }
+
     const bodyText = body.startsWith('<') ? stripHtmlTags(body) : body;
     const summary = bodyText.substring(0, maxLength);
     return bodyText.length > maxLength ? `${summary}...` : summary;
