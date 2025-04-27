@@ -3,14 +3,13 @@ import {ApiError} from '@/lib/types/errors/api.error';
 import {Email, EmailLabel, EmailStatus} from '@/lib/types/models/email';
 import {IntegrationType} from '@/lib/types/models/integration';
 import {mailgunService} from '@/lib/services/mailgun';
-import {FilterQuery} from 'mongoose';
 import {emailAddressService} from "@/lib/services/email-address";
-import {generateEmailSummary} from "@/lib/utils/generateEmailSummary";
 
 class EmailService {
-  async prepareEmailConversation(repliedMessageId?: string) {
+  async prepareEmailConversation(subject: string, repliedMessageId?: string) {
     const createConversation = () => dbService.emailConversation.create({
       lastMessageAt: new Date(),
+      subject,
     });
     if (!repliedMessageId) return await createConversation();
     const parentEmail = await dbService.email.findOne({
@@ -28,7 +27,7 @@ class EmailService {
   }
 
   async createEmail(emailData: Partial<Email>): Promise<Email> {
-    const conversation = await this.prepareEmailConversation(emailData.inReplyTo);
+    const conversation = await this.prepareEmailConversation(emailData.subject ?? "Untitled", emailData.inReplyTo);
     if (!conversation) throw new ApiError(400, 'Failed to prepare conversation');
 
     // Create the email with the conversation reference
@@ -133,7 +132,7 @@ class EmailService {
     }
 
     // Get user's email addresses
-    const teamMember = await dbService.teamMember.findOne({ user: userId });
+    const teamMember = await dbService.teamMember.findOne({user: userId});
     if (!teamMember) {
       throw new ApiError(404, 'Team member not found');
     }
@@ -152,10 +151,10 @@ class EmailService {
     const isParticipant = await dbService.email.findOne({
       conversation: conversationId,
       $or: [
-        { from: { $in: userEmails } },
-        { to: { $in: userEmails } },
-        { cc: { $in: userEmails } },
-        { bcc: { $in: userEmails } }
+        {from: {$in: userEmails}},
+        {to: {$in: userEmails}},
+        {cc: {$in: userEmails}},
+        {bcc: {$in: userEmails}}
       ]
     });
 
@@ -164,8 +163,8 @@ class EmailService {
     }
 
     // Get all emails in the conversation
-    const emails = await dbService.email.find({ conversation: conversationId })
-      .sort({ createdAt: 1 });
+    const emails = await dbService.email.find({conversation: conversationId})
+      .sort({createdAt: 1});
 
     return {
       conversation,
@@ -406,19 +405,19 @@ class EmailService {
     // Build the base query for emails
     const emailQuery: any = {
       $or: [
-        { from: { $in: filteredEmailAddresses } },
-        { to: { $in: filteredEmailAddresses } },
-        { cc: { $in: filteredEmailAddresses } },
-        { bcc: { $in: filteredEmailAddresses } }
+        {from: {$in: filteredEmailAddresses}},
+        {to: {$in: filteredEmailAddresses}},
+        {cc: {$in: filteredEmailAddresses}},
+        {bcc: {$in: filteredEmailAddresses}}
       ]
     };
 
     // Add additional filters
     if (search) {
       emailQuery.$or = [
-        { subject: { $regex: search, $options: 'i' } },
-        { text: { $regex: search, $options: 'i' } },
-        { html: { $regex: search, $options: 'i' } }
+        {subject: {$regex: search, $options: 'i'}},
+        {text: {$regex: search, $options: 'i'}},
+        {html: {$regex: search, $options: 'i'}}
       ];
     }
 
@@ -431,7 +430,7 @@ class EmailService {
     }
 
     // First, get all conversation IDs that match our criteria
-    const matchingEmails = await dbService.email.find(emailQuery, { conversation: 1 });
+    const matchingEmails = await dbService.email.find(emailQuery, {conversation: 1});
     const conversationIds = [...new Set(matchingEmails.map(email => email.conversation.toString()))];
 
     if (conversationIds.length === 0) {
@@ -451,21 +450,21 @@ class EmailService {
 
     // Get all conversations with their latest message date
     const conversations = await dbService.emailConversation.find({
-      _id: { $in: conversationIds }
-    }).sort({ lastMessageAt: -1 })
+      _id: {$in: conversationIds}
+    }).sort({lastMessageAt: -1})
       .skip((page - 1) * limit)
       .limit(limit);
 
     // Get the total count for pagination
     const totalDocs = await dbService.emailConversation.count({
-      _id: { $in: conversationIds }
+      _id: {$in: conversationIds}
     });
 
     // For each conversation, get the latest email
     const results = await Promise.all(conversations.map(async (conversation) => {
       const latestEmail = await dbService.email.findOne({
         conversation: conversation._id
-      }).sort({ createdAt: -1 });
+      }).sort({createdAt: -1});
 
       return {
         conversation,
@@ -502,7 +501,7 @@ class EmailService {
     }
 
     // Get user's email addresses
-    const teamMember = await dbService.teamMember.findOne({ user: userId });
+    const teamMember = await dbService.teamMember.findOne({user: userId});
     if (!teamMember) {
       throw new ApiError(404, 'Team member not found');
     }
@@ -521,10 +520,10 @@ class EmailService {
     const isParticipant = await dbService.email.findOne({
       conversation: conversationId,
       $or: [
-        { from: { $in: userEmails } },
-        { to: { $in: userEmails } },
-        { cc: { $in: userEmails } },
-        { bcc: { $in: userEmails } }
+        {from: {$in: userEmails}},
+        {to: {$in: userEmails}},
+        {cc: {$in: userEmails}},
+        {bcc: {$in: userEmails}}
       ]
     });
 
@@ -564,21 +563,21 @@ class EmailService {
 
     // Update the email with sent status
     const updatedEmail = await dbService.email.findOneAndUpdate(
-      { _id: emailId },
+      {_id: emailId},
       {
         $set: {
           direction: 'outgoing',
           // We don't have status field in the new model, but we can add it if needed
         }
       },
-      { new: true }
+      {new: true}
     );
 
     // Update the conversation's lastMessageAt timestamp
     if (email.conversation) {
       await dbService.emailConversation.findOneAndUpdate(
-        { _id: email.conversation },
-        { $set: { lastMessageAt: new Date() } }
+        {_id: email.conversation},
+        {$set: {lastMessageAt: new Date()}}
       );
     }
 

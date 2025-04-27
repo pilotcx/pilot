@@ -61,4 +61,5 @@ export interface Email extends BaseEntity {
 
 export interface EmailConversation extends BaseEntity {
   lastMessageAt: Date | string;
+  subject: string;
 }

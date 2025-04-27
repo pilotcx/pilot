@@ -10,6 +10,10 @@ export const EmailConversationSchema = new mongoose.Schema<EmailConversation>({
     default: Date.now,
     required: true,
   },
+  subject: {
+    type: String,
+    required: true,
+  }
 }, {
   timestamps: true,
 });
