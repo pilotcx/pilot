@@ -76,7 +76,7 @@ class TeamService {
   /**
    * Create a new team
    */
-  async createTeam(data: CreateTeamSchema, userId: string) {
+  async createTeam(data: CreateTeamSchema) {
     // Generate slug from name if not provided
     let slug = data.slug;
     if (!slug) {
@@ -104,7 +104,7 @@ class TeamService {
     }
 
     // Create the team
-    const team = await dbService.team.create({
+    return await dbService.team.create({
       name: data.name,
       slug,
       description: data.description || '',
@@ -112,22 +112,6 @@ class TeamService {
       membersCount: 1,
       tasksCount: 0,
     });
-
-    // Get the user
-    const user = await dbService.user.findById(userId);
-    if (!user) {
-      throw new ApiError(404, 'User not found');
-    }
-
-    // Add the creator as the owner
-    await dbService.teamMember.create({
-      displayName: user.fullName,
-      role: TeamRole.Owner,
-      user: userId,
-      team: team._id,
-    });
-
-    return team;
   }
 
   /**
@@ -219,37 +203,35 @@ class TeamService {
     });
   }
 
-  /**
-   * Add a member to a team
-   */
-  async addTeamMember(teamId: string, data: AddTeamMemberSchema) {
-    // Check if team exists
-    const team = await teamService.getTeam(teamId);
-    if (!team) {
-      throw new ApiError(404, 'Team not found');
-    }
-
-    // Check if user to be added exists
-    const userToAdd = await dbService.user.findOne({
-      email: data.userId,
-    });
-    if (!userToAdd) throw new ApiError(404, 'User not found');
-
+  async inviteTeamMember(teamId: string, data: AddTeamMemberSchema) {
     // Check if user is already a member
     const existingMember = await dbService.teamMember.findOne({
       team: teamId,
-      user: userToAdd._id,
+      user: data.userId,
     });
 
     if (existingMember) {
       throw new ApiError(400, 'User is already a member of this team');
     }
 
+    return this.addTeamMember(teamId, data.userId, data.role);
+  }
+
+  /**
+   * Add a member to a team
+   */
+  async addTeamMember(teamId: string, userId: string, role: TeamRole = TeamRole.Member) {
+    // Check if team exists
+    const team = await teamService.getTeam(teamId);
+    if (!team) throw new ApiError(404, 'TEAM_NOT_FOUND');
+    const user = await dbService.user.findById(userId);
+    if (!user) throw new ApiError(404, 'USER_NOT_FOUND');
+
     // Add the member
     const newMember = await dbService.teamMember.create({
-      displayName: data.displayName,
-      role: data.role || TeamRole.Member,
-      user: userToAdd._id,
+      displayName: user.fullName,
+      role,
+      user: userId,
       team: teamId,
     });
 

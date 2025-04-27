@@ -1,8 +1,9 @@
-import { NextRequest } from 'next/server';
-import { withApi } from '@/lib/utils/withApi';
-import { teamService } from '@/lib/services/team';
-import { createTeamSchema } from '@/lib/validations/team';
-import { ApiError } from '@/lib/types/errors/api.error';
+import {NextRequest} from 'next/server';
+import {withApi} from '@/lib/utils/withApi';
+import {teamService} from '@/lib/services/team';
+import {createTeamSchema} from '@/lib/validations/team';
+import {ApiError} from '@/lib/types/errors/api.error';
+import {TeamRole} from "@/lib/types/models/team";
 
 // Get all teams
 export const GET = withApi(async (request: NextRequest, context, decoded) => {
@@ -10,14 +11,14 @@ export const GET = withApi(async (request: NextRequest, context, decoded) => {
     throw new ApiError(401, 'Unauthorized');
   }
 
-  const { searchParams } = new URL(request.url);
+  const {searchParams} = new URL(request.url);
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '10');
 
   const teams = await teamService.getJoinedTeamMemberships(decoded.id, {
     page,
     limit,
-    sort: { createdAt: -1 },
+    sort: {createdAt: -1},
   });
 
   return {
@@ -29,7 +30,6 @@ export const GET = withApi(async (request: NextRequest, context, decoded) => {
   protected: true,
 });
 
-// Create a new team
 export const POST = withApi(async (request: NextRequest, context, decoded) => {
   if (!decoded) {
     throw new ApiError(401, 'Unauthorized');
@@ -37,14 +37,13 @@ export const POST = withApi(async (request: NextRequest, context, decoded) => {
 
   const body = await request.json();
 
-  // Validate the request body against the schema
   const result = createTeamSchema.safeParse(body);
   if (!result.success) {
     throw new ApiError(400, result.error.message);
   }
 
-  // Create the team
-  const team = await teamService.createTeam(result.data, decoded.id);
+  const team = await teamService.createTeam(result.data);
+  await teamService.addTeamMember(team._id.toString(), decoded.id, TeamRole.Owner);
 
   return {
     data: team,
