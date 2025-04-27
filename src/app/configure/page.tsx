@@ -6,16 +6,17 @@ import { redirect } from "next/navigation";
 export default async function ConfigurePage() {
   await dbService.connect();
 
-  const isConfigured = await systemConfigService.get<boolean>(SystemConfigKey.SystemConfigured, false);
+  // Always use skipCache=true to ensure we're getting the latest values from the database
+  const isConfigured = await systemConfigService.get<boolean>(SystemConfigKey.SystemConfigured, false, true);
 
   if (isConfigured) {
     redirect('/');
   }
 
-  // Check which configuration steps have been completed
-  const adminCompleted = await systemConfigService.get<boolean>(SystemConfigKey.ConfigStepAdminCompleted, false);
-  const orgCompleted = await systemConfigService.get<boolean>(SystemConfigKey.ConfigStepOrgCompleted, false);
-  const featuresCompleted = await systemConfigService.get<boolean>(SystemConfigKey.ConfigStepFeaturesCompleted, false);
+  
+  const adminCompleted = await systemConfigService.get<boolean>(SystemConfigKey.ConfigStepAdminCompleted, false, true);
+  const orgCompleted = await systemConfigService.get<boolean>(SystemConfigKey.ConfigStepOrgCompleted, false, true);
+  const featuresCompleted = await systemConfigService.get<boolean>(SystemConfigKey.ConfigStepFeaturesCompleted, false, true);
 
   // Redirect to the appropriate step
   if (!adminCompleted) {
@@ -27,6 +28,8 @@ export default async function ConfigurePage() {
   } else {
     // If all steps are completed but SystemConfigured is false, set it to true
     await systemConfigService.set(SystemConfigKey.SystemConfigured, true);
+    // Clear cache to ensure all components get the updated state
+    systemConfigService.clearCache();
     redirect('/');
   }
 }

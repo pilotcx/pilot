@@ -26,6 +26,7 @@ import {TeamMember} from "@/lib/types/models/team";
 import useApi from "@/hooks/use-api";
 import api from "@/lib/services/api";
 import { CommentSection } from "@/components/comment-section";
+import { MarkdownDisplay } from "@/components/ui/markdown-display";
 
 interface PostProps {
   post: Post;
@@ -198,7 +199,7 @@ export function TeamPost({post}: PostProps) {
 
         <h3 className="text-lg font-medium mb-2">{post.title}</h3>
 
-        <div className="mb-4 whitespace-pre-line text-sm">{post.content}</div>
+        <MarkdownDisplay content={post.content} className="mb-4 text-sm" />
 
         <CommentSection key={`comments-${post._id}`} postId={post._id} initialCommentsCount={post.commentCount} />
       </div>

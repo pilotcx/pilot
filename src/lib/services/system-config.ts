@@ -76,10 +76,8 @@ class SystemConfigService {
   async set<T = any>(key: SystemConfigKey, value: T): Promise<SystemConfig> {
     const stringValue = JSON.stringify(value);
 
-    // Update cache if enabled
-    if (this.cacheEnabled) {
-      this.cache[key] = value;
-    }
+    // Clear cache for this key specifically
+    this.clearCacheKey(key);
 
     // Try to find existing config
     const existingConfig = await dbService.systemConfig.findOne({key});
@@ -92,10 +90,6 @@ class SystemConfigService {
         {new: true}
       );
       if (!result) {
-        // Remove from cache if update failed
-        if (this.cacheEnabled) {
-          delete this.cache[key];
-        }
         throw new Error('Failed to update config');
       }
       return result;
@@ -107,10 +101,6 @@ class SystemConfigService {
           value: stringValue,
         });
       } catch (error) {
-        // Remove from cache if creation failed
-        if (this.cacheEnabled) {
-          delete this.cache[key];
-        }
         throw error;
       }
     }
@@ -200,11 +190,9 @@ class SystemConfigService {
   async setMultiple(configs: SystemMappedConfig): Promise<number> {
     const operations = [];
 
-    // Update cache first if enabled
-    if (this.cacheEnabled) {
-      for (const [key, value] of Object.entries(configs)) {
-        this.cache[key as SystemConfigKey] = value;
-      }
+    // Clear all cache entries for the keys we're updating
+    for (const key of Object.keys(configs)) {
+      this.clearCacheKey(key as SystemConfigKey);
     }
 
     // Prepare database operations
@@ -224,17 +212,8 @@ class SystemConfigService {
 
     try {
       const result = await dbService.systemConfig.bulkWrite(operations);
-      if (this.cacheEnabled) {
-        this.clearCache();
-      }
       return (result.upsertedCount || 0) + (result.modifiedCount || 0);
     } catch (error) {
-      // If database operation fails, remove the affected keys from cache
-      if (this.cacheEnabled) {
-        for (const key of Object.keys(configs)) {
-          delete this.cache[key as SystemConfigKey];
-        }
-      }
       throw error;
     }
   }

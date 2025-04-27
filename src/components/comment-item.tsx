@@ -8,12 +8,13 @@ import { MoreHorizontal, Reply, Trash2 } from "lucide-react";
 import { Comment } from "@/lib/types/models/post";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { Textarea } from "@/components/ui/textarea";
 import { useTeam } from "@/components/providers/team-provider";
 import { TeamMember } from "@/lib/types/models/team";
 import useApi from "@/hooks/use-api";
 import api from "@/lib/services/api";
 import { cn } from "@/lib/utils";
+import { MarkdownDisplay } from "@/components/ui/markdown-display";
+import { InlineMarkdownEditor } from "@/components/ui/inline-markdown-editor";
 
 interface CommentItemProps {
   comment: Comment;
@@ -49,7 +50,14 @@ export function CommentItem({ comment, postId, teamId, onDelete, onReply, isRepl
     try {
       await deleteComment(teamId, comment._id);
       toast.success("Comment deleted successfully");
+      
+      // Call parent component's onDelete to update the UI
       onDelete(comment._id);
+      
+      // If this is a reply being deleted, also update the local allReplies state
+      if (isReply) {
+        setAllReplies(prev => prev.filter(reply => reply._id !== comment._id));
+      }
     } catch (error) {
       toast.error("Failed to delete comment");
     }
@@ -78,29 +86,31 @@ export function CommentItem({ comment, postId, teamId, onDelete, onReply, isRepl
   };
   
   const loadMoreReplies = async () => {
-    if (repliesLoaded) {
-      console.log('Toggling visibility of replies:', showAllReplies ? 'hiding' : 'showing');
-      setShowAllReplies(!showAllReplies);
+    if (showAllReplies) {
+      // Hide replies
+      setShowAllReplies(false);
       return;
     }
     
-    setLoadingReplies(true);
+    if (repliesLoaded) {
+      // Show already loaded replies
+      setShowAllReplies(true);
+      return;
+    }
+    
     try {
-      console.log('Loading replies for comment:', comment._id, 'in team:', teamId);
-      const response = await getCommentReplies(teamId, comment._id);
-      console.log('Reply API response:', JSON.stringify(response));
+      setLoadingReplies(true);
+      const response = await getCommentReplies(teamId, comment._id, {
+        limit: 50, // Get more replies at once to avoid pagination issues
+        skip: 0
+      });
       
-      if (response && response.data && Array.isArray(response.data)) {
-        console.log('Setting replies:', response.data.length);
-        setAllReplies(response.data);
-        setRepliesLoaded(true);
+      if (response && response.data) {
+        setAllReplies(response.data as Comment[]);
         setShowAllReplies(true);
-      } else {
-        console.error('Invalid response format for replies:', JSON.stringify(response));
-        toast.error("Failed to load replies: Invalid response format");
+        setRepliesLoaded(true);
       }
     } catch (error) {
-      console.error('Error loading replies:', error);
       toast.error("Failed to load replies");
     } finally {
       setLoadingReplies(false);
@@ -125,7 +135,18 @@ export function CommentItem({ comment, postId, teamId, onDelete, onReply, isRepl
               teamId={teamId}
               comment={reply}
               postId={postId}
-              onDelete={onDelete}
+              onDelete={(replyId) => {
+                // When a reply is deleted, update the local replies state
+                setAllReplies(prev => prev.filter(r => r._id !== replyId));
+                
+                // Update the replyCount
+                if (comment.replyCount > 0) {
+                  comment.replyCount -= 1;
+                }
+                
+                // Also call parent onDelete to update parent component state
+                onDelete(replyId);
+              }}
               isReply={true}
             />
           ) : null
@@ -178,7 +199,7 @@ export function CommentItem({ comment, postId, teamId, onDelete, onReply, isRepl
             )}
           </div>
           
-          <p className="text-sm break-words whitespace-pre-line leading-relaxed">{comment.content}</p>
+          <MarkdownDisplay content={comment.content} className="text-sm" />
         </div>
         
         {!isReply && (
@@ -212,12 +233,14 @@ export function CommentItem({ comment, postId, teamId, onDelete, onReply, isRepl
         )}
         
         {replyMode && !isReply && (
-          <div className="mt-2">
-            <Textarea
-              placeholder="Write a reply..."
+          <div className="mt-2" style={{ contain: "content" }}>
+            <InlineMarkdownEditor
               value={replyContent}
-              onChange={(e) => setReplyContent(e.target.value)}
-              className="min-h-[60px] text-sm"
+              onChange={setReplyContent}
+              placeholder="Write a reply..."
+              minHeight="60px"
+              height="60px"
+              className="mb-2"
             />
             <div className="flex justify-end gap-2 mt-2">
               <Button 
@@ -232,6 +255,7 @@ export function CommentItem({ comment, postId, teamId, onDelete, onReply, isRepl
                 size="sm"
                 className="h-7 text-xs px-3"
                 onClick={submitReply}
+                disabled={!replyContent.trim()}
               >
                 Reply
               </Button>
