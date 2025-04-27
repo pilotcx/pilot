@@ -1,7 +1,19 @@
 import {Button} from "@/components/ui/button";
 import {ArchiveIcon, ArchiveXIcon, EyeOffIcon, ForwardIcon, PrinterIcon, Trash2Icon} from "lucide-react";
+import {emailService} from "@/lib/services/email";
+import {notFound} from "next/navigation";
+import EmailSeries from "@/app/(org)/t/[teamSlug]/mailing/[conversationId]/components/EmailSeries";
 
-export default function EmailConversationPage() {
+interface EmailConversationPageProps {
+  params: Promise<{
+    conversationId: string;
+  }>
+}
+
+export default async function EmailConversationPage({params}: EmailConversationPageProps) {
+  const {conversationId} = await params;
+  const conversation = await emailService.getConversationById(conversationId);
+  if (!conversation) return notFound();
   return <div className={'w-full h-full flex flex-col'}>
     <div className={'flex flex-row p-2 border-b justify-between'}>
       <div className={'flex flex-row gap-2'}>
@@ -28,7 +40,10 @@ export default function EmailConversationPage() {
       </div>
     </div>
     <div className={''}>
-
+      <div className={'p-4 text-lg font-medium'}>
+        {conversation.subject ?? 'Untitled'}
+      </div>
+      <EmailSeries/>
     </div>
   </div>
 }

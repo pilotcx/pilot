@@ -9,11 +9,16 @@ interface WithApiOptions {
   protected?: boolean;
 }
 
+interface WithApiContext<K> {
+  params: K;
+  searchParams: URLSearchParams;
+}
+
 export function withApi<T, K>(
-  handler: (request: NextRequest, context: { params: K }, decoded?: JWT) => Promise<T> | T,
+  handler: (request: NextRequest, context: WithApiContext<K>, decoded?: JWT) => Promise<T> | T,
   options: WithApiOptions = {},
 ) {
-  return async function wrappedHandler(request: NextRequest, context: { params: K }): Promise<Response> {
+  return async function wrappedHandler(request: NextRequest, context: WithApiContext<K>): Promise<Response> {
     const {roles = [], preventDb = false, protected: isProtected = false} = options;
     let decoded: JWT | undefined, token: string | undefined;
     const authHeader = request.headers.get('Authorization');
@@ -70,6 +75,7 @@ export function withApi<T, K>(
         }
       }
       context.params = await context.params;
+      context.searchParams = new URL(request.url).searchParams;
       const result: any = await handler(request, context, decoded);
 
       if (result instanceof NextResponse) {

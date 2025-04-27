@@ -14,9 +14,9 @@ export const GET = withApi(async (request: NextRequest, context, decoded) => {
   const page = parseInt(url.searchParams.get('page') || '1');
   const limit = parseInt(url.searchParams.get('limit') || '20');
   const labelId = url.searchParams.get('labelId') || undefined;
-  const isStarred = url.searchParams.get('isStarred') === 'true' ? true : 
+  const isStarred = url.searchParams.get('isStarred') === 'true' ? true :
                     url.searchParams.get('isStarred') === 'false' ? false : undefined;
-  const isRead = url.searchParams.get('isRead') === 'true' ? true : 
+  const isRead = url.searchParams.get('isRead') === 'true' ? true :
                  url.searchParams.get('isRead') === 'false' ? false : undefined;
   const search = url.searchParams.get('search') || undefined;
   const status = url.searchParams.get('status') as any || undefined;
@@ -41,21 +41,22 @@ export const GET = withApi(async (request: NextRequest, context, decoded) => {
 
 // Create a new email
 export const POST = withApi(async (request: NextRequest, context, decoded) => {
-  if (!decoded) {
-    throw new ApiError(401, 'Unauthorized');
-  }
-
-  const body = await request.json();
-  
-  // Set the sender to the authenticated user
-  body.sender = decoded.id;
-  
-  const email = await emailService.createEmail(body);
-
-  return {
-    data: email,
-    message: 'Email created successfully',
-  };
+  throw new ApiError(501, 'NOT_IMPLEMENTED')
+  // if (!decoded) {
+  //   throw new ApiError(401, 'Unauthorized');
+  // }
+  //
+  // const body = await request.json();
+  //
+  // // Set the sender to the authenticated user
+  // body.sender = decoded.id;
+  //
+  // const email = await emailService.createEmail(body);
+  //
+  // return {
+  //   data: email,
+  //   message: 'Email created successfully',
+  // };
 }, {
   protected: true,
 });

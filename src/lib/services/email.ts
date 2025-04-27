@@ -6,10 +6,11 @@ import {mailgunService} from '@/lib/services/mailgun';
 import {emailAddressService} from "@/lib/services/email-address";
 
 class EmailService {
-  async prepareEmailConversation(subject: string, repliedMessageId?: string) {
+  async prepareEmailConversation(teamId: string, subject: string, repliedMessageId?: string) {
     const createConversation = () => dbService.emailConversation.create({
       lastMessageAt: new Date(),
       subject,
+      team: teamId,
     });
     if (!repliedMessageId) return await createConversation();
     const parentEmail = await dbService.email.findOne({
@@ -23,11 +24,12 @@ class EmailService {
         _id: parentEmail.conversation,
       });
       if (!conversation) return await createConversation();
+      return conversation;
     }
   }
 
-  async createEmail(emailData: Partial<Email>): Promise<Email> {
-    const conversation = await this.prepareEmailConversation(emailData.subject ?? "Untitled", emailData.inReplyTo);
+  async createEmail(teamId: string, emailData: Partial<Email>): Promise<Email> {
+    const conversation = await this.prepareEmailConversation(teamId, emailData.subject ?? "Untitled", emailData.inReplyTo);
     if (!conversation) throw new ApiError(400, 'Failed to prepare conversation');
 
     // Create the email with the conversation reference
@@ -117,59 +119,6 @@ class EmailService {
         {path: 'parentEmail', select: 'subject'}
       ]
     });
-  }
-
-  /**
-   * Get emails in a conversation
-   */
-  async getConversationEmails(conversationId: string, userId: string) {
-    await dbService.connect();
-
-    // Check if conversation exists
-    const conversation = await dbService.emailConversation.findById(conversationId);
-    if (!conversation) {
-      throw new ApiError(404, 'Conversation not found');
-    }
-
-    // Get user's email addresses
-    const teamMember = await dbService.teamMember.findOne({user: userId});
-    if (!teamMember) {
-      throw new ApiError(404, 'Team member not found');
-    }
-
-    const userEmailAddresses = await emailAddressService.getTeamMemberEmailAddresses(
-      teamMember.team.toString(),
-      teamMember._id.toString()
-    );
-
-    const userEmails = userEmailAddresses.map(addr => {
-      const domain = addr.domain as any;
-      return `${addr.localPart}@${domain.name}`;
-    });
-
-    // Check if user is a participant
-    const isParticipant = await dbService.email.findOne({
-      conversation: conversationId,
-      $or: [
-        {from: {$in: userEmails}},
-        {to: {$in: userEmails}},
-        {cc: {$in: userEmails}},
-        {bcc: {$in: userEmails}}
-      ]
-    });
-
-    if (!isParticipant) {
-      throw new ApiError(403, 'You do not have access to this conversation');
-    }
-
-    // Get all emails in the conversation
-    const emails = await dbService.email.find({conversation: conversationId})
-      .sort({createdAt: 1});
-
-    return {
-      conversation,
-      emails
-    };
   }
 
   /**
@@ -490,48 +439,17 @@ class EmailService {
   /**
    * Get a conversation by ID
    */
-  async getConversationById(conversationId: string, userId: string) {
-    await dbService.connect();
+  getConversationById(conversationId: string) {
+    return dbService.emailConversation.findById(conversationId);
+  }
 
-    // Get the conversation
-    const conversation = await dbService.emailConversation.findById(conversationId);
-
-    if (!conversation) {
-      throw new ApiError(404, 'Conversation not found');
-    }
-
-    // Get user's email addresses
-    const teamMember = await dbService.teamMember.findOne({user: userId});
-    if (!teamMember) {
-      throw new ApiError(404, 'Team member not found');
-    }
-
-    const userEmailAddresses = await emailAddressService.getTeamMemberEmailAddresses(
-      teamMember.team.toString(),
-      teamMember._id.toString()
-    );
-
-    const userEmails = userEmailAddresses.map(addr => {
-      const domain = addr.domain as any;
-      return `${addr.localPart}@${domain.name}`;
-    });
-
-    // Check if user is a participant
-    const isParticipant = await dbService.email.findOne({
+  async getConversationEmails(conversationId: string, emailAddress: string) {
+    const conversation = await this.getConversationById(conversationId);
+    if (!conversation) throw new ApiError(404, 'CONVERSATION_NOT_FOUND');
+    return dbService.email.find({
       conversation: conversationId,
-      $or: [
-        {from: {$in: userEmails}},
-        {to: {$in: userEmails}},
-        {cc: {$in: userEmails}},
-        {bcc: {$in: userEmails}}
-      ]
+      recipient: emailAddress,
     });
-
-    if (!isParticipant) {
-      throw new ApiError(403, 'You do not have access to this conversation');
-    }
-
-    return conversation;
   }
 
   /**
@@ -582,6 +500,14 @@ class EmailService {
     }
 
     return updatedEmail as Email;
+  }
+
+  async checkMemberConversationAccessible(teamId: string, memberId: string, conversationId: string) {
+    const emailAddresses = await emailAddressService.getTeamMemberEmailAddresses(teamId, memberId);
+    return dbService.email.exists({
+      conversation: conversationId,
+      recipient: {$in: emailAddresses.map(addr => addr.fullAddress)}
+    });
   }
 }
 

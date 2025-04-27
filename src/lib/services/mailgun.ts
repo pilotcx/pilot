@@ -189,12 +189,13 @@ class MailgunService {
         from: payload.from,
         inReplyTo: headers['in-reply-to'],
         direction: EmailType.Incoming,
+        messageId: payload.messageId,
         isRead: false,
         to: this.parseEmailList(headers['to']),
         cc: this.parseEmailList(headers['cc']),
         bcc: this.parseEmailList(headers['bcc']),
       };
-      await emailService.createEmail(emailData);
+      await emailService.createEmail(teamId, emailData);
     }
   }
 

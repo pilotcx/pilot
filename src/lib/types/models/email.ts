@@ -1,7 +1,7 @@
 import {BaseEntity} from "@/lib/types/models/base";
 import {User} from "@/lib/types/models/user";
 import mongoose from "mongoose";
-import {TeamMember} from "@/lib/types/models/team";
+import {Team, TeamMember} from "@/lib/types/models/team";
 
 export enum EmailType {
   Incoming = 'incoming',
@@ -51,6 +51,7 @@ export interface Email extends BaseEntity {
   html: string;
 
   attachments?: EmailAttachment[];
+  team: Team | string | mongoose.Schema.Types.ObjectId;
 
   messageId: string;
   inReplyTo?: string;
@@ -62,4 +63,5 @@ export interface Email extends BaseEntity {
 export interface EmailConversation extends BaseEntity {
   lastMessageAt: Date | string;
   subject: string;
+  team: Team | string | mongoose.Schema.Types.ObjectId;
 }

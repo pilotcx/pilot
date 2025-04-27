@@ -29,30 +29,13 @@ export const POST = withApi(async (request: NextRequest, { params }: { params: {
     messageId: formData.get('Message-Id') as string,
   };
 
-  // Handle attachments if present
-  const attachmentCount = parseInt(formData.get('attachment-count') as string || '0');
-  if (attachmentCount > 0) {
-    payload.attachments = [];
-
-    for (let i = 1; i <= attachmentCount; i++) {
-      const attachment = formData.get(`attachment-${i}`) as File;
-      if (attachment) {
-        payload.attachments.push({
-          name: attachment.name,
-          contentType: attachment.type,
-          size: attachment.size,
-          url: '', // In a real implementation, you would store the file and generate a URL
-        });
-      }
-    }
-  }
+  console.log(payload);
 
   try {
     // Process the inbound email
-    const email = await mailgunService.processInboundEmail(payload as MailgunInboundMessage, teamId);
+    await mailgunService.processInboundEmail(payload as MailgunInboundMessage, teamId);
 
     return {
-      data: { emailId: email._id },
       message: 'Inbound email processed successfully',
     };
   } catch (error: any) {

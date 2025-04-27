@@ -436,8 +436,12 @@ export class ApiService {
     }[]>('GET', url);
   };
 
-  getConversationEmails = async (conversationId: string) => {
-    return this.call('GET', `/email-conversations/${conversationId}/emails`);
+  getConversationEmails = async (teamId: string, conversationId: string, emailAddress: string) => {
+    return this.call<Email[]>('GET', `/teams/${teamId}/mailing/${conversationId}/emails`, undefined, {
+      params: {
+        emailAddress,
+      }
+    });
   };
 }
 
