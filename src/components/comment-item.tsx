@@ -49,7 +49,14 @@ export function CommentItem({ comment, postId, teamId, onDelete, onReply, isRepl
     try {
       await deleteComment(teamId, comment._id);
       toast.success("Comment deleted successfully");
+      
+      // Call parent component's onDelete to update the UI
       onDelete(comment._id);
+      
+      // If this is a reply being deleted, also update the local allReplies state
+      if (isReply) {
+        setAllReplies(prev => prev.filter(reply => reply._id !== comment._id));
+      }
     } catch (error) {
       toast.error("Failed to delete comment");
     }
@@ -78,29 +85,31 @@ export function CommentItem({ comment, postId, teamId, onDelete, onReply, isRepl
   };
   
   const loadMoreReplies = async () => {
-    if (repliesLoaded) {
-      console.log('Toggling visibility of replies:', showAllReplies ? 'hiding' : 'showing');
-      setShowAllReplies(!showAllReplies);
+    if (showAllReplies) {
+      // Hide replies
+      setShowAllReplies(false);
       return;
     }
     
-    setLoadingReplies(true);
+    if (repliesLoaded) {
+      // Show already loaded replies
+      setShowAllReplies(true);
+      return;
+    }
+    
     try {
-      console.log('Loading replies for comment:', comment._id, 'in team:', teamId);
-      const response = await getCommentReplies(teamId, comment._id);
-      console.log('Reply API response:', JSON.stringify(response));
+      setLoadingReplies(true);
+      const response = await getCommentReplies(teamId, comment._id, {
+        limit: 50, // Get more replies at once to avoid pagination issues
+        skip: 0
+      });
       
-      if (response && response.data && Array.isArray(response.data)) {
-        console.log('Setting replies:', response.data.length);
-        setAllReplies(response.data);
-        setRepliesLoaded(true);
+      if (response && response.data) {
+        setAllReplies(response.data as Comment[]);
         setShowAllReplies(true);
-      } else {
-        console.error('Invalid response format for replies:', JSON.stringify(response));
-        toast.error("Failed to load replies: Invalid response format");
+        setRepliesLoaded(true);
       }
     } catch (error) {
-      console.error('Error loading replies:', error);
       toast.error("Failed to load replies");
     } finally {
       setLoadingReplies(false);
@@ -125,7 +134,18 @@ export function CommentItem({ comment, postId, teamId, onDelete, onReply, isRepl
               teamId={teamId}
               comment={reply}
               postId={postId}
-              onDelete={onDelete}
+              onDelete={(replyId) => {
+                // When a reply is deleted, update the local replies state
+                setAllReplies(prev => prev.filter(r => r._id !== replyId));
+                
+                // Update the replyCount
+                if (comment.replyCount > 0) {
+                  comment.replyCount -= 1;
+                }
+                
+                // Also call parent onDelete to update parent component state
+                onDelete(replyId);
+              }}
               isReply={true}
             />
           ) : null

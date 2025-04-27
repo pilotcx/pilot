@@ -160,10 +160,16 @@ class PostService {
 
       const populatedComment = await dbService.comment.findById(comment._id).populate('author');
 
+      // Increment parent comment reply count
       await dbService.comment.findOneAndUpdate(
         { _id: parentIdStr },
         { $inc: { replyCount: 1 } }
       );
+
+      // Increment post comment count
+      await dbService.post.findOneAndUpdate({ _id: postId }, {
+        $inc: { commentCount: 1 },
+      });
 
       return populatedComment;
     }
@@ -178,6 +184,7 @@ class PostService {
 
     const populatedComment = await dbService.comment.findById(comment._id).populate('author');
 
+    // Increment post comment count
     await dbService.post.findOneAndUpdate({ _id: postId }, {
       $inc: { commentCount: 1 },
     });
@@ -304,38 +311,70 @@ class PostService {
       throw new Error('Comment not found');
     }
 
-    // If it's a parent comment, delete all replies first
-    if (!comment.parentId) {
-      await dbService.comment.delete({ parentId: commentId });
+    try {
+      // If it's a parent comment, delete all replies first
+      if (!comment.parentId) {
+        // Find and count all replies to properly update counts
+        const replies = await dbService.comment.find({ parentId: commentId });
+        const replyCount = replies.length;
+        
+        // Delete all replies
+        if (replyCount > 0) {
+          await dbService.comment.deleteMany({ parentId: commentId });
+        }
 
-      // Decrement post comment count by 1 + replyCount
-      await dbService.post.findOneAndUpdate(
-        { _id: comment.post },
-        { $inc: { commentCount: -(1 + comment.replyCount) } }
-      );
-    } else {
-      // It's a reply, decrement parent comment reply count
-      await dbService.comment.findOneAndUpdate(
-        { _id: comment.parentId },
-        { $inc: { replyCount: -1 } }
-      );
+        // Get current post to check commentCount before decrementing
+        const post = await dbService.post.findById(comment.post as string);
+        if (!post) {
+          throw new Error('Post not found');
+        }
 
-      // Decrement post comment count
-      await dbService.post.findOneAndUpdate(
-        { _id: comment.post },
-        { $inc: { commentCount: -1 } }
-      );
+        // Calculate how much to decrement (ensure it doesn't go negative)
+        // Count parent + all replies
+        const decrementAmount = Math.min(post.commentCount, 1 + replyCount);
+
+        // Decrement post comment count by 1 + replyCount (with safeguard)
+        await dbService.post.findOneAndUpdate(
+          { _id: comment.post },
+          { $inc: { commentCount: -decrementAmount } }
+        );
+      } else {
+        // It's a reply, decrement parent comment reply count
+        const parentComment = await dbService.comment.findById(comment.parentId as string);
+        if (parentComment) {
+          // Ensure replyCount doesn't go negative
+          const newReplyCount = Math.max(0, parentComment.replyCount - 1);
+          await dbService.comment.findOneAndUpdate(
+            { _id: comment.parentId },
+            { $set: { replyCount: newReplyCount } }
+          );
+        }
+
+        // Get current post to check commentCount before decrementing
+        const post = await dbService.post.findById(comment.post as string);
+        if (post && post.commentCount > 0) {
+          // Decrement post comment count (safely)
+          await dbService.post.findOneAndUpdate(
+            { _id: comment.post },
+            { $inc: { commentCount: -1 } }
+          );
+        }
+      }
+
+      // Finally delete the comment itself
+      await dbService.comment.deleteOne({ _id: commentId });
+      
+      return { deleted: true };
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      throw error;
     }
-
-    await dbService.comment.deleteOne({ _id: commentId });
-
-    return { deleted: true };
   }
 
   async deletePost(postId: string): Promise<{ deleted: boolean }> {
     await dbService.connect();
     await dbService.post.deleteOne({ _id: postId });
-    await dbService.comment.delete({ postId: new ObjectId(postId) });
+    await dbService.comment.delete({ post: new ObjectId(postId) });
     await dbService.reaction.delete({ post: postId });
 
     return { deleted: true };

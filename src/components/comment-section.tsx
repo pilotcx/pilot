@@ -3,12 +3,11 @@
 import { CommentItem } from "@/components/comment-item";
 import { useTeam } from "@/components/providers/team-provider";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import useApi from "@/hooks/use-api";
 import api from "@/lib/services/api";
 import { Comment } from "@/lib/types/models/post";
-import { MessageSquare } from "lucide-react";
+import { LoaderCircle, MessageSquare } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -37,7 +36,6 @@ export function CommentSection({
   const [getPostComments] = useApi(api.getPostComments);
   const [commentOnPost] = useApi(api.commentOnPost);
 
-  // Use a ref to track if the comments have been loaded
   const commentsLoadedRef = useRef(false);
 
   useEffect(() => {
@@ -46,7 +44,7 @@ export function CommentSection({
       commentsLoadedRef.current = true;
       loadComments();
     }
-  }, [teamId, showComments]); // Depend on showComments too
+  }, [teamId, showComments]);
 
   const loadComments = async () => {
     if (!teamId) return;
@@ -60,8 +58,6 @@ export function CommentSection({
         sortBy: "createdAt",
         sortOrder: "desc",
       });
-
-      console.log("Comment API response:", JSON.stringify(response));
 
       if (response && response.data && Array.isArray(response.data)) {
         console.log("Setting comments:", response.data.length);
@@ -135,7 +131,6 @@ export function CommentSection({
       const response = await commentOnPost(teamId, postId, content, commentId);
 
       if (response.data) {
-        // Update the comments array by adding the reply to the correct parent
         const updatedComments = comments.map((comment) => {
           if (comment._id === commentId) {
             // Add reply to parent comment
@@ -176,13 +171,15 @@ export function CommentSection({
       updatedComments.splice(topLevelIndex, 1);
 
       setComments(updatedComments);
-      setTotalComments(totalComments - decrementCount);
+      setTotalComments(Math.max(0, totalComments - decrementCount));
       return;
     }
 
-    // Check if it's a reply
+    // Check if it's a reply by iterating through all comments and their replies
+    let foundReply = false;
     const updatedComments = comments.map((comment) => {
-      if (comment.replies?.some((reply) => reply._id === commentId)) {
+      if (comment.replies && comment.replies.some((reply) => reply._id === commentId)) {
+        foundReply = true;
         // Filter out the deleted reply
         const updatedReplies = comment.replies.filter(
           (reply) => reply._id !== commentId
@@ -190,15 +187,22 @@ export function CommentSection({
         return {
           ...comment,
           replies: updatedReplies,
-          replyCount: (comment.replyCount || 0) - 1,
+          replyCount: Math.max(0, (comment.replyCount || 0) - 1),
         };
       }
       return comment;
     });
 
-    setComments(updatedComments);
-    setTotalComments(totalComments - 1);
+    if (foundReply) {
+      setComments(updatedComments);
+      setTotalComments(Math.max(0, totalComments - 1));
+    } else {
+      // If we couldn't find the reply in the current comments, refresh the comments
+      console.log("Reply not found in current state, refreshing comments");
+      loadComments();
+    }
   };
+  console.log("comments", comments);
 
   // Add a null check before rendering comments
   const renderComments = () => {
@@ -301,16 +305,8 @@ export function CommentSection({
           </div>
 
           {loading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <Skeleton className="h-8 w-8 rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-1/4" />
-                    <Skeleton className="h-20 w-full rounded-lg" />
-                  </div>
-                </div>
-              ))}
+            <div className="flex items-center justify-center py-4">
+              <LoaderCircle className="animate-spin w-4 h-4" />
             </div>
           ) : (
             renderComments()
