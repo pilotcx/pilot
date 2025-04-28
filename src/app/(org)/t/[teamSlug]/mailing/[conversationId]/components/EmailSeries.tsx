@@ -8,6 +8,7 @@ import {useTeam} from "@/components/providers/team-provider";
 import EmailDisplay from "@/app/(org)/t/[teamSlug]/mailing/[conversationId]/components/EmailDisplay";
 import EmailComposer from "@/app/(org)/t/[teamSlug]/mailing/[conversationId]/components/EmailComposer";
 import {parseEmailFrom} from "@/lib/utils/parseEmailFrom";
+import {toast} from "sonner";
 
 export default function EmailSeries() {
   const {team} = useTeam();
@@ -16,12 +17,14 @@ export default function EmailSeries() {
   const [getEmails, {data: emails}] = useApi(apiService.getConversationEmails);
   const [sendEmail] = useApi(apiService.sendEmail);
 
-  useEffect(() => {
+  const load = () => {
     if (!team || !activeAddress || !conversationId) return;
     // call api to retrieve conversation emails, sorted by date
     getEmails(team._id as string, conversationId as string, activeAddress.fullAddress!).then(() => {
-      console.log(emails);
     });
+  }
+  useEffect(() => {
+    load();
   }, [activeAddress, conversationId, team]);
 
   return <>
@@ -44,7 +47,8 @@ export default function EmailSeries() {
         form.append('to', lastEmailAddress);
         form.append('inReplyTo', emails[emails.length - 1]?.messageId!);
         const result = await sendEmail(team._id as string, form);
-        console.log(result);
+        toast.success(result.message);
+        load();
       }}
     />
   </>

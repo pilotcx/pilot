@@ -14,7 +14,7 @@ export default async function EmailConversationPage({params}: EmailConversationP
   const {conversationId} = await params;
   const conversation = await emailService.getConversationById(conversationId);
   if (!conversation) return notFound();
-  return <div className={'w-full h-full flex flex-col'}>
+  return <div className={'w-full h-full flex flex-col overflow-y-auto'}>
     <div className={'flex flex-row p-2 border-b justify-between'}>
       <div className={'flex flex-row gap-2'}>
         <Button className={'w-9 h-9'} variant={'ghost'}>
