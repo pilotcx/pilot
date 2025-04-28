@@ -1,25 +1,44 @@
 "use client";
 
-import { useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import {useState} from "react";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
+import {Button} from "@/components/ui/button";
+import {toast} from "sonner";
 import useApi from "@/hooks/use-api";
 import api from "@/lib/services/api";
-import { useTeam } from "@/components/providers/team-provider";
-import { MarkdownEditor } from "@/components/ui/markdown-editor";
-import { cn } from "@/lib/utils";
-import { PenLine } from "lucide-react";
+import {useTeam} from "@/components/providers/team-provider";
+import {cn} from "@/lib/utils";
+import {EditorContent} from "@tiptap/react";
+import {LinkBubbleMenu} from "@/components/ui/custom-tiptap/bubble-menu/link-bubble-menu";
+import {FormatBubbleMenu} from "@/components/ui/custom-tiptap/bubble-menu/format-bubble-menu";
+import useTiptapEditor from "@/lib/hooks/useEditor";
+import {EditorToolbar} from "@/components/ui/custom-tiptap/toolbar";
+import {Markdown} from "tiptap-markdown";
 
 interface CreatePostFormProps {
   onSuccess?: () => void;
 }
 
-export function CreatePostForm({ onSuccess }: CreatePostFormProps) {
-  const { team, membership } = useTeam();
+export function CreatePostForm({onSuccess}: CreatePostFormProps) {
+  const {team, membership} = useTeam();
   const [newPostTitle, setNewPostTitle] = useState("");
   const [newPostContent, setNewPostContent] = useState("");
-  const [createPost, { loading: isSubmitting }] = useApi(api.createPost);
+  const [createPost, {loading: isSubmitting}] = useApi(api.createPost);
+
+  const editor = useTiptapEditor({
+    extensions: [
+      Markdown.configure({
+        html: false,
+        transformPastedText: true,
+      }),
+    ],
+    onUpdate: () => {
+      const markdown = editor!.storage.markdown.getMarkdown();
+      setNewPostContent(markdown);
+    },
+    editable: true,
+    immediatelyRender: false,
+  })
 
   const handleSubmitPost = async () => {
     if (!newPostTitle.trim() || !newPostContent.trim() || !team?._id) return;
@@ -59,7 +78,7 @@ export function CreatePostForm({ onSuccess }: CreatePostFormProps) {
       <div className="p-4">
         <div className="flex items-center gap-3 mb-4">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={membership?.avatar} alt={membership?.displayName || ''} />
+            <AvatarImage src={membership?.avatar} alt={membership?.displayName || ''}/>
             <AvatarFallback>
               {membership?.displayName?.substring(0, 2)?.toUpperCase() || ''}
             </AvatarFallback>
@@ -67,7 +86,7 @@ export function CreatePostForm({ onSuccess }: CreatePostFormProps) {
           <div className="font-medium">{membership?.displayName}</div>
         </div>
 
-        <div className="space-y-4">
+        <div>
           <input
             type="text"
             placeholder="Post title"
@@ -78,14 +97,17 @@ export function CreatePostForm({ onSuccess }: CreatePostFormProps) {
             value={newPostTitle}
             onChange={(e) => setNewPostTitle(e.target.value)}
           />
-          
-          <MarkdownEditor
-            value={newPostContent}
-            onChange={setNewPostContent}
-            placeholder="Write your post content here..."
-            minHeight="200px"
-            className="border-none shadow-sm"
-          />
+
+          {editor && <div className={'mt-4 rounded-lg overflow-hidden border'}>
+            <div className={'bg-muted/60 border-b'}>
+              <EditorToolbar editor={editor}/>
+            </div>
+            <div onClick={() => editor?.commands.focus()} className={'cursor-text'}>
+              <EditorContent editor={editor} className="tiptap-editor min-h-[140px] p-2"/>
+            </div>
+            <LinkBubbleMenu editor={editor}/>
+            <FormatBubbleMenu editor={editor}/>
+          </div>}
         </div>
 
         <div className="flex justify-end gap-2 mt-4">

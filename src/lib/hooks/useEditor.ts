@@ -1,6 +1,5 @@
 import * as React from "react"
-import type {Content, Editor, UseEditorOptions} from "@tiptap/react"
-import {useEditor} from "@tiptap/react"
+import {Content, Editor, Extension, useEditor, UseEditorOptions} from "@tiptap/react"
 import {StarterKit} from "@tiptap/starter-kit"
 import {Typography} from "@tiptap/extension-typography"
 import {Placeholder} from "@tiptap/extension-placeholder"
@@ -9,7 +8,6 @@ import {TextStyle} from "@tiptap/extension-text-style"
 import {cn} from "@/lib/utils"
 import {CodeBlockLowlight, Color, Link} from "@/components/ui/custom-tiptap/extensions";
 import {TextAlign} from "@tiptap/extension-text-align";
-import { FontSize } from '@tiptap/extension-font-size';
 
 export interface UseTiptapEditorProps extends UseEditorOptions {
   value?: Content
@@ -19,6 +17,7 @@ export interface UseTiptapEditorProps extends UseEditorOptions {
   immediatelyRender?: boolean
   onUpdate?: (content: Content) => void
   onBlur?: (content: Content) => void
+  extensions?: Extension[]
 }
 
 const createExtensions = (placeholder: string) => [
@@ -41,9 +40,6 @@ const createExtensions = (placeholder: string) => [
   TextAlign.configure({
     types: ['heading', 'paragraph'],
     defaultAlignment: 'left',
-  }),
-  FontSize.configure({
-
   }),
   Placeholder.configure({placeholder: () => placeholder}),
 ]
@@ -73,14 +69,14 @@ export const useTiptapEditor = (props: UseTiptapEditorProps) => {
   } = props;
 
   const handleUpdate = React.useCallback(
-    ({ editor }: { editor: Editor }) => {
+    ({editor}: { editor: Editor }) => {
       onUpdate?.(getOutput(editor, type))
     },
     [type, onUpdate]
   )
 
   const handleCreate = React.useCallback(
-    ({ editor }: { editor: Editor }) => {
+    ({editor}: { editor: Editor }) => {
       if (value && editor.isEmpty) {
         editor.commands.setContent(value)
       }
@@ -89,14 +85,18 @@ export const useTiptapEditor = (props: UseTiptapEditorProps) => {
   )
 
   const handleBlur = React.useCallback(
-    ({ editor }: { editor: Editor }) => {
+    ({editor}: { editor: Editor }) => {
       onBlur?.(getOutput(editor, type))
     },
     [type, onBlur]
   )
 
   return useEditor({
-    extensions: createExtensions(placeholder),
+    ...props,
+    extensions: [
+      ...createExtensions(placeholder),
+      ...(props.extensions ?? []),
+    ],
     editorProps: {
       attributes: {
         autocomplete: "off",
@@ -108,7 +108,6 @@ export const useTiptapEditor = (props: UseTiptapEditorProps) => {
     onUpdate: handleUpdate,
     onCreate: handleCreate,
     onBlur: handleBlur,
-    ...props,
   })
 }
 

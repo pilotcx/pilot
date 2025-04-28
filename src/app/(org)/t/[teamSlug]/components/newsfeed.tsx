@@ -115,7 +115,9 @@ export function TeamNewsfeed() {
           )}
         </div>
       </div>
-      {contentType === 'post' && (<CreatePostForm/>)}
+      {contentType === 'post' && (<CreatePostForm
+        onSuccess={() => setContentType('')}
+      />)}
       {contentType === 'event' && (<CreateEventForm/>)}
       {contentType === 'announcement' && (<CreateAnnouncementForm/>)}
 
