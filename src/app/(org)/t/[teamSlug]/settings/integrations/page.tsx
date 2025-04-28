@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import {useEffect, useState, useMemo} from "react";
 import {Button} from "@/components/ui/button";
 import {Separator} from "@/components/ui/separator";
 import {Switch} from "@/components/ui/switch";
@@ -53,21 +53,24 @@ export default function IntegrationsSettings() {
 
   // Fetch real integrations once we have the team ID
   useEffect(() => {
-    getIntegrations(team._id as string).then(() => {
+    if (team._id) {
+      getIntegrations(team._id as string);
+    }
+  }, [team._id, getIntegrations]);
 
-    });
-  }, [team, getIntegrations]);
+  // Find Mailgun integration if it exists - memoize this to prevent unnecessary recalculations
+  const mailgunIntegration = useMemo(() => {
+    return integrations.find(i => i.type === IntegrationType.Mailgun);
+  }, [integrations]);
 
-  // Find Mailgun integration if it exists
-  const mailgunIntegration = integrations.find(i => i.type === IntegrationType.Mailgun);
-
+  // Define integration items without initial connected state
   const [integrationItems, setIntegrationItems] = useState<IntegrationItem[]>([
     {
       id: "mailgun",
       name: "Mailgun",
       description: "Send and receive emails using Mailgun's email service.",
       icon: Mail,
-      connected: !!mailgunIntegration,
+      connected: false, // Will be updated in useEffect
       type: IntegrationType.Mailgun,
       configurable: true,
     },
@@ -120,87 +123,110 @@ export default function IntegrationsSettings() {
 
   // Update integration items when real integrations change
   useEffect(() => {
-    setIntegrationItems(prev =>
-      prev.map(item => {
-        if (item.type) {
-          const realIntegration = integrations.find(ri => ri.type === item.type);
-          return {...item, connected: !!realIntegration};
-        }
-        return item;
-      })
-    );
+    if (integrations.length > 0) {
+      setIntegrationItems(prev =>
+        prev.map(item => {
+          if (item.type) {
+            const realIntegration = integrations.find(ri => ri.type === item.type);
+            return {...item, connected: !!realIntegration};
+          }
+          return item;
+        })
+      );
+    }
   }, [integrations]);
 
-  const handleToggleIntegration = async (id: string) => {
-    // Find the integration
-    const integration = integrationItems.find((i) => i.id === id);
+  // Memoize the handleToggleIntegration function to prevent unnecessary recreations
+  const handleToggleIntegration = useMemo(() => {
+    return async (id: string) => {
+      // Find the integration
+      const integration = integrationItems.find((i) => i.id === id);
 
-    if (integration?.comingSoon) {
-      toast.info(`${integration.name} integration is coming soon!`);
-      return;
-    }
-
-    // For other integrations, use the mock behavior
-    setIntegrationItems(
-      integrationItems.map((item) =>
-        item.id === id
-          ? {...item, connected: !item.connected}
-          : item
-      )
-    );
-
-    // Show a toast message
-    const isConnecting = !integrationItems.find((i) => i.id === id)?.connected;
-    toast.success(
-      isConnecting
-        ? `Connected to ${id} successfully!`
-        : `Disconnected from ${id} successfully!`
-    );
-  };
-
-  const handleConnectIntegration = (id: string) => {
-    // Find the integration
-    const integration = integrationItems.find((i) => i.id === id);
-
-    if (integration?.comingSoon) {
-      toast.info(`${integration.name} integration is coming soon!`);
-      return;
-    }
-
-    // For Mailgun, navigate to the configuration page
-    if (integration?.type === IntegrationType.Mailgun) {
-      if (team._id) {
-        window.location.href = `/t/${team.slug}/settings/integrations/mailgun`;
-      } else {
-        toast.error('Could not determine team ID');
+      if (integration?.comingSoon) {
+        toast.info(`${integration.name} integration is coming soon!`);
+        return;
       }
-      return;
-    }
 
-    // Simulate a successful connection after a delay
-    setTimeout(() => {
-      setIntegrationItems(
-        integrationItems.map((item) =>
+      // For Mailgun or other real integrations, we should handle this differently
+      // by calling the API to enable/disable the integration
+      if (integration?.type === IntegrationType.Mailgun) {
+        // For now, just navigate to the configuration page
+        if (team._id) {
+          window.location.href = `/t/${team.slug}/settings/integrations/mailgun`;
+        } else {
+          toast.error('Could not determine team ID');
+        }
+        return;
+      }
+
+      // For other integrations, use the mock behavior
+      setIntegrationItems(prev =>
+        prev.map((item) =>
           item.id === id
-            ? {...item, connected: true}
+            ? {...item, connected: !item.connected}
             : item
         )
       );
-      toast.success(`Connected to ${id} successfully!`);
-    }, 1500);
-  };
 
-  const handleConfigureIntegration = (id: string) => {
-    // Find the integration
-    const integration = integrationItems.find((i) => i.id === id);
+      // Show a toast message
+      const isConnecting = !integration?.connected;
+      toast.success(
+        isConnecting
+          ? `Connected to ${id} successfully!`
+          : `Disconnected from ${id} successfully!`
+      );
+    };
+  }, [integrationItems, team._id, team.slug]);
 
-    if (integration?.type === IntegrationType.Mailgun) {
-      window.location.href = `/t/${team.slug}/settings/integrations/mailgun`;
-    } else {
-      // For other integrations, just show a toast
-      toast.info(`Opening ${id} configuration...`);
-    }
-  };
+  // Memoize the handleConnectIntegration function to prevent unnecessary recreations
+  const handleConnectIntegration = useMemo(() => {
+    return (id: string) => {
+      // Find the integration
+      const integration = integrationItems.find((i) => i.id === id);
+
+      if (integration?.comingSoon) {
+        toast.info(`${integration.name} integration is coming soon!`);
+        return;
+      }
+
+      // For Mailgun, navigate to the configuration page
+      if (integration?.type === IntegrationType.Mailgun) {
+        if (team._id) {
+          window.location.href = `/t/${team.slug}/settings/integrations/mailgun`;
+        } else {
+          toast.error('Could not determine team ID');
+        }
+        return;
+      }
+
+      // Simulate a successful connection after a delay
+      setTimeout(() => {
+        setIntegrationItems(prev =>
+          prev.map((item) =>
+            item.id === id
+              ? {...item, connected: true}
+              : item
+          )
+        );
+        toast.success(`Connected to ${id} successfully!`);
+      }, 1500);
+    };
+  }, [integrationItems, team._id, team.slug]);
+
+  // Memoize the handleConfigureIntegration function to prevent unnecessary recreations
+  const handleConfigureIntegration = useMemo(() => {
+    return (id: string) => {
+      // Find the integration
+      const integration = integrationItems.find((i) => i.id === id);
+
+      if (integration?.type === IntegrationType.Mailgun) {
+        window.location.href = `/t/${team.slug}/settings/integrations/mailgun`;
+      } else {
+        // For other integrations, just show a toast
+        toast.info(`Opening ${id} configuration...`);
+      }
+    };
+  }, [integrationItems, team.slug]);
 
   return (
     <div className="space-y-6">
