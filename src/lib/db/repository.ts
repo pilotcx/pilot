@@ -21,6 +21,9 @@ export interface MixedModel<T>
 }
 
 export class BaseRepository<T> {
+  deleteMany(arg0: { parentId: string; }) {
+    throw new Error('Method not implemented.');
+  }
   private _model: MixedModel<T>;
 
   constructor(name: string, schema: mongoose.Schema<T>) {

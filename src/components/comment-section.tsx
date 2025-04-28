@@ -3,12 +3,11 @@
 import { CommentItem } from "@/components/comment-item";
 import { useTeam } from "@/components/providers/team-provider";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
+import { InlineMarkdownEditor } from "@/components/ui/inline-markdown-editor";
 import useApi from "@/hooks/use-api";
 import api from "@/lib/services/api";
 import { Comment } from "@/lib/types/models/post";
-import { MessageSquare } from "lucide-react";
+import { LoaderCircle, MessageSquare } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -32,13 +31,12 @@ export function CommentSection({
   const [hasMore, setHasMore] = useState(false);
   const [totalComments, setTotalComments] = useState(initialCommentsCount);
   const [showComments, setShowComments] = useState(false);
-  const [expandedForm, setExpandedForm] = useState(false);
 
   const [getPostComments] = useApi(api.getPostComments);
   const [commentOnPost] = useApi(api.commentOnPost);
 
-  // Use a ref to track if the comments have been loaded
   const commentsLoadedRef = useRef(false);
+  const commentSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Only load comments when the section is shown and not already loaded
@@ -46,14 +44,13 @@ export function CommentSection({
       commentsLoadedRef.current = true;
       loadComments();
     }
-  }, [teamId, showComments]); // Depend on showComments too
+  }, [teamId, showComments]);
 
   const loadComments = async () => {
     if (!teamId) return;
 
     setLoading(true);
     try {
-      console.log("Fetching comments for post:", postId, "in team:", teamId);
       const response = await getPostComments(teamId, postId, {
         limit: 10,
         skip: 0,
@@ -61,10 +58,7 @@ export function CommentSection({
         sortOrder: "desc",
       });
 
-      console.log("Comment API response:", JSON.stringify(response));
-
       if (response && response.data && Array.isArray(response.data)) {
-        console.log("Setting comments:", response.data.length);
         setComments(response.data);
         setHasMore(response.pagination?.hasNextPage || false);
         setTotalComments(
@@ -72,11 +66,9 @@ export function CommentSection({
         );
         setPage(1);
       } else {
-        console.error("Invalid response format:", JSON.stringify(response));
         toast.error("Invalid response format from server");
       }
     } catch (error) {
-      console.error("Error loading comments:", error);
       toast.error("Failed to load comments");
     } finally {
       setLoading(false);
@@ -135,7 +127,6 @@ export function CommentSection({
       const response = await commentOnPost(teamId, postId, content, commentId);
 
       if (response.data) {
-        // Update the comments array by adding the reply to the correct parent
         const updatedComments = comments.map((comment) => {
           if (comment._id === commentId) {
             // Add reply to parent comment
@@ -176,13 +167,15 @@ export function CommentSection({
       updatedComments.splice(topLevelIndex, 1);
 
       setComments(updatedComments);
-      setTotalComments(totalComments - decrementCount);
+      setTotalComments(Math.max(0, totalComments - decrementCount));
       return;
     }
 
-    // Check if it's a reply
+    // Check if it's a reply by iterating through all comments and their replies
+    let foundReply = false;
     const updatedComments = comments.map((comment) => {
-      if (comment.replies?.some((reply) => reply._id === commentId)) {
+      if (comment.replies && comment.replies.some((reply) => reply._id === commentId)) {
+        foundReply = true;
         // Filter out the deleted reply
         const updatedReplies = comment.replies.filter(
           (reply) => reply._id !== commentId
@@ -190,14 +183,19 @@ export function CommentSection({
         return {
           ...comment,
           replies: updatedReplies,
-          replyCount: (comment.replyCount || 0) - 1,
+          replyCount: Math.max(0, (comment.replyCount || 0) - 1),
         };
       }
       return comment;
     });
 
-    setComments(updatedComments);
-    setTotalComments(totalComments - 1);
+    if (foundReply) {
+      setComments(updatedComments);
+      setTotalComments(Math.max(0, totalComments - 1));
+    } else {
+      // If we couldn't find the reply in the current comments, refresh the comments
+      loadComments();
+    }
   };
 
   // Add a null check before rendering comments
@@ -211,9 +209,13 @@ export function CommentSection({
     }
 
     return (
-      <div
+      <div 
         className="space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent pr-4"
-        style={{ maxHeight: "400px" }}
+        style={{ 
+          maxHeight: "400px",
+          willChange: "height",
+          contain: "content"
+        }}
       >
         {comments.map((comment) =>
           comment && comment._id ? (
@@ -244,78 +246,62 @@ export function CommentSection({
     );
   };
 
-  const toggleComments = () => {
-    setShowComments(!showComments);
-  };
+  const renderCommentForm = () => {
+    if (!showComments) return null;
 
-  return (
-    <div className="">
-      <div className="flex items-center justify-between">
-        <div className="flex -mx-3 -mb-2 gap-2 items-center">
+    return (
+      <div className="mt-4">
+        <div className="mb-2">
+          <InlineMarkdownEditor
+            value={newComment}
+            onChange={setNewComment}
+            placeholder="Write a comment..."
+            minHeight="60px"
+            height="60px"
+            className="mb-2"
+          />
+        </div>
+        <div className="flex justify-end">
           <Button
-            onClick={toggleComments}
-            variant="ghost"
+            onClick={handleAddComment}
+            disabled={!newComment.trim()}
             size="sm"
-            className="h-8 gap-1"
           >
-            <MessageSquare className="h-4 w-4" />
-            <span>{totalComments} Comments</span>
+            Comment
           </Button>
         </div>
       </div>
+    );
+  };
+
+  return (
+    <div className="mt-4" ref={commentSectionRef}>
+      <div className="flex items-center">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
+          onClick={() => setShowComments(!showComments)}
+        >
+          <MessageSquare className="h-3.5 w-3.5" />
+          <span>
+            {totalComments} {totalComments === 1 ? "comment" : "comments"}
+          </span>
+        </Button>
+      </div>
 
       {showComments && (
-        <>
-          <div className="py-4 mt-4 border-t">
-            {expandedForm ? (
-              <>
-                <Textarea
-                  placeholder="Write a comment..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="min-h-[50px]"
-                />
-                <div className="flex justify-end gap-2 mt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setExpandedForm(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button size="sm" onClick={handleAddComment}>
-                    Add Comment
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <Button
-                variant="outline"
-                className="w-full text-muted-foreground justify-start"
-                onClick={() => setExpandedForm(true)}
-              >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Write a comment...
-              </Button>
-            )}
-          </div>
-
+        <div className="comment-content pt-3" style={{ contain: "content" }}>
           {loading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <Skeleton className="h-8 w-8 rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-1/4" />
-                    <Skeleton className="h-20 w-full rounded-lg" />
-                  </div>
-                </div>
-              ))}
+            <div className="flex justify-center py-8">
+              <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : (
             renderComments()
           )}
-        </>
+
+          {renderCommentForm()}
+        </div>
       )}
     </div>
   );

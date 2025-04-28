@@ -117,7 +117,8 @@
     --tw-ring-offset-color: transparent !important;
   }
 
-  html, body {
+  html,
+  body {
     @apply w-full h-full;
   }
 
@@ -125,7 +126,8 @@
     @apply bg-background text-foreground;
   }
 
-  button, a {
+  button,
+  a {
     @apply cursor-pointer;
   }
 }
@@ -178,11 +180,153 @@
 
   /* Hide scrollbar but allow scrolling */
   .scrollbar-hidden {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 
   .scrollbar-hidden::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+    display: none; /* Chrome, Safari and Opera */
   }
+}
+
+/* Markdown Prose Styles */
+[data-active="true"] {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+.ProseMirror {
+  outline: none;
+}
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  height: 0;
+}
+
+.prose {
+  color: var(--foreground);
+}
+
+.prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.prose strong {
+  font-weight: 600;
+}
+
+.prose ol,
+.prose ul {
+  padding-left: 1.25rem;
+}
+
+.prose ol {
+  list-style-type: decimal;
+}
+
+.prose ul {
+  list-style-type: disc;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.prose h1 {
+  font-size: 1.875em;
+}
+
+.prose h2 {
+  font-size: 1.5em;
+}
+
+.prose h3 {
+  font-size: 1.25em;
+}
+
+.prose h4 {
+  font-size: 1.125em;
+}
+
+.prose blockquote {
+  border-left: 4px solid var(--muted);
+  padding-left: 1rem;
+  font-style: italic;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.prose code {
+  font-family: monospace;
+  background-color: var(--muted);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 85%;
+}
+
+.prose pre {
+  background-color: var(--muted);
+  border-radius: 0.375rem;
+  overflow-x: auto;
+  padding: 1rem;
+}
+
+.prose pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: 90%;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+}
+
+.prose.prose-sm {
+  font-size: 0.875rem;
+}
+
+.prose.prose-sm h1 {
+  font-size: 1.5em;
+}
+
+.prose.prose-sm h2 {
+  font-size: 1.25em;
+}
+
+.prose.prose-sm h3 {
+  font-size: 1.125em;
+}
+
+.prose.prose-sm h4 {
+  font-size: 1em;
+}
+
+.dark .prose {
+  color: var(--foreground);
+}
+
+.dark .prose a {
+  color: var(--primary);
+}
+
+.dark .prose code,
+.dark .prose pre {
+  background-color: var(--muted);
+}
+
+.dark .prose blockquote {
+  border-left-color: var(--muted);
 }
