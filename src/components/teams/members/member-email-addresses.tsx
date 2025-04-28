@@ -301,118 +301,108 @@ export function MemberEmailAddresses({
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Email Addresses</CardTitle>
-            <CardDescription>
-              Manage email addresses for this team member
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Email Address</TableHead>
-                  <TableHead>Display Name</TableHead>
-                  <TableHead>Status</TableHead>
-                  {canManageEmailAddresses && (
-                    <TableHead className="text-right">Actions</TableHead>
-                  )}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {emailAddresses.map((emailAddress: EmailAddress) => (
-                  <TableRow key={emailAddress._id as string}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center">
-                        <Mail className="mr-2 h-4 w-4 text-muted-foreground"/>
-                        <span>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Email Address</TableHead>
+              <TableHead>Display Name</TableHead>
+              <TableHead>Status</TableHead>
+              {canManageEmailAddresses && (
+                <TableHead className="text-right">Actions</TableHead>
+              )}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {emailAddresses.map((emailAddress: EmailAddress) => (
+              <TableRow key={emailAddress._id as string}>
+                <TableCell className="font-medium">
+                  <div className="flex items-center">
+                    <Mail className="mr-2 h-4 w-4 text-muted-foreground"/>
+                    <span>
                           {emailAddress.localPart}@{(emailAddress.domain as Domain)?.name}
                         </span>
-                        {emailAddress.isDefault && (
-                          <Badge variant="secondary" className="ml-2">
-                            <Star className="mr-1 h-3 w-3"/>
-                            Default
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{emailAddress.displayName || "-"}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          emailAddress.status === EmailAddressStatus.Active
-                            ? "success"
-                            : emailAddress.status === EmailAddressStatus.Pending
-                              ? "outline"
-                              : "destructive"
-                        }
-                      >
-                        {emailAddress.status}
+                    {emailAddress.isDefault && (
+                      <Badge variant="secondary" className="ml-2">
+                        <Star className="mr-1 h-3 w-3"/>
+                        Default
                       </Badge>
-                    </TableCell>
-                    {canManageEmailAddresses && (
-                      <TableCell className="text-right">
-                        <div className="flex justify-end space-x-2">
-                          {!emailAddress.isDefault && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleSetDefault(emailAddress._id as string)}
-                              disabled={updatingEmailAddress}
-                            >
-                              {updatingEmailAddress ? (
-                                <Loader2 className="h-4 w-4 animate-spin"/>
-                              ) : (
-                                <Star className="h-4 w-4"/>
-                              )}
-                              <span className="sr-only">Set as Default</span>
-                            </Button>
-                          )}
-
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-destructive hover:text-destructive"
-                                disabled={emailAddress.isDefault || deletingEmailAddress}
-                              >
-                                {deletingEmailAddress ? (
-                                  <Loader2 className="h-4 w-4 animate-spin"/>
-                                ) : (
-                                  <Trash2 className="h-4 w-4"/>
-                                )}
-                                <span className="sr-only">Delete</span>
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Email Address</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete this email address? This action cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDeleteEmailAddress(emailAddress._id as string)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
                     )}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                  </div>
+                </TableCell>
+                <TableCell>{emailAddress.displayName || "-"}</TableCell>
+                <TableCell>
+                  <Badge
+                    variant={
+                      emailAddress.status === EmailAddressStatus.Active
+                        ? "success"
+                        : emailAddress.status === EmailAddressStatus.Pending
+                          ? "outline"
+                          : "destructive"
+                    }
+                  >
+                    {emailAddress.status}
+                  </Badge>
+                </TableCell>
+                {canManageEmailAddresses && (
+                  <TableCell className="text-right">
+                    <div className="flex justify-end space-x-2">
+                      {!emailAddress.isDefault && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleSetDefault(emailAddress._id as string)}
+                          disabled={updatingEmailAddress}
+                        >
+                          {updatingEmailAddress ? (
+                            <Loader2 className="h-4 w-4 animate-spin"/>
+                          ) : (
+                            <Star className="h-4 w-4"/>
+                          )}
+                          <span className="sr-only">Set as Default</span>
+                        </Button>
+                      )}
+
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            disabled={emailAddress.isDefault || deletingEmailAddress}
+                          >
+                            {deletingEmailAddress ? (
+                              <Loader2 className="h-4 w-4 animate-spin"/>
+                            ) : (
+                              <Trash2 className="h-4 w-4"/>
+                            )}
+                            <span className="sr-only">Delete</span>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Email Address</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this email address? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteEmailAddress(emailAddress._id as string)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
     </div>
   );
