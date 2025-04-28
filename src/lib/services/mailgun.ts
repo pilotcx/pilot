@@ -12,6 +12,7 @@ import {emailService} from '@/lib/services/email';
 import FormData from 'form-data';
 import Mailgun from 'mailgun.js';
 import crypto from 'crypto';
+import {generateEmailSummary} from "@/lib/utils/generateEmailSummary";
 
 class MailgunService {
   /**
@@ -200,13 +201,7 @@ class MailgunService {
   }
 
   generateEmailSummary(body: string, maxLength: number = 100): string {
-    function stripHtmlTags(html: string): string {
-      return html.replace(/<[^>]*>/g, ''); // Remove all HTML tags
-    }
-
-    const bodyText = body.startsWith('<') ? stripHtmlTags(body) : body;
-    const summary = bodyText.substring(0, maxLength);
-    return bodyText.length > maxLength ? `${summary}...` : summary;
+    return generateEmailSummary(body, maxLength);
   }
 
   parseEmailList(addressList?: string): string[] {

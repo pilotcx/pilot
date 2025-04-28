@@ -89,10 +89,10 @@ export function MailSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
             className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
           >
             <div className="flex w-full items-center gap-2">
-              <span>{conv.email.from.split('<')[0].trim()}</span>
+              <span className={'font-semibold'}>{conv.email.from.split('<')[0].trim()}</span>
               <span className="ml-auto text-xs">{dayjs(conv.email.createdAt as string).fromNow()}</span>
             </div>
-            <span className="font-medium">{conv.email?.subject}</span>
+            <span className="font-medium text-xs">{conv.email?.subject}</span>
             <span className="line-clamp-2 w-[260px] text-xs whitespace-break-spaces">
               {conv.email.summary ?? "(Empty email)"}
             </span>

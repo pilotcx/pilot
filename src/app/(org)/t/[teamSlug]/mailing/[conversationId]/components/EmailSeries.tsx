@@ -6,6 +6,7 @@ import useApi from "@/hooks/use-api";
 import apiService from "@/lib/services/api";
 import {useTeam} from "@/components/providers/team-provider";
 import EmailDisplay from "@/app/(org)/t/[teamSlug]/mailing/[conversationId]/components/EmailDisplay";
+import EmailComposer from "@/app/(org)/t/[teamSlug]/mailing/[conversationId]/components/EmailComposer";
 
 export default function EmailSeries() {
   const {team} = useTeam();
@@ -21,9 +22,16 @@ export default function EmailSeries() {
     });
   }, [activeAddress, conversationId, team]);
 
-  return <div className={'divide-y'}>
-    {emails?.map(email => <div key={email._id?.toString()} className={'py-4'}>
-      <EmailDisplay email={email}/>
-    </div>)}
-  </div>
+  return <>
+    <div className={'divide-y'}>
+      {emails?.map(email => <div key={email._id?.toString()} className={'py-4'}>
+        <EmailDisplay email={email}/>
+      </div>)}
+    </div>
+    <EmailComposer
+      context={{
+        target: emails?.[0]?.from ?? ''
+      }}
+    />
+  </>
 }

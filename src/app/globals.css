@@ -196,6 +196,8 @@
 }
 .ProseMirror {
   outline: none;
+  font-size: 12px;
+  height: 100%;
 }
 .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
@@ -330,3 +332,4 @@
 .dark .prose blockquote {
   border-left-color: var(--muted);
 }
+
