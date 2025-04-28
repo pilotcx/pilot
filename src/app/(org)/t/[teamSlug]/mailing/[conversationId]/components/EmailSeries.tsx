@@ -7,12 +7,14 @@ import apiService from "@/lib/services/api";
 import {useTeam} from "@/components/providers/team-provider";
 import EmailDisplay from "@/app/(org)/t/[teamSlug]/mailing/[conversationId]/components/EmailDisplay";
 import EmailComposer from "@/app/(org)/t/[teamSlug]/mailing/[conversationId]/components/EmailComposer";
+import {parseEmailFrom} from "@/lib/utils/parseEmailFrom";
 
 export default function EmailSeries() {
   const {team} = useTeam();
   const {conversationId} = useParams();
   const {activeAddress} = useMailing();
   const [getEmails, {data: emails}] = useApi(apiService.getConversationEmails);
+  const [sendEmail] = useApi(apiService.sendEmail);
 
   useEffect(() => {
     if (!team || !activeAddress || !conversationId) return;
@@ -31,6 +33,18 @@ export default function EmailSeries() {
     <EmailComposer
       context={{
         target: emails?.[0]?.from ?? ''
+      }}
+      onSend={async (content) => {
+        if (!emails) return;
+        const {email: lastEmailAddress} = parseEmailFrom(emails[emails.length - 1].from);
+        const form = new FormData();
+        form.append('subject', 'Re: ' + emails[0].subject);
+        form.append('html', content);
+        form.append('from', activeAddress?.fullAddress!);
+        form.append('to', lastEmailAddress);
+        form.append('inReplyTo', emails[emails.length - 1]?.messageId!);
+        const result = await sendEmail(team._id as string, form);
+        console.log(result);
       }}
     />
   </>

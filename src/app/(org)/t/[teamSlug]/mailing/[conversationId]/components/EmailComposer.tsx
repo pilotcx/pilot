@@ -13,13 +13,13 @@ import {Button} from "@/components/ui/button";
 interface EmailComposerProps {
   context: {
     target: string;
-  }
+  },
+  onSend?: (html: string) => void;
 }
 
-export default function EmailComposer({context}: EmailComposerProps) {
+export default function EmailComposer({context, onSend}: EmailComposerProps) {
   const {membership} = useTeam();
   const {activeAddress} = useMailing();
-
 
   const editor = useTiptapEditor({
     onUpdate: () => {
@@ -30,6 +30,10 @@ export default function EmailComposer({context}: EmailComposerProps) {
   })
 
   if (!editor) return;
+
+  const doSend = () => {
+    onSend?.(editor!.getHTML());
+  }
 
   return <div className={'flex flex-row gap-2 p-4'}>
     <Avatar
@@ -56,7 +60,7 @@ export default function EmailComposer({context}: EmailComposerProps) {
         <LinkBubbleMenu editor={editor}/>
         <FormatBubbleMenu editor={editor}/>
         <div className={'flex flex-row items-center px-2'}>
-          <Button className={'px-6 rounded-full'}>
+          <Button className={'px-6 rounded-full'} onClick={doSend}>
             Send
           </Button>
           <div className={'flex-1'}>

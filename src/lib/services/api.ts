@@ -184,7 +184,7 @@ export class ApiService {
   };
 
   commentOnPost = async (teamId: string, postId: string, content: string, parentId?: string) => {
-    return this.call('POST', `/teams/${teamId}/posts/${postId}/comments`, { content, parentId });
+    return this.call('POST', `/teams/${teamId}/posts/${postId}/comments`, {content, parentId});
   };
 
   getPostComments = async (teamId: string, postId: string, options: {
@@ -193,7 +193,7 @@ export class ApiService {
     sortBy?: string;
     sortOrder?: 'asc' | 'desc'
   } = {}) => {
-    const { limit = 10, skip = 0, sortBy = 'createdAt', sortOrder = 'desc' } = options;
+    const {limit = 10, skip = 0, sortBy = 'createdAt', sortOrder = 'desc'} = options;
     return this.call('GET',
       `/teams/${teamId}/posts/${postId}/comments?limit=${limit}&skip=${skip}&sortBy=${sortBy}&sortOrder=${sortOrder}`
     );
@@ -203,7 +203,7 @@ export class ApiService {
     limit?: number;
     skip?: number;
   } = {}) => {
-    const { limit = 10, skip = 0 } = options;
+    const {limit = 10, skip = 0} = options;
     return this.call('GET', `/teams/${teamId}/comments/${commentId}/replies?limit=${limit}&skip=${skip}`);
   };
 
@@ -419,6 +419,10 @@ export class ApiService {
   deleteMemberEmailAddress = async (teamId: string, memberId: string, emailAddressId: string) => {
     return this.call('DELETE', `/teams/${teamId}/members/${memberId}/email-addresses/${emailAddressId}`);
   };
+
+  sendEmail = (teamId: string, emailData: FormData) => {
+    return this.call('POST', `/teams/${teamId}/mailing/send`, emailData);
+  }
 
   getConversationsWithLatestEmail = async (teamId: string, memberId: string, options: {
     page?: number;

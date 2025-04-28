@@ -2,16 +2,16 @@ import {Email} from "@/lib/types/models/email";
 import EmailIframe from "@/app/(org)/t/[teamSlug]/mailing/[conversationId]/components/EmailIframe";
 import gravatar from "gravatar";
 import dayjs from "dayjs";
+import {parseEmailFrom} from "@/lib/utils/parseEmailFrom";
 
 export default function EmailDisplay({email}: { email: Email }) {
-  const senderName = email.from.split('<')[0].trim();
-  const senderEmail = email.from.split('<')[1].replace('>', '').trim();
+  const {name: senderName, email: senderEmail} = parseEmailFrom(email.from);
 
   return <div>
     <div className={'flex flex-row gap-4 px-4 mb-2'}>
       <div className={'h-10 w-10'}>
         <img
-          src={gravatar.url(senderEmail)}
+          src={gravatar.url(senderEmail!)}
           alt={senderName}
           className={'h-10 w-10 rounded-full'}
         />
@@ -31,7 +31,7 @@ export default function EmailDisplay({email}: { email: Email }) {
           </div>
         </div>
         <div className={'text-muted-foreground text-xs'}>
-          to {email.recipient.split('@')[0]}
+          to {email.recipient?.split('@')[0]}
         </div>
       </div>
     </div>

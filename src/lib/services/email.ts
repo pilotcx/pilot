@@ -1,9 +1,12 @@
 import {dbService} from '@/lib/db/service';
 import {ApiError} from '@/lib/types/errors/api.error';
-import {Email, EmailLabel, EmailStatus} from '@/lib/types/models/email';
+import {Email, EmailAttachment, EmailLabel, EmailStatus} from '@/lib/types/models/email';
 import {IntegrationType} from '@/lib/types/models/integration';
 import {mailgunService} from '@/lib/services/mailgun';
 import {emailAddressService} from "@/lib/services/email-address";
+import path from 'path';
+import fs from 'fs/promises';
+import {nanoid} from "nanoid";
 
 class EmailService {
   async prepareEmailConversation(teamId: string, subject: string, repliedMessageId?: string) {
@@ -47,9 +50,14 @@ class EmailService {
     return newEmail;
   }
 
-  async getEmailById(emailId: string): Promise<Email | null> {
-    await dbService.connect();
+  getEmailById(emailId: string) {
     return dbService.email.findById(emailId);
+  }
+
+  async getEmailByMessageId(messageId: string) {
+    return dbService.email.findOne({
+      messageId,
+    })
   }
 
   async getUserEmails(
@@ -448,12 +456,50 @@ class EmailService {
     if (!conversation) throw new ApiError(404, 'CONVERSATION_NOT_FOUND');
     return dbService.email.find({
       conversation: conversationId,
-      recipient: emailAddress,
+      $or: [{
+        recipient: {$in: emailAddress},
+      }, {
+        from: {$in: emailAddress},
+      }, {
+        to: {$in: emailAddress},
+      }]
     });
   }
 
   /**
+   * Upload an email attachment
+   * @param file The file to upload
+   * @param teamId The team ID
+   * @returns The uploaded file information
+   */
+  async uploadAttachment(file: File, teamId: string): Promise<EmailAttachment> {
+    // Create uploads directory if it doesn't exist
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', teamId);
+    await fs.mkdir(uploadsDir, { recursive: true });
+
+    // Generate a unique filename
+    const fileExtension = path.extname(file.name);
+    const uniqueFilename = `${nanoid()}${fileExtension}`;
+    const filePath = path.join(uploadsDir, uniqueFilename);
+
+    // Convert File to Buffer and save it
+    const buffer = Buffer.from(await file.arrayBuffer());
+    await fs.writeFile(filePath, buffer);
+
+    // Return the attachment information
+    return {
+      filename: file.name,
+      mimetype: file.type,
+      size: file.size,
+      url: `/uploads/${teamId}/${uniqueFilename}`
+    };
+  }
+
+  /**
    * Send an email using Mailgun integration
+   * @param emailId The email ID to send
+   * @param teamId The team ID
+   * @returns The updated email
    */
   async sendEmailWithMailgun(emailId: string, teamId: string): Promise<Email> {
     await dbService.connect();
@@ -504,9 +550,16 @@ class EmailService {
 
   async checkMemberConversationAccessible(teamId: string, memberId: string, conversationId: string) {
     const emailAddresses = await emailAddressService.getTeamMemberEmailAddresses(teamId, memberId);
+    const ownedAddresses = emailAddresses.map(addr => addr.fullAddress);
     return dbService.email.exists({
       conversation: conversationId,
-      recipient: {$in: emailAddresses.map(addr => addr.fullAddress)}
+      $or: [{
+        recipient: {$in: ownedAddresses},
+      }, {
+        from: {$in: ownedAddresses},
+      }, {
+        to: {$in: ownedAddresses},
+      }]
     });
   }
 }

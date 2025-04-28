@@ -37,7 +37,6 @@ export const EmailSchema = new mongoose.Schema<Email>({
   // Recipient information
   recipient: {
     type: String,
-    required: true,
   },
 
   // Email addresses

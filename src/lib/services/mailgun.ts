@@ -15,6 +15,19 @@ import crypto from 'crypto';
 import {generateEmailSummary} from "@/lib/utils/generateEmailSummary";
 
 class MailgunService {
+
+  async getTeamClient(teamId: string) {
+    const integration = await this.getIntegrationByTeam(teamId);
+    if (!integration) throw new ApiError(404, 'Mailgun integration not found for this team');
+    if (integration.status !== IntegrationStatus.Active) throw new ApiError(400, 'Mailgun integration is not active');
+    const config = integration.config as MailgunConfig;
+    if (!config.outboundEnabled) throw new ApiError(400, 'Outbound email is disabled for this integration');
+    const mailgun = new Mailgun(FormData);
+    return mailgun.client({
+      username: 'api',
+      key: config.apiKey
+    });
+  }
   /**
    * Create a new Mailgun integration for a team
    */

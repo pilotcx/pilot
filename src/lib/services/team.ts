@@ -49,15 +49,15 @@ class TeamService {
       _id: slugOrId
     });
 
-    if (!team) {
-      throw new ApiError(404, 'Team not found');
-    }
+    if (!team) throw new ApiError(404, 'Team not found');
 
     // Get the user's membership in this team
     const membership = await dbService.teamMember.findOne({
       team: team._id,
       user: userId
     });
+
+    if (!membership) throw new ApiError(400, 'You are not a member of this team');
 
     return {
       team,
