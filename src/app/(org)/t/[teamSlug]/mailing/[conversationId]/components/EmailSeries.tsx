@@ -9,9 +9,11 @@ import EmailDisplay from "@/app/(org)/t/[teamSlug]/mailing/[conversationId]/comp
 import EmailComposer from "@/app/(org)/t/[teamSlug]/mailing/[conversationId]/components/EmailComposer";
 import {parseEmailFrom} from "@/lib/utils/parseEmailFrom";
 import {toast} from "sonner";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
+import gravatar from "gravatar";
 
 export default function EmailSeries() {
-  const {team} = useTeam();
+  const {team, membership} = useTeam();
   const {conversationId} = useParams();
   const {activeAddress} = useMailing();
   const [getEmails, {data: emails}] = useApi(apiService.getConversationEmails);
@@ -33,23 +35,37 @@ export default function EmailSeries() {
         <EmailDisplay email={email}/>
       </div>)}
     </div>
-    <EmailComposer
-      context={{
-        target: emails?.[0]?.from ?? ''
-      }}
-      onSend={async (content) => {
-        if (!emails) return;
-        const {email: lastEmailAddress} = parseEmailFrom(emails[emails.length - 1].from);
-        const form = new FormData();
-        form.append('subject', 'Re: ' + emails[0].subject);
-        form.append('html', content);
-        form.append('from', activeAddress?.fullAddress!);
-        form.append('to', lastEmailAddress);
-        form.append('inReplyTo', emails[emails.length - 1]?.messageId!);
-        const result = await sendEmail(team._id as string, form);
-        toast.success(result.message);
-        load();
-      }}
-    />
+    <div className={'flex flex-row gap-2 p-4'}>
+      <Avatar
+        className={'w-10 h-10'}
+      >
+        <AvatarImage
+          src={gravatar.url(activeAddress?.fullAddress!)}
+        />
+        <AvatarFallback>
+          {membership.displayName?.substring(0, 2)?.toUpperCase() || ''}
+        </AvatarFallback>
+      </Avatar>
+      <div className={'flex-1 border rounded-lg p-2'}>
+        <EmailComposer
+          context={{
+            target: emails?.[0]?.from ?? ''
+          }}
+          onSend={async (content) => {
+            if (!emails) return;
+            const {email: lastEmailAddress} = parseEmailFrom(emails[emails.length - 1].from);
+            const form = new FormData();
+            form.append('subject', 'Re: ' + emails[0].subject);
+            form.append('html', content);
+            form.append('from', activeAddress?.fullAddress!);
+            form.append('to', lastEmailAddress);
+            form.append('inReplyTo', emails[emails.length - 1]?.messageId!);
+            const result = await sendEmail(team._id as string, form);
+            toast.success(result.message);
+            load();
+          }}
+        />
+      </div>
+    </div>
   </>
 }

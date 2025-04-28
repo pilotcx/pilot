@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import {ArchiveIcon, InboxIcon, SearchIcon, SendIcon, TrashIcon} from "lucide-react"
+import {ArchiveIcon, InboxIcon, PlusIcon, SearchIcon, SendIcon, TrashIcon} from "lucide-react"
 import {Sidebar,} from "@/components/ui/sidebar"
 import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/select";
 import {Input} from "@/components/ui/input";
@@ -12,6 +12,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import Link from "next/link";
 import {useTeam} from "@/components/providers/team-provider";
 import {parseEmailFrom} from "@/lib/utils/parseEmailFrom";
+import {Button} from "@/components/ui/button";
 
 dayjs.extend(relativeTime);
 
@@ -82,7 +83,7 @@ export function MailSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
           />
         </div>
       </div>
-      <div className={'flex-1 h-full overflow-y-auto scrollbar-hidden'}>
+      <div className={'flex-1 overflow-y-auto scrollbar-hidden'}>
         {(conversations ?? []).map((conv) => (
           <Link
             href={`/t/${team.slug}/mailing/${conv.conversation._id}`}
@@ -99,6 +100,14 @@ export function MailSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
             </span>
           </Link>
         ))}
+      </div>
+      <div className={'p-4'}>
+        <Link href={`/t/${team.slug}/mailing/new`}>
+          <Button className={'w-full'}>
+            <PlusIcon/>
+            New Email
+          </Button>
+        </Link>
       </div>
     </div>
   )

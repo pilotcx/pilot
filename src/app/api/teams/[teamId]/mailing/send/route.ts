@@ -24,7 +24,18 @@ export const POST = withApi(async (req: NextRequest, {params}: { params: { teamI
     for (const [key, value] of formData.entries()) {
       // Skip file entries for now
       if (!(value instanceof File)) {
-        formValues[key] = value.toString();
+        // Check if the key is an array field (ends with [])
+        if (key.endsWith('[]')) {
+          const cleanKey = key.slice(0, -2); // Remove [] from the key
+          if (!formValues[cleanKey]) {
+            formValues[cleanKey] = value.toString();
+          } else {
+            // If the key already exists, append the new value with a comma
+            formValues[cleanKey] += ',' + value.toString();
+          }
+        } else {
+          formValues[key] = value.toString();
+        }
       }
     }
 

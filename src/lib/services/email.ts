@@ -33,6 +33,7 @@ class EmailService {
 
   async createEmail(teamId: string, emailData: Partial<Email>): Promise<Email> {
     const conversation = await this.prepareEmailConversation(teamId, emailData.subject ?? "Untitled", emailData.inReplyTo);
+    console.log('prepared conversation', conversation._id.toString());
     if (!conversation) throw new ApiError(400, 'Failed to prepare conversation');
 
     // Create the email with the conversation reference
@@ -319,8 +320,6 @@ class EmailService {
       emailAddress?: string; // Filter by specific email address
     } = {}
   ) {
-    await dbService.connect();
-
     const {
       page = 1,
       limit = 20,
@@ -362,10 +361,7 @@ class EmailService {
     // Build the base query for emails
     const emailQuery: any = {
       $or: [
-        {from: {$in: filteredEmailAddresses}},
-        {to: {$in: filteredEmailAddresses}},
-        {cc: {$in: filteredEmailAddresses}},
-        {bcc: {$in: filteredEmailAddresses}}
+        {recipient: {$in: filteredEmailAddresses}},
       ]
     };
 
