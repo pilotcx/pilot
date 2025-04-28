@@ -64,4 +64,5 @@ export interface EmailConversation extends BaseEntity {
   lastMessageAt: Date | string;
   subject: string;
   team: Team | string | mongoose.Schema.Types.ObjectId;
+  participatedEmails: string[];
 }

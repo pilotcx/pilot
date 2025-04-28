@@ -13,6 +13,11 @@ export const EmailConversationSchema = new mongoose.Schema<EmailConversation>({
   subject: {
     type: String,
     required: true,
+  },
+  participatedEmails: {
+    type: [String],
+    default: [],
+    index: true
   }
 }, {
   timestamps: true,

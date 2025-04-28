@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import {ArchiveIcon, InboxIcon, SearchIcon, SendIcon, TrashIcon} from "lucide-react"
+import {ArchiveIcon, InboxIcon, PlusIcon, SearchIcon, SendIcon, TrashIcon} from "lucide-react"
 import {Sidebar,} from "@/components/ui/sidebar"
 import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/select";
 import {Input} from "@/components/ui/input";
@@ -11,6 +11,8 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Link from "next/link";
 import {useTeam} from "@/components/providers/team-provider";
+import {parseEmailFrom} from "@/lib/utils/parseEmailFrom";
+import {Button} from "@/components/ui/button";
 
 dayjs.extend(relativeTime);
 
@@ -70,18 +72,7 @@ export function MailSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
           </div>
         </div>
       </div>
-      <div className={'bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60'}>
-        <div className={'relative'}>
-          <SearchIcon
-            className={'left-2 top-2.5 absolute text-muted-foreground w-4 h-4'}
-          />
-          <Input
-            className={'w-full shadow-none bg-background pl-7'}
-            placeholder={'Search...'}
-          />
-        </div>
-      </div>
-      <div className={'flex-1 h-full overflow-y-auto scrollbar-hidden'}>
+      <div className={'flex-1 overflow-y-auto scrollbar-hidden'}>
         {(conversations ?? []).map((conv) => (
           <Link
             href={`/t/${team.slug}/mailing/${conv.conversation._id}`}
@@ -89,7 +80,7 @@ export function MailSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
             className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex flex-col items-start gap-2 border-b p-4 text-sm leading-tight whitespace-nowrap last:border-b-0"
           >
             <div className="flex w-full items-center gap-2">
-              <span className={'font-semibold'}>{conv.email.from.split('<')[0].trim()}</span>
+              <span className={'font-semibold'}>{parseEmailFrom(conv.email.from).name}</span>
               <span className="ml-auto text-xs">{dayjs(conv.email.createdAt as string).fromNow()}</span>
             </div>
             <span className="font-medium text-xs">{conv.email?.subject}</span>
@@ -98,6 +89,14 @@ export function MailSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
             </span>
           </Link>
         ))}
+      </div>
+      <div className={'p-4'}>
+        <Link href={`/t/${team.slug}/mailing/new`}>
+          <Button className={'w-full'}>
+            <PlusIcon/>
+            New Email
+          </Button>
+        </Link>
       </div>
     </div>
   )
