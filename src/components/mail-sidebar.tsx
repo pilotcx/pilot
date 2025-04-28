@@ -72,17 +72,6 @@ export function MailSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
           </div>
         </div>
       </div>
-      <div className={'bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60'}>
-        <div className={'relative'}>
-          <SearchIcon
-            className={'left-2 top-2.5 absolute text-muted-foreground w-4 h-4'}
-          />
-          <Input
-            className={'w-full shadow-none bg-background pl-7'}
-            placeholder={'Search...'}
-          />
-        </div>
-      </div>
       <div className={'flex-1 overflow-y-auto scrollbar-hidden'}>
         {(conversations ?? []).map((conv) => (
           <Link
