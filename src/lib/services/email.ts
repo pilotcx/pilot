@@ -9,11 +9,12 @@ import fs from 'fs/promises';
 import {nanoid} from "nanoid";
 
 class EmailService {
-  async prepareEmailConversation(teamId: string, subject: string, repliedMessageId?: string) {
+  async prepareEmailConversation(teamId: string, subject: string, repliedMessageId?: string, participatedEmails: string[] = []) {
     const createConversation = () => dbService.emailConversation.create({
       lastMessageAt: new Date(),
       subject,
       team: teamId,
+      participatedEmails: [...new Set(participatedEmails)], // Use Set to ensure uniqueness
     });
     if (!repliedMessageId) return await createConversation();
     const parentEmail = await dbService.email.findOne({
@@ -32,7 +33,42 @@ class EmailService {
   }
 
   async createEmail(teamId: string, emailData: Partial<Email>): Promise<Email> {
-    const conversation = await this.prepareEmailConversation(teamId, emailData.subject ?? "Untitled", emailData.inReplyTo);
+    // Collect all email addresses involved in this email
+    const participatedEmails: string[] = [];
+
+    // Add sender email
+    if (emailData.from) {
+      participatedEmails.push(emailData.from);
+    }
+
+    // Add recipient emails
+    if (emailData.to && Array.isArray(emailData.to)) {
+      participatedEmails.push(...emailData.to);
+    }
+
+    // Add CC emails if they exist
+    if (emailData.cc && Array.isArray(emailData.cc)) {
+      participatedEmails.push(...emailData.cc);
+    }
+
+    // Add BCC emails if they exist
+    if (emailData.bcc && Array.isArray(emailData.bcc)) {
+      participatedEmails.push(...emailData.bcc);
+    }
+
+    // Add recipient if it exists (used in some cases)
+    if (emailData.recipient) {
+      participatedEmails.push(emailData.recipient);
+    }
+
+    // Prepare the conversation with the collected emails
+    const conversation = await this.prepareEmailConversation(
+      teamId,
+      emailData.subject ?? "Untitled",
+      emailData.inReplyTo,
+      participatedEmails
+    );
+
     console.log('prepared conversation', conversation._id.toString());
     if (!conversation) throw new ApiError(400, 'Failed to prepare conversation');
 
@@ -44,8 +80,18 @@ class EmailService {
       messageId: emailData.messageId || `${Date.now()}.${Math.random().toString(36).substring(2)}@${emailData.from?.split('@')[1] || 'example.com'}`,
     } as Email);
 
-    // Update the conversation's lastMessageAt timestamp
+    // Update the conversation's lastMessageAt timestamp and participated emails
     conversation.lastMessageAt = new Date();
+
+    // Add new emails to the existing participatedEmails array
+    if (!conversation.participatedEmails) {
+      conversation.participatedEmails = [];
+    }
+
+    // Combine existing and new emails, then remove duplicates
+    const updatedEmails = [...new Set([...conversation.participatedEmails, ...participatedEmails])];
+    conversation.participatedEmails = updatedEmails;
+
     await conversation.save();
 
     return newEmail;
@@ -305,6 +351,7 @@ class EmailService {
   /**
    * Get conversations with the latest email from each conversation
    * This is used for displaying a conversation list where only the latest email in each thread is shown
+   * Optimized to use the participatedEmails field in conversations
    */
   async getConversationsWithLatestEmail(
     teamId: string,
@@ -329,101 +376,40 @@ class EmailService {
       isRead,
       emailAddress
     } = options;
-
-    // Get the team member's email addresses
     const memberEmailAddresses = await emailAddressService.getTeamMemberEmailAddresses(teamId, memberId);
-    const emailAddressList = memberEmailAddresses.map(addr => {
-      // Construct full email address from localPart and domain
-      const domain = addr.domain as any;
-      return `${addr.localPart}@${domain.name}`;
-    });
 
-    // Filter by specific email address if provided
-    const filteredEmailAddresses = emailAddress
-      ? emailAddressList.filter(addr => addr === emailAddress)
-      : emailAddressList;
-
-    if (filteredEmailAddresses.length === 0) {
-      return {
-        docs: [],
-        totalDocs: 0,
-        limit,
-        page,
-        totalPages: 0,
-        hasNextPage: false,
-        hasPrevPage: false,
-        pagingCounter: 0,
-        prevPage: null,
-        nextPage: null
-      };
-    }
-
-    // Build the base query for emails
-    const emailQuery: any = {
-      $or: [
-        {recipient: {$in: filteredEmailAddresses}},
-      ]
+    if (!memberEmailAddresses.find(x => x.fullAddress === emailAddress)) throw new ApiError(400, 'FORBIDDEN');
+    const filter = {
+      participatedEmails: {
+        $in: [emailAddress],
+      }
     };
-
-    // Add additional filters
-    if (search) {
-      emailQuery.$or = [
-        {subject: {$regex: search, $options: 'i'}},
-        {text: {$regex: search, $options: 'i'}},
-        {html: {$regex: search, $options: 'i'}}
-      ];
-    }
-
-    if (isRead !== undefined) {
-      emailQuery.isRead = isRead;
-    }
-
-    if (isStarred !== undefined) {
-      emailQuery.isStarred = isStarred;
-    }
-
-    // First, get all conversation IDs that match our criteria
-    const matchingEmails = await dbService.email.find(emailQuery, {conversation: 1});
-    const conversationIds = [...new Set(matchingEmails.map(email => email.conversation.toString()))];
-
-    if (conversationIds.length === 0) {
-      return {
-        docs: [],
-        totalDocs: 0,
-        limit,
-        page,
-        totalPages: 0,
-        hasNextPage: false,
-        hasPrevPage: false,
-        pagingCounter: 0,
-        prevPage: null,
-        nextPage: null
-      };
-    }
-
-    // Get all conversations with their latest message date
-    const conversations = await dbService.emailConversation.find({
-      _id: {$in: conversationIds}
-    }).sort({lastMessageAt: -1})
+    const totalDocs = await dbService.emailConversation.count(filter)
+    const conversations = await dbService.emailConversation.find(filter)
+      .sort({ lastMessageAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
-
-    // Get the total count for pagination
-    const totalDocs = await dbService.emailConversation.count({
-      _id: {$in: conversationIds}
+    const conversationIds = conversations.map(conv => conv._id);
+    const latestEmails = await dbService.email.aggregate([
+      { $match: { conversation: { $in: conversationIds } } },
+      { $sort: { createdAt: -1 } },
+      { $group: {
+          _id: "$conversation",
+          latestEmail: { $first: "$$ROOT" }
+        }
+      }
+    ]);
+    const emailMap = new Map();
+    latestEmails.forEach(item => {
+      emailMap.set(item._id.toString(), item.latestEmail);
     });
 
-    // For each conversation, get the latest email
-    const results = await Promise.all(conversations.map(async (conversation) => {
-      const latestEmail = await dbService.email.findOne({
-        conversation: conversation._id
-      }).sort({createdAt: -1});
-
+    const results = conversations.map(conversation => {
       return {
         conversation,
-        email: latestEmail
+        email: emailMap.get(conversation._id.toString()) || null
       };
-    }));
+    });
 
     // Return in paginated format
     return {
@@ -437,6 +423,24 @@ class EmailService {
       pagingCounter: (page - 1) * limit + 1,
       prevPage: page > 1 ? page - 1 : null,
       nextPage: page * limit < totalDocs ? page + 1 : null
+    };
+  }
+
+  /**
+   * Helper method to return an empty paginated result
+   */
+  private emptyPaginatedResult(page: number, limit: number) {
+    return {
+      docs: [],
+      totalDocs: 0,
+      limit,
+      page,
+      totalPages: 0,
+      hasNextPage: false,
+      hasPrevPage: false,
+      pagingCounter: 0,
+      prevPage: null,
+      nextPage: null
     };
   }
 
@@ -557,6 +561,21 @@ class EmailService {
         to: {$in: ownedAddresses},
       }]
     });
+  }
+
+  /**
+   * Get all unique email addresses that have participated in a conversation
+   * @param conversationId The ID of the conversation
+   * @returns Array of unique email addresses
+   */
+  async getConversationParticipants(conversationId: string): Promise<string[]> {
+    const conversation = await this.getConversationById(conversationId);
+    if (!conversation) {
+      throw new ApiError(404, 'Conversation not found');
+    }
+
+    // Return the participated emails from the conversation
+    return conversation.participatedEmails || [];
   }
 }
 
