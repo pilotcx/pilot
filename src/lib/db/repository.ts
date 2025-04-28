@@ -10,7 +10,7 @@ import mongoose, {
   PipelineStage,
   MongooseBulkWriteOptions,
 } from "mongoose";
-import mongodb from "mongodb";
+import mongodb, {UpdateOptions} from "mongodb";
 export interface MixedModel<T>
   extends PaginateModel<T>,
     AggregatePaginateModel<T> {
@@ -85,10 +85,10 @@ export class BaseRepository<T> {
 
   update(
     filter: FilterQuery<T>,
-    update?: UpdateQuery<T>,
-    options?: QueryOptions<T>
+    update: UpdateQuery<T>,
+    options?: UpdateOptions
   ) {
-    return this._model.findOneAndUpdate(
+    return this._model.updateMany(
       this.processFilter(filter),
       update,
       options

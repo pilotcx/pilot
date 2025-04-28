@@ -55,30 +55,22 @@ class EmailService {
     if (!emailData.subject) throw new ApiError(400, 'Subject is required');
     if (!emailData.html) throw new ApiError(400, 'Body is required');
     const chainId = await this.determineChainId(emailData.inReplyTo, emailData.references);
+
     await dbService.email.update(
       {chainId},
-      {$set: {isLatestInChain: false}}
+      {isLatestInChain: false}
     );
 
     // Generate a unique message ID if not provided
-    const messageId = emailData.messageId ||
-      `${Date.now()}.${Math.random().toString(36).substring(2)}@${emailData.from?.split('@')[1] || 'example.com'}`;
-
+    const messageId = emailData.messageId || `${Date.now()}.${Math.random().toString(36).substring(2)}@${emailData.from?.split('@')[1] || 'example.com'}`;
     // Create the email with chain information
     return await dbService.email.create({
-      recipient: emailData.recipient,
-      from: emailData.from,
-      to: emailData.to,
-      subject: emailData.subject,
-      summary: generateEmailSummary(emailData.html),
-      html: emailData.html,
+      ...emailData,
       messageId,
       chainId,
       isLatestInChain: true,
-      team: teamId,
-      isRead: true,
-      direction: EmailType.Outgoing,
-    });
+      team: teamId
+    } as Email);
   }
 
   getEmailById(emailId: string) {
