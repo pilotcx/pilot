@@ -4,8 +4,6 @@ import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 import mongoosePaginate from 'mongoose-paginate-v2';
 import { Schemas } from "@/lib/db/models/index";
 
-
-
 // Email attachment schema
 const EmailAttachmentSchema = new mongoose.Schema({
   filename: {
@@ -27,13 +25,6 @@ const EmailAttachmentSchema = new mongoose.Schema({
 }, { _id: false });
 
 export const EmailSchema = new mongoose.Schema<Email>({
-  // Conversation reference
-  conversation: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'EmailConversation',
-    required: true,
-  },
-
   // Recipient information
   recipient: {
     type: String,
@@ -53,6 +44,10 @@ export const EmailSchema = new mongoose.Schema<Email>({
       },
       message: 'At least one recipient is required',
     },
+  },
+  team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Schemas.Team,
   },
   cc: {
     type: [String],
@@ -93,6 +88,22 @@ export const EmailSchema = new mongoose.Schema<Email>({
     type: String,
     index: true,
   },
+  references: {
+    type: [String],
+    default: [],
+  },
+
+  // Chain tracking
+  chainId: {
+    type: String,
+    required: true,
+    index: true,
+  },
+  isLatestInChain: {
+    type: Boolean,
+    default: true,
+    index: true,
+  },
 
   // Status
   isRead: {
@@ -117,8 +128,13 @@ EmailSchema.set('toJSON', { virtuals: true });
 EmailSchema.set('toObject', { virtuals: true });
 
 // Create indexes for common queries
-EmailSchema.index({ conversation: 1 });
 EmailSchema.index({ from: 1 });
 EmailSchema.index({ to: 1 });
 EmailSchema.index({ direction: 1 });
 EmailSchema.index({ isRead: 1 });
+
+// Create index for chain-based queries
+EmailSchema.index({ chainId: 1, isLatestInChain: 1 });
+EmailSchema.index({ chainId: 1, createdAt: 1 }); // For sorting emails within a chain
+
+EmailSchema.index({ team: 1, isLatestInChain: 1, lastMessageAt: -1 });

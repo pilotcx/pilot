@@ -37,9 +37,7 @@ export interface EmailAttachment {
 }
 
 export interface Email extends BaseEntity {
-  conversation: mongoose.Types.ObjectId | EmailConversation | string;
-
-  recipient: string;
+  recipient?: string;
 
   from: string;
   to: string[];
@@ -53,16 +51,15 @@ export interface Email extends BaseEntity {
   attachments?: EmailAttachment[];
   team: Team | string | mongoose.Schema.Types.ObjectId;
 
+  // Message IDs for threading
   messageId: string;
   inReplyTo?: string;
+  references?: string[];
+
+  // Chain tracking
+  chainId: string;
+  isLatestInChain: boolean;
 
   isRead: boolean;
   direction: 'incoming' | 'outgoing';
-}
-
-export interface EmailConversation extends BaseEntity {
-  lastMessageAt: Date | string;
-  subject: string;
-  team: Team | string | mongoose.Schema.Types.ObjectId;
-  participatedEmails: string[];
 }

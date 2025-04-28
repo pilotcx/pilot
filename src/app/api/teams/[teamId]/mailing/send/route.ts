@@ -60,17 +60,12 @@ export const POST = withApi(async (req: NextRequest, {params}: { params: { teamI
       attachment: files,
     });
     if (!sendResult.id) throw new ApiError(500, 'FAILED_SENDING_EMAIL');
-    let conversationId: string | undefined = undefined;
-    if (validatedData.inReplyTo) {
-      const email = await emailService.getEmailByMessageId(validatedData.inReplyTo);
-      if (email?.conversation) {
-        conversationId = email.conversation.toString();
-      }
-    }
+
+    // Create the email with the appropriate chainId
+    // The createEmail method will handle finding the correct chainId based on inReplyTo
     await emailService.createEmail(teamId, {
       ...validatedData,
       summary: generateEmailSummary(validatedData.html),
-      conversation: conversationId,
       messageId: sendResult.id,
       direction: EmailType.Outgoing,
       isRead: true,

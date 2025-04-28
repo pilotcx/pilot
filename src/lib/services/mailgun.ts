@@ -28,6 +28,7 @@ class MailgunService {
       key: config.apiKey
     });
   }
+
   /**
    * Create a new Mailgun integration for a team
    */
@@ -194,6 +195,17 @@ class MailgunService {
 
     const headers = this.parseMessageHeaders(payload.messageHeaders);
     const recipients = this.parseEmailList(payload.recipient);
+
+    // Parse References header if it exists
+    let references: string[] = [];
+    if (headers['references']) {
+      // References header can contain multiple message IDs separated by spaces
+      references = headers['references']
+        .split(/\s+/)
+        .map(ref => ref.trim())
+        .filter(ref => ref.length > 0);
+    }
+
     for await (const recipient of recipients) {
       const emailData: Partial<Email> = {
         recipient,
@@ -202,12 +214,14 @@ class MailgunService {
         summary: this.generateEmailSummary(payload.bodyHtml ? payload.bodyHtml : payload.bodyPlain),
         from: payload.from,
         inReplyTo: headers['in-reply-to'],
+        references,
         direction: EmailType.Incoming,
         messageId: payload.messageId,
         isRead: false,
         to: this.parseEmailList(headers['to']),
         cc: this.parseEmailList(headers['cc']),
         bcc: this.parseEmailList(headers['bcc']),
+        team: teamId,
       };
       await emailService.createEmail(teamId, emailData);
     }
