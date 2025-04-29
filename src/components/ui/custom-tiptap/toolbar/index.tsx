@@ -22,13 +22,13 @@ export const EditorToolbar = ({ editor, className }: { editor: Editor, className
       ]}
     />
 
-    <Separator orientation="vertical" className="mx-2 h-7" />
+    <Separator orientation="vertical" className="mx-2 !h-7" />
     <TextAlignment editor={editor} />
     <TextHeading editor={editor} activeLevels={[1, 2, 3, 4]}/>
     <TextList editor={editor} />
     <TextColor editor={editor} />
 
-    <Separator orientation="vertical" className="mx-2 h-7" />
+    <Separator orientation="vertical" className="mx-2 !h-7" />
 
     <TextInsertElement editor={editor} />
   </div>
