@@ -47,11 +47,6 @@ const defaultCols = [
     title: "Complete",
     status: TaskStatus.Completed,
   },
-  {
-    id: ColStatus.OVERDUE,
-    title: "Overdue",
-    status: TaskStatus.Overdue,
-  },
 ] satisfies Column[];
 
 export type ColumnId = (typeof defaultCols)[number]["id"];
