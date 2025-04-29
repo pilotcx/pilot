@@ -362,7 +362,12 @@ export class ApiService {
   };
 
   getMailgunIntegration = async (teamId: string) => {
-    return this.call('GET', `/teams/${teamId}/integrations/mailgun`);
+    return this.call<Integration>('GET', `/teams/${teamId}/integrations/mailgun`);
+  };
+
+  // Get joined projects for a team member
+  getJoinedProjects = async (memberId: string, teamId: string) => {
+    return this.call<Project[]>('GET', `/teams/${teamId}/members/${memberId}/projects`);
   };
 
   createOrUpdateMailgunIntegration = async (teamId: string, data: any) => {

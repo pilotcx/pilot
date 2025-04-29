@@ -44,14 +44,6 @@ export function TeamPost({post}: PostProps) {
   const [reactToPost] = useApi(api.reactToPost);
   const [deletePost] = useApi(api.deletePost);
 
-  const handleCopyLink = async () => {
-    // In a real app, this would copy the actual post URL
-    await navigator.clipboard.writeText(`${window.location.origin}/posts/${post._id}`);
-    setCopied(true);
-    toast.success("Link copied to clipboard");
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   const isCurrentUserAuthor = author._id === membership._id;
 
   const getReactionIcon = (type: ReactionType) => {

@@ -3,7 +3,7 @@
 import { CommentItem } from "@/components/comment-item";
 import { useTeam } from "@/components/providers/team-provider";
 import { Button } from "@/components/ui/button";
-import { InlineMarkdownEditor } from "@/components/ui/inline-markdown-editor";
+import { TiptapEditor } from "@/components/ui/custom-tiptap/tiptap-editor";
 import useApi from "@/hooks/use-api";
 import api from "@/lib/services/api";
 import { Comment } from "@/lib/types/models/post";
@@ -39,7 +39,6 @@ export function CommentSection({
   const commentSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Only load comments when the section is shown and not already loaded
     if (teamId && showComments && !commentsLoadedRef.current) {
       commentsLoadedRef.current = true;
       loadComments();
@@ -111,7 +110,13 @@ export function CommentSection({
 
       if (response.data) {
         setComments([response.data as Comment, ...comments]);
+        // Reset comment input
         setNewComment("");
+        // Force editor to clear
+        setTimeout(() => {
+          setNewComment("");
+        }, 0);
+        
         setTotalComments(totalComments + 1);
         toast.success("Comment added successfully");
       }
@@ -155,11 +160,9 @@ export function CommentSection({
   const handleDeleteComment = (commentId: string) => {
     if (!teamId) return;
 
-    // First check if it's a top-level comment
     const topLevelIndex = comments.findIndex((c) => c._id === commentId);
 
     if (topLevelIndex >= 0) {
-      // It's a top-level comment, remove it and decrement total
       const deletedComment = comments[topLevelIndex];
       const decrementCount = 1 + (deletedComment.replyCount || 0);
 
@@ -171,10 +174,12 @@ export function CommentSection({
       return;
     }
 
-    // Check if it's a reply by iterating through all comments and their replies
     let foundReply = false;
     const updatedComments = comments.map((comment) => {
-      if (comment.replies && comment.replies.some((reply) => reply._id === commentId)) {
+      if (
+        comment.replies &&
+        comment.replies.some((reply) => reply._id === commentId)
+      ) {
         foundReply = true;
         // Filter out the deleted reply
         const updatedReplies = comment.replies.filter(
@@ -209,23 +214,17 @@ export function CommentSection({
     }
 
     return (
-      <div 
-        className="space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent pr-4"
-        style={{ 
-          maxHeight: "400px",
-          willChange: "height",
-          contain: "content"
-        }}
-      >
+      <div className="space-y-4 pr-4">
         {comments.map((comment) =>
           comment && comment._id ? (
             <CommentItem
-              key={comment._id}
+              key={`comment-${comment._id}`}
               teamId={teamId}
               comment={comment}
               postId={postId}
               onDelete={handleDeleteComment}
               onReply={handleReply}
+              isReply={false}
             />
           ) : null
         )}
@@ -252,12 +251,11 @@ export function CommentSection({
     return (
       <div className="mt-4">
         <div className="mb-2">
-          <InlineMarkdownEditor
+          <TiptapEditor
             value={newComment}
             onChange={setNewComment}
             placeholder="Write a comment..."
-            minHeight="60px"
-            height="60px"
+            minHeight="36px"
             className="mb-2"
           />
         </div>
@@ -280,7 +278,7 @@ export function CommentSection({
         <Button
           variant="ghost"
           size="sm"
-          className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
+          className="flex -ml-2 items-center gap-1.5 text-xs font-medium"
           onClick={() => setShowComments(!showComments)}
         >
           <MessageSquare className="h-3.5 w-3.5" />
@@ -291,7 +289,9 @@ export function CommentSection({
       </div>
 
       {showComments && (
-        <div className="comment-content pt-3" style={{ contain: "content" }}>
+        <div
+          className="comment-content pt-6 border-t mt-3"
+        >
           {loading ? (
             <div className="flex justify-center py-8">
               <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />

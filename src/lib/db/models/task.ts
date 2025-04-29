@@ -43,6 +43,10 @@ export const TaskSchema = new mongoose.Schema<Task>({
     required: true,
     index: true,
   },
+  overdue: {
+    type: Boolean,
+    default: false,
+  },
 }, {
   timestamps: true,
 });

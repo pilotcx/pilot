@@ -1,6 +1,6 @@
-import {BaseEntity} from "@/lib/types/models/base";
+import { BaseEntity } from "@/lib/types/models/base";
+import { User } from "@/lib/types/models/user";
 import mongoose from "mongoose";
-import {User} from "@/lib/types/models/user";
 
 export enum TeamRole {
   Owner = 'owner',
