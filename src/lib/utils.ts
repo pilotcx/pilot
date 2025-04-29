@@ -59,8 +59,8 @@ export const getStatusLabel = (status: TaskStatus) => {
       return "In Progress";
     case TaskStatus.Pending:
       return "Todo";
-    case TaskStatus.Overdue:
-      return "Overdue";
+    case TaskStatus.Late:
+      return "Late";
     default:
       return "Todo";
   }

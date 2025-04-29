@@ -6,15 +6,20 @@ import {PaginateOptions} from 'mongoose';
 
 class TaskService {
   async createTask(teamId: string, data: CreateTaskInput) {
+    const dueDate = new Date(data.dueDate);
+    const now = new Date();
+    const isPastDue = dueDate < now;
+    
     const task = await dbService.task.create({
       title: data.title,
       description: data.description || '',
       status: TaskStatus.Pending,
       assignee: data.assignee,
-      dueDate: new Date(data.dueDate),
+      dueDate: dueDate,
       priority: data.priority ?? TaskPriority.Medium,
       team: teamId,
       project: data.project,
+      overdue: isPastDue,
     });
 
     // Update team task count
@@ -51,7 +56,6 @@ class TaskService {
   async getTasksByTeamProject(teamId: string, projectId: string, options: PaginateOptions & { query?: any } = {}) {
     await dbService.connect();
 
-    // Verify that the project belongs to the team
     const project = await dbService.project.findOne({_id: projectId, team: teamId});
     if (!project) {
       throw new ApiError(404, 'Project not found in this team');
@@ -59,7 +63,6 @@ class TaskService {
 
     const {query = {}, ...paginateOptions} = options;
 
-    // Build the final query
     const finalQuery = {
       team: teamId,
       project: projectId,
@@ -78,7 +81,6 @@ class TaskService {
   async getUserTeamTasks(teamId: string, userId: string, options: PaginateOptions & { query?: any } = {}) {
     await dbService.connect();
 
-    // Get the team membership for the user
     const membership = await dbService.teamMember.findOne({
       team: teamId,
       user: userId
@@ -88,14 +90,12 @@ class TaskService {
       throw new ApiError(403, 'User is not a member of this team');
     }
 
-    // Get all projects that the user is a member of
     const projectMemberships = await dbService.projectMember.find({
       teamMember: membership._id
     });
 
     const projectIds = projectMemberships.map(pm => pm.project);
 
-    // If user is not a member of any projects, return empty result
     if (projectIds.length === 0) {
       return {
         docs: [],
@@ -113,7 +113,6 @@ class TaskService {
 
     const {query = {}, ...paginateOptions} = options;
 
-    // Build the final query to get tasks from all projects the user is a member of
     const finalQuery = {
       team: teamId,
       project: {$in: projectIds},
@@ -147,13 +146,56 @@ class TaskService {
     const updateData: any = {};
     if (data.title) updateData.title = data.title;
     if (data.description !== undefined) updateData.description = data.description;
-    if (data.status) updateData.status = data.status;
     if (data.assignee) updateData.assignee = data.assignee;
     if (data.dueDate) updateData.dueDate = new Date(data.dueDate);
     if (data.priority) updateData.priority = data.priority;
     if (data.project) updateData.project = data.project;
 
-    return dbService.task.update({_id: taskId}, updateData, {new: true});
+    // Handle status update and overdue logic
+    const now = new Date();
+    const dueDate = data.dueDate ? new Date(data.dueDate) : task.dueDate;
+    const isPastDue = new Date(dueDate) < now;
+    
+    updateData.overdue = isPastDue && (!data.status || (data.status !== TaskStatus.Completed && data.status !== TaskStatus.Late));
+    
+    // Handle status changes with proper logic
+    if (data.status) {
+      // If task is being marked as completed and is past due date, mark as Late instead
+      if (data.status === TaskStatus.Completed && isPastDue) {
+        updateData.status = TaskStatus.Late;
+      } else {
+        updateData.status = data.status;
+      }
+    }
+
+    return dbService.task.update({_id: taskId}, updateData);
+  }
+
+  /**
+   * Updates overdue status for tasks
+   * This method should be called on a schedule to mark tasks as overdue
+   * if they are past their due date and not completed
+   */
+  async updateOverdueTasks() {
+    await dbService.connect();
+    const now = new Date();
+    
+    // Find all tasks that are past due date, not completed/late, and not already marked as overdue
+    const overdueTasks = await dbService.task.find({
+      dueDate: { $lt: now },
+      status: { $nin: [TaskStatus.Completed, TaskStatus.Late] },
+      overdue: false
+    });
+    
+    // Update all found tasks to be marked as overdue
+    for (const task of overdueTasks) {
+      await dbService.task.update(
+        { _id: task._id },
+        { overdue: true }
+      );
+    }
+    
+    return overdueTasks.length;
   }
 
   async deleteTask(taskId: string) {
