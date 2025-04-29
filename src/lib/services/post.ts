@@ -207,48 +207,47 @@ class PostService {
       ? postId
       : (postId as any).toString();
 
-    // Get top-level comments only (no parentId)
+    // First get top-level comments (with author populated)
+    const commentsQuery = {
+      post: postIdStr,
+      parentId: null
+    };
+    
+    // Get the paginated comments, but only populate author initially
     const comments = await dbService.comment.paginate(
-      {
-        post: postIdStr,
-        parentId: null
-      },
+      commentsQuery,
       {
         limit,
         offset: skip,
         sort: { [sortBy]: sortOrder === 'asc' ? 1 : -1 },
-        populate: [
-          { path: 'author' },
-          {
-            path: 'replies',
-            populate: {
-              path: 'author'
-            },
-            options: {
-              limit: 10, // Limit replies to 10 per comment
-              sort: { createdAt: 1 } // Sort replies by creation date (oldest first)
-            }
-          }
-        ]
+        populate: 'author'
       }
     );
 
-    // Clean up the response to ensure proper JSON serialization
-    const cleanedDocs = comments.docs.map(doc => {
-      const docObj = (doc as any).toObject ? (doc as any).toObject() : doc;
-
-      // Clean up replies if they exist
-      if (docObj.replies && Array.isArray(docObj.replies)) {
-        docObj.replies = docObj.replies.map((reply: any) =>
-          reply.toObject ? reply.toObject() : reply
-        );
-      }
-
-      return docObj;
-    });
+    // For each comment, get replies separately with explicit query
+    const commentsWithReplies = await Promise.all(
+      comments.docs.map(async (comment) => {
+        // Convert to plain object for easier manipulation
+        const commentObj = (comment as any).toObject ? (comment as any).toObject() : comment;
+        
+        // Fetch replies for this comment
+        const replies = await dbService.comment.find({ 
+          parentId: comment._id.toString(),
+          post: postIdStr
+        })
+        .sort({ createdAt: 1 })
+        .limit(10)
+        .populate('author')
+        .lean();
+        
+        // Add replies to comment object
+        commentObj.replies = replies;
+        return commentObj;
+      })
+    );
 
     return {
-      data: cleanedDocs,
+      data: commentsWithReplies,
       pagination: {
         totalDocs: comments.totalDocs,
         totalPages: comments.totalPages,
@@ -280,6 +279,7 @@ class PostService {
         limit,
         offset: skip,
         sort: { createdAt: 1 },
+        strictPopulate: false,
         populate: 'author'
       }
     );

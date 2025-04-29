@@ -1,8 +1,8 @@
 import * as React from "react"
 import type { Editor } from "@tiptap/react"
 import { BubbleMenu } from "@tiptap/react"
-import LinkEditBlock from "../link/link-edit-block"
-import {LinkPopoverBlock} from "@/components/ui/custom-tiptap/link/link-popover-block";
+import { Button } from "@/components/ui/button"
+import { ExternalLinkIcon, PencilIcon, XIcon } from "lucide-react"
 
 interface LinkBubbleMenuProps {
   editor: Editor
@@ -20,20 +20,15 @@ interface ShouldShowProps {
 }
 
 export const LinkBubbleMenu = ({ editor } : LinkBubbleMenuProps) => {
-  const [showEdit, setShowEdit] = React.useState(false)
   const [linkAttrs, setLinkAttrs] = React.useState<LinkAttributes>({
     href: "",
     target: "",
   })
-  const [selectedText, setSelectedText] = React.useState("")
 
   const updateLinkState = React.useCallback(() => {
     const { from, to } = editor.state.selection
     const { href, target } = editor.getAttributes("link")
-    const text = editor.state.doc.textBetween(from, to, " ")
-
     setLinkAttrs({ href, target })
-    setSelectedText(text)
   }, [editor])
 
   const shouldShow = React.useCallback(
@@ -57,41 +52,26 @@ export const LinkBubbleMenu = ({ editor } : LinkBubbleMenuProps) => {
   )
 
   const handleEdit = React.useCallback(() => {
-    setShowEdit(true)
-  }, [])
-
-  const onSetLink = React.useCallback(
-    (url: string, text?: string, openInNewTab?: boolean) => {
+    const { from, to } = editor.state.selection
+    const text = editor.state.doc.textBetween(from, to, " ")
+    const url = window.prompt('URL', linkAttrs.href)
+    if (url) {
       editor
         .chain()
         .focus()
         .extendMarkRange("link")
-        .insertContent({
-          type: "text",
-          text: text || url,
-          marks: [
-            {
-              type: "link",
-              attrs: {
-                href: url,
-                target: openInNewTab ? "_blank" : "",
-              },
-            },
-          ],
-        })
-        .setLink({ href: url, target: openInNewTab ? "_blank" : "" })
+        .setLink({ href: url })
         .run()
-      setShowEdit(false)
-      updateLinkState()
-    },
-    [editor, updateLinkState]
-  )
+    }
+  }, [editor, linkAttrs.href])
 
   const onUnsetLink = React.useCallback(() => {
     editor.chain().focus().extendMarkRange("link").unsetLink().run()
-    setShowEdit(false)
-    updateLinkState()
-  }, [editor, updateLinkState])
+  }, [editor])
+
+  const openLink = React.useCallback(() => {
+    window.open(linkAttrs.href, '_blank')
+  }, [linkAttrs.href])
 
   return (
     <BubbleMenu
@@ -99,24 +79,47 @@ export const LinkBubbleMenu = ({ editor } : LinkBubbleMenuProps) => {
       shouldShow={shouldShow}
       tippyOptions={{
         placement: "bottom-start",
-        onHidden: () => setShowEdit(false),
+        appendTo: () => document.body,
+        zIndex: 50
       }}
     >
-      {showEdit ? (
-        <LinkEditBlock
-          defaultUrl={linkAttrs.href}
-          defaultText={selectedText}
-          defaultIsNewTab={linkAttrs.target === "_blank"}
-          onSave={onSetLink}
-          className="w-full min-w-80 rounded-md border bg-muted p-4 text-muted-foreground shadow-md outline-none"
-        />
-      ) : (
-        <LinkPopoverBlock
-          onClear={onUnsetLink}
-          url={linkAttrs.href}
-          onEdit={handleEdit}
-        />
-      )}
+      <div className="flex items-center gap-2 rounded-md border bg-popover p-2 shadow-md">
+        <span className="text-xs truncate max-w-40 text-muted-foreground">
+          {linkAttrs.href}
+        </span>
+        
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={openLink}
+            title="Open link"
+          >
+            <ExternalLinkIcon className="h-3 w-3" />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={handleEdit}
+            title="Edit link"
+          >
+            <PencilIcon className="h-3 w-3" />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={onUnsetLink}
+            title="Remove link"
+          >
+            <XIcon className="h-3 w-3" />
+          </Button>
+        </div>
+      </div>
     </BubbleMenu>
   )
 }

@@ -1,29 +1,29 @@
 "use client";
 
-import {useState} from "react";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {Button} from "@/components/ui/button";
-import {toast} from "sonner";
+import { useTeam } from "@/components/providers/team-provider";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { FormatBubbleMenu } from "@/components/ui/custom-tiptap/bubble-menu/format-bubble-menu";
+import { LinkBubbleMenu } from "@/components/ui/custom-tiptap/bubble-menu/link-bubble-menu";
+import { EditorToolbar } from "@/components/ui/custom-tiptap/toolbar";
 import useApi from "@/hooks/use-api";
-import api from "@/lib/services/api";
-import {useTeam} from "@/components/providers/team-provider";
-import {cn} from "@/lib/utils";
-import {EditorContent} from "@tiptap/react";
-import {LinkBubbleMenu} from "@/components/ui/custom-tiptap/bubble-menu/link-bubble-menu";
-import {FormatBubbleMenu} from "@/components/ui/custom-tiptap/bubble-menu/format-bubble-menu";
 import useTiptapEditor from "@/lib/hooks/useEditor";
-import {EditorToolbar} from "@/components/ui/custom-tiptap/toolbar";
-import {Markdown} from "tiptap-markdown";
+import api from "@/lib/services/api";
+import { cn } from "@/lib/utils";
+import { EditorContent } from "@tiptap/react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Markdown } from "tiptap-markdown";
 
 interface CreatePostFormProps {
   onSuccess?: () => void;
 }
 
-export function CreatePostForm({onSuccess}: CreatePostFormProps) {
-  const {team, membership} = useTeam();
+export function CreatePostForm({ onSuccess }: CreatePostFormProps) {
+  const { team, membership } = useTeam();
   const [newPostTitle, setNewPostTitle] = useState("");
   const [newPostContent, setNewPostContent] = useState("");
-  const [createPost, {loading: isSubmitting}] = useApi(api.createPost);
+  const [createPost, { loading: isSubmitting }] = useApi(api.createPost);
 
   const editor = useTiptapEditor({
     extensions: [
@@ -38,7 +38,7 @@ export function CreatePostForm({onSuccess}: CreatePostFormProps) {
     },
     editable: true,
     immediatelyRender: false,
-  })
+  });
 
   const handleSubmitPost = async () => {
     if (!newPostTitle.trim() || !newPostContent.trim() || !team?._id) return;
@@ -46,7 +46,7 @@ export function CreatePostForm({onSuccess}: CreatePostFormProps) {
     try {
       const response = await createPost(team._id.toString(), {
         title: newPostTitle,
-        content: newPostContent
+        content: newPostContent,
       });
 
       if (response) {
@@ -78,9 +78,12 @@ export function CreatePostForm({onSuccess}: CreatePostFormProps) {
       <div className="p-4">
         <div className="flex items-center gap-3 mb-4">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={membership?.avatar} alt={membership?.displayName || ''}/>
+            <AvatarImage
+              src={membership?.avatar}
+              alt={membership?.displayName || ""}
+            />
             <AvatarFallback>
-              {membership?.displayName?.substring(0, 2)?.toUpperCase() || ''}
+              {membership?.displayName?.substring(0, 2)?.toUpperCase() || ""}
             </AvatarFallback>
           </Avatar>
           <div className="font-medium">{membership?.displayName}</div>
@@ -98,29 +101,35 @@ export function CreatePostForm({onSuccess}: CreatePostFormProps) {
             onChange={(e) => setNewPostTitle(e.target.value)}
           />
 
-          {editor && <div className={'mt-4 rounded-lg overflow-hidden border'}>
-            <div className={'bg-muted/60 border-b'}>
-              <EditorToolbar editor={editor}/>
+          {editor && (
+            <div className={"mt-4 rounded-lg overflow-hidden border"}>
+              <div className={"border-b"}>
+                <EditorToolbar editor={editor} />
+              </div>
+              <div
+                onClick={() => editor?.commands.focus()}
+                className={"cursor-text"}
+              >
+                <EditorContent
+                  editor={editor}
+                  className="tiptap-editor min-h-[140px] p-2"
+                />
+              </div>
+              <LinkBubbleMenu editor={editor} />
+              <FormatBubbleMenu editor={editor} />
             </div>
-            <div onClick={() => editor?.commands.focus()} className={'cursor-text'}>
-              <EditorContent editor={editor} className="tiptap-editor min-h-[140px] p-2"/>
-            </div>
-            <LinkBubbleMenu editor={editor}/>
-            <FormatBubbleMenu editor={editor}/>
-          </div>}
+          )}
         </div>
 
         <div className="flex justify-end gap-2 mt-4">
-          <Button
-            variant="outline"
-            onClick={resetForm}
-            disabled={isSubmitting}
-          >
+          <Button variant="outline" onClick={resetForm} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button
             onClick={handleSubmitPost}
-            disabled={isSubmitting || !newPostTitle.trim() || !newPostContent.trim()}
+            disabled={
+              isSubmitting || !newPostTitle.trim() || !newPostContent.trim()
+            }
           >
             {isSubmitting ? "Posting..." : "Publish Post"}
           </Button>

@@ -2,22 +2,39 @@
 
 import { useTeam } from "@/components/providers/team-provider";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import useApi from "@/hooks/use-api";
+import api from "@/lib/services/api";
+import {
+  CreateProjectInput,
+  createProjectSchema,
+} from "@/lib/validations/project";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeftIcon } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { createProjectSchema, CreateProjectInput } from "@/lib/validations/project";
-import api from "@/lib/services/api";
-import useApi from "@/hooks/use-api";
-import Link from "next/link";
 
 export default function NewProjectPage() {
-  const { team } = useTeam();
+  const { team, reloadProjects } = useTeam();
   const router = useRouter();
   const [createProject, { loading }] = useApi(api.createProject);
 
@@ -36,6 +53,7 @@ export default function NewProjectPage() {
     try {
       await createProject(team._id as string, values);
       toast.success("Project created successfully");
+      await reloadProjects?.();
       router.push(`/t/${team.slug}/projects`);
     } catch (error: any) {
       toast.error(error.message || "Failed to create project");
@@ -47,16 +65,19 @@ export default function NewProjectPage() {
     <div className="container py-6">
       <div className="max-w-2xl mx-auto">
         <div className="mb-6">
-          <Link 
+          <Link
             href={`/t/${team.slug}/projects`}
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
           >
             <ArrowLeftIcon className="mr-2 h-4 w-4" />
             Back to Projects
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight">Create New Project</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Create New Project
+          </h1>
           <p className="text-muted-foreground">
-            Set up a new project for your team to organize tasks and track progress
+            Set up a new project for your team to organize tasks and track
+            progress
           </p>
         </div>
 
@@ -69,7 +90,10 @@ export default function NewProjectPage() {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 <FormField
                   control={form.control}
                   name="name"
@@ -80,7 +104,8 @@ export default function NewProjectPage() {
                         <Input placeholder="Enter project name" {...field} />
                       </FormControl>
                       <FormDescription>
-                        This is the name that will be displayed to all team members.
+                        This is the name that will be displayed to all team
+                        members.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -94,17 +119,19 @@ export default function NewProjectPage() {
                     <FormItem>
                       <FormLabel>Project Code</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="PROJ" 
-                          {...field} 
+                        <Input
+                          placeholder="PROJ"
+                          {...field}
                           value={field.value?.toUpperCase()}
-                          onChange={e => field.onChange(e.target.value.toUpperCase())}
+                          onChange={(e) =>
+                            field.onChange(e.target.value.toUpperCase())
+                          }
                           maxLength={10}
                         />
                       </FormControl>
                       <FormDescription>
-                        A short, unique identifier for the project (e.g., PROJ, HR, MARK). 
-                        Use only uppercase letters and numbers.
+                        A short, unique identifier for the project (e.g., PROJ,
+                        HR, MARK). Use only uppercase letters and numbers.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

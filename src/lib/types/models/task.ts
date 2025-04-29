@@ -6,7 +6,7 @@ export enum TaskStatus {
   Pending = 'pending',
   InProgress = 'in-progress',
   Completed = 'completed',
-  Overdue = 'overdue',
+  Late = 'late',
 }
 
 export enum TaskPriority {
@@ -25,12 +25,12 @@ export interface Task extends BaseEntity {
   priority: TaskPriority;
   team: Team | string;
   project: Project | string;
+  overdue: boolean;
 }
 
 
 export enum ColStatus {
   TODO = 'todo',
-  OVERDUE = 'overdue',
   IN_PROGRESS = 'in-progress',
   COMPLETE = 'complete',
 }

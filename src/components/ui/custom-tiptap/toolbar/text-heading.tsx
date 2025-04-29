@@ -117,7 +117,7 @@ export const TextHeading = React.memo(
         tooltip="Heading"
         aria-label="Text styles"
         pressed={editor.isActive("heading")}
-        className={cn("w-12", className)}
+        className={cn("w-fit px-2", className)}
         disabled={editor.isActive("codeBlock")}
       >
         <CaseSensitiveIcon className="size-5" />

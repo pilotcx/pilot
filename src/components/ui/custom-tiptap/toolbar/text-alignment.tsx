@@ -95,7 +95,7 @@ export const TextAlignment = (props: TextAlignmentProps) => {
       tooltip="Alignment"
       aria-label="Text alignment"
       pressed={editor.isActive("textAlign")}
-      className={cn("w-12", className)}
+      className={cn("w-fit px-2", className)}
       disabled={editor.isActive("codeBlock")}
     >
       {currentAlignment?.icon || <AlignLeftIcon className="size-5" />}

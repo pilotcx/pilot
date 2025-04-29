@@ -4,7 +4,7 @@ import { cn, getStatusLabel } from "@/lib/utils";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cva } from "class-variance-authority";
-import { Calendar, CheckCircle, Clock, Plane, User } from "lucide-react";
+import { AlertTriangle, Calendar, CheckCircle, Clock, Plane, User } from "lucide-react";
 
 export type TaskType = "Task";
 
@@ -80,6 +80,8 @@ export const TaskItem = ({ task, isOverlay }: TaskItemProps) => {
     switch (task.status) {
       case TaskStatus.Completed:
         return <CheckCircle className="h-3.5 w-3.5 text-green-500" />;
+      case TaskStatus.Late:
+        return <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />;
       case TaskStatus.InProgress:
         return <Plane className="h-3.5 w-3.5 text-blue-500" />;
       case TaskStatus.Pending:
@@ -119,6 +121,14 @@ export const TaskItem = ({ task, isOverlay }: TaskItemProps) => {
             {getStatusIcon()}
             <span>{getStatusLabel(task.status)}</span>
           </div>
+
+          {/* Overdue indicator */}
+          {task.overdue && task.status !== TaskStatus.Late && task.status !== TaskStatus.Completed && (
+            <div className="flex items-center gap-1">
+              <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
+              <span className="text-red-500">Overdue</span>
+            </div>
+          )}
 
           {/* Due date if available */}
           {formattedDate && (
