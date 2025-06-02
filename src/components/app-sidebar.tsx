@@ -1,23 +1,21 @@
-"use client"
+"use client";
 
-import * as React from "react"
 import {
   BookOpen,
   CheckCheckIcon,
   FileCheckIcon,
-  FolderKanbanIcon,
-  Frame, MailIcon,
-  Map,
+  MailIcon,
   NewspaperIcon,
-  PieChart,
   Settings2,
-  TargetIcon,
-} from "lucide-react"
+  TargetIcon
+} from "lucide-react";
+import * as React from "react";
 
-import {NavMain} from "@/components/nav-main"
-import {NavProjects} from "@/components/nav-projects"
-import {NavUser} from "@/components/nav-user"
-import {TeamSwitcher} from "@/components/team-switcher"
+import { NavMain } from "@/components/nav-main";
+import { NavProjects } from "@/components/nav-projects";
+import { NavUser } from "@/components/nav-user";
+import { useTeam } from "@/components/providers/team-provider";
+import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -29,12 +27,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 import Link from "next/link";
-import {useTeam} from "@/components/providers/team-provider";
 
-export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
-  const {team, projects} = useTeam();
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { team, projects } = useTeam();
   const teamSlug = team.slug;
 
   const data = {
@@ -61,16 +58,12 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
         icon: TargetIcon,
         items: [
           {
-            title: "Genesis",
-            url: "#",
+            title: "Dashboard",
+            url: `/t/${teamSlug}/okr`,
           },
           {
-            title: "Explorer",
-            url: "#",
-          },
-          {
-            title: "Quantum",
-            url: "#",
+            title: "Objectives",
+            url: `/t/${teamSlug}/okr/objectives`,
           },
         ],
       },
@@ -113,12 +106,12 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
         ],
       },
     ],
-  }
+  };
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher/>
+        <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -127,7 +120,7 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <Link href={`/t/${teamSlug}/`}>
-                  <NewspaperIcon/>
+                  <NewspaperIcon />
                   <span>Newsfeed</span>
                 </Link>
               </SidebarMenuButton>
@@ -135,7 +128,7 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <Link href={`/t/${teamSlug}/requests`}>
-                  <FileCheckIcon/>
+                  <FileCheckIcon />
                   <span>Requests</span>
                 </Link>
               </SidebarMenuButton>
@@ -143,7 +136,7 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <Link href={`/t/${teamSlug}/mailing`}>
-                  <MailIcon/>
+                  <MailIcon />
                   <span>Mailing</span>
                 </Link>
               </SidebarMenuButton>
@@ -151,20 +144,20 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <Link href={`/teams/${teamSlug}/integrations`}>
-                  <Settings2/>
+                  <Settings2 />
                   <span>Integrations</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
-        <NavMain items={data.navMain}/>
-        <NavProjects/>
+        <NavMain items={data.navMain} />
+        <NavProjects />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser/>
+        <NavUser />
       </SidebarFooter>
-      <SidebarRail/>
+      <SidebarRail />
     </Sidebar>
-  )
+  );
 }

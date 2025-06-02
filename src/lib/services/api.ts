@@ -20,6 +20,7 @@ import {Integration} from "@/lib/types/models/integration";
 import {Domain} from "@/lib/types/models/domain";
 import {EmailAddress} from "@/lib/types/models/email-address";
 import {Email, EmailConversation} from "@/lib/types/models/email";
+import { Objective, KeyResult, CreateObjectiveInput, UpdateObjectiveInput, CreateKeyResultInput, UpdateKeyResultInput } from '../types/models/okr';
 
 export class ApiService {
   api = axios.create({
@@ -466,6 +467,88 @@ export class ApiService {
         emailAddress,
       }
     });
+  };
+
+  // OKR methods
+  getTeamObjectives = async (teamId: string, options: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    startDate?: Date;
+    endDate?: Date;
+    ownerId?: string;
+  } = {}) => {
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      startDate,
+      endDate,
+      ownerId
+    } = options;
+
+    let url = `/teams/${teamId}/okr?page=${page}&limit=${limit}`;
+
+    if (status) url += `&status=${status}`;
+    if (startDate) url += `&startDate=${startDate.toISOString()}`;
+    if (endDate) url += `&endDate=${endDate.toISOString()}`;
+    if (ownerId) url += `&ownerId=${ownerId}`;
+
+    return this.call<Objective[]>('GET', url);
+  };
+
+  createObjective = async (teamId: string, data: CreateObjectiveInput) => {
+    return this.call<Objective>('POST', `/teams/${teamId}/okr`, data);
+  };
+
+  getObjective = async (teamId: string, objectiveId: string) => {
+    return this.call<Objective>('GET', `/teams/${teamId}/okr/${objectiveId}`);
+  };
+
+  updateObjective = async (teamId: string, objectiveId: string, data: UpdateObjectiveInput) => {
+    return this.call<Objective>('PUT', `/teams/${teamId}/okr/${objectiveId}`, data);
+  };
+
+  deleteObjective = async (teamId: string, objectiveId: string) => {
+    return this.call('DELETE', `/teams/${teamId}/okr/${objectiveId}`);
+  };
+
+  // Key Results methods
+  getObjectiveKeyResults = async (teamId: string, objectiveId: string, options: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    ownerId?: string;
+  } = {}) => {
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      ownerId
+    } = options;
+
+    let url = `/teams/${teamId}/okr/${objectiveId}/key-results?page=${page}&limit=${limit}`;
+
+    if (status) url += `&status=${status}`;
+    if (ownerId) url += `&ownerId=${ownerId}`;
+
+    return this.call<KeyResult[]>('GET', url);
+  };
+
+  createKeyResult = async (teamId: string, objectiveId: string, data: CreateKeyResultInput) => {
+    return this.call<KeyResult>('POST', `/teams/${teamId}/okr/${objectiveId}/key-results`, data);
+  };
+
+  getKeyResult = async (teamId: string, objectiveId: string, keyResultId: string) => {
+    return this.call<KeyResult>('GET', `/teams/${teamId}/okr/${objectiveId}/key-results/${keyResultId}`);
+  };
+
+  updateKeyResult = async (teamId: string, objectiveId: string, keyResultId: string, data: UpdateKeyResultInput) => {
+    return this.call<KeyResult>('PUT', `/teams/${teamId}/okr/${objectiveId}/key-results/${keyResultId}`, data);
+  };
+
+  deleteKeyResult = async (teamId: string, objectiveId: string, keyResultId: string) => {
+    return this.call('DELETE', `/teams/${teamId}/okr/${objectiveId}/key-results/${keyResultId}`);
   };
 }
 
