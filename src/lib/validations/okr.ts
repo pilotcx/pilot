@@ -5,18 +5,15 @@ import { KeyResultStatus, ObjectiveStatus } from '../types/models/okr';
 export const createObjectiveSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
   description: z.string().max(1000, 'Description must be less than 1000 characters').optional(),
-  startDate: z.string({
-    required_error: "Start date is required",
-  }),
-  endDate: z.string({
-    required_error: "End date is required",
+  dueDate: z.string({
+    required_error: "Due date is required",
   }),
   teamId: z.string().min(1, 'Team ID is required'),
 }).refine((data) => {
-  return dayjs(data.startDate).isBefore(dayjs(data.endDate));
+  return dayjs(data.dueDate).isAfter(dayjs());
 }, {
-  message: "End date must be after start date",
-  path: ["endDate"],
+  message: "Due date must be in the future",
+  path: ["dueDate"],
 });
 
 export const updateObjectiveSchema = z.object({
@@ -24,17 +21,16 @@ export const updateObjectiveSchema = z.object({
   description: z.string().max(1000, 'Description must be less than 1000 characters').optional(),
   status: z.nativeEnum(ObjectiveStatus).optional(),
   progress: z.number().min(0).max(100).optional(),
-  startDate: z.date().optional(),
-  endDate: z.date().optional(),
+  dueDate: z.string().optional(),
   ownerId: z.string().min(1, 'Owner ID is required').optional(),
 }).refine((data) => {
-  if (data.startDate && data.endDate) {
-    return data.startDate < data.endDate;
+  if (data.dueDate) {
+    return dayjs(data.dueDate).isAfter(dayjs());
   }
   return true;
 }, {
-  message: "End date must be after start date",
-  path: ["endDate"],
+  message: "Due date must be in the future",
+  path: ["dueDate"],
 });
 
 export const createKeyResultSchema = z.object({
@@ -49,21 +45,16 @@ export const createKeyResultSchema = z.object({
     invalid_type_error: "Current must be a number",
   }),
   unit: z.string().min(1, 'Unit is required'),
-  startDate: z.date({
-    required_error: "Start date is required",
-    invalid_type_error: "Start date must be a valid date",
-  }),
-  endDate: z.date({
-    required_error: "End date is required",
-    invalid_type_error: "End date must be a valid date",
+  dueDate: z.string({
+    required_error: "Due date is required",
   }),
   objectiveId: z.string().min(1, 'Objective ID is required'),
-  ownerId: z.string().min(1, 'Owner ID is required'),
+  taskId: z.string().optional(),
 }).refine((data) => {
-  return data.startDate < data.endDate;
+  return dayjs(data.dueDate).isAfter(dayjs());
 }, {
-  message: "End date must be after start date",
-  path: ["endDate"],
+  message: "Due date must be in the future",
+  path: ["dueDate"],
 });
 
 export const updateKeyResultSchema = z.object({
@@ -74,15 +65,15 @@ export const updateKeyResultSchema = z.object({
   target: z.number().optional(),
   current: z.number().optional(),
   unit: z.string().min(1, 'Unit is required').optional(),
-  startDate: z.date().optional(),
-  endDate: z.date().optional(),
+  dueDate: z.string().optional(),
   ownerId: z.string().min(1, 'Owner ID is required').optional(),
+  taskId: z.string().optional(),
 }).refine((data) => {
-  if (data.startDate && data.endDate) {
-    return data.startDate < data.endDate;
+  if (data.dueDate) {
+    return dayjs(data.dueDate).isAfter(dayjs());
   }
   return true;
 }, {
-  message: "End date must be after start date",
-  path: ["endDate"],
+  message: "Due date must be in the future",
+  path: ["dueDate"],
 }); 

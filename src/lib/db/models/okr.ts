@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import { ObjectiveStatus, KeyResultStatus } from '@/lib/types/models/okr';
+import { Schemas } from '@/lib/db/models/index';
 
-const objectiveSchema = new mongoose.Schema({
+export const ObjectiveSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
@@ -24,11 +25,7 @@ const objectiveSchema = new mongoose.Schema({
     max: 100,
     default: 0,
   },
-  startDate: {
-    type: Date,
-    required: true,
-  },
-  endDate: {
+  dueDate: {
     type: Date,
     required: true,
   },
@@ -46,7 +43,7 @@ const objectiveSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-const keyResultSchema = new mongoose.Schema({
+export const KeyResultSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
@@ -82,11 +79,7 @@ const keyResultSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  startDate: {
-    type: Date,
-    required: true,
-  },
-  endDate: {
+  dueDate: {
     type: Date,
     required: true,
   },
@@ -100,23 +93,28 @@ const keyResultSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  task: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Task',
+    required: false,
+  },
 }, {
   timestamps: true,
 });
 
 // Add virtual field for keyResults in Objective model
-objectiveSchema.virtual('keyResults', {
+ObjectiveSchema.virtual('keyResults', {
   ref: 'KeyResult',
   localField: '_id',
   foreignField: 'objective',
 });
 
 // Ensure virtuals are included in JSON output
-objectiveSchema.set('toJSON', { virtuals: true });
-objectiveSchema.set('toObject', { virtuals: true });
+ObjectiveSchema.set('toJSON', { virtuals: true });
+ObjectiveSchema.set('toObject', { virtuals: true });
 
 // Update objective progress when key result progress changes
-keyResultSchema.post('save', async function(this: any, doc: any) {
+KeyResultSchema.post('save', async function(this: any, doc: any) {
   const objective = await mongoose.model('Objective').findById(doc.objective);
   if (objective) {
     const keyResults = await mongoose.model('KeyResult').find({ objective: objective._id });
@@ -134,7 +132,7 @@ keyResultSchema.post('save', async function(this: any, doc: any) {
 });
 
 // Update objective progress when key result is deleted
-keyResultSchema.pre('deleteOne', { document: true, query: false }, async function(this: any) {
+KeyResultSchema.pre('deleteOne', { document: true, query: false }, async function(this: any) {
   const objective = await mongoose.model('Objective').findById(this.objective);
   if (objective) {
     const keyResults = await mongoose.model('KeyResult').find({ objective: objective._id });
@@ -148,6 +146,3 @@ keyResultSchema.pre('deleteOne', { document: true, query: false }, async functio
     await objective.save();
   }
 });
-
-export const Objective = mongoose.models.Objective || mongoose.model('Objective', objectiveSchema);
-export const KeyResult = mongoose.models.KeyResult || mongoose.model('KeyResult', keyResultSchema); 

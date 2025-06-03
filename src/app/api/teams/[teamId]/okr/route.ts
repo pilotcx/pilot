@@ -1,4 +1,5 @@
-import { Objective } from "@/lib/db/models/okr";
+import { dbService } from "@/lib/db/service";
+import { ObjectiveStatus } from "@/lib/types/models/okr";
 import { withApi } from "@/lib/utils/withApi";
 import { createObjectiveSchema } from "@/lib/validations/okr";
 import { NextRequest } from "next/server";
@@ -22,7 +23,7 @@ export const GET = withApi(async (req: NextRequest, { params, searchParams }) =>
   if (ownerId) query.owner = ownerId;
 
   const [objectives, total] = await Promise.all([
-    Objective.find(query)
+    dbService.objective.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -35,7 +36,7 @@ export const GET = withApi(async (req: NextRequest, { params, searchParams }) =>
           select: "fullName email",
         },
       }),
-    Objective.countDocuments(query),
+    dbService.objective.count(query),
   ]);
 
   return {
@@ -61,10 +62,14 @@ export const POST = withApi(async (req: NextRequest, { params }, decoded) => {
     throw new Error(validatedData.error.message);
   }
 
-  const objective = await Objective.create({
+  const objective = await dbService.objective.create({
     ...validatedData.data,
-    owner: decoded!.id,
-    team: teamId,
+    owner: decoded!.id as string,
+    team: teamId as string,
+    status: ObjectiveStatus.NOT_STARTED,
+    progress: 0,
+    keyResults: [],
+    dueDate: new Date(validatedData.data.dueDate),
   });
 
   await objective.populate([

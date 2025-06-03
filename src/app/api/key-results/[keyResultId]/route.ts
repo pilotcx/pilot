@@ -8,7 +8,7 @@ interface Params {
   keyResultId: string;
 }
 
-// GET /api/teams/[teamId]/okr/[objectiveId]/key-results/[keyResultId]
+// GET /api/key-results/[keyResultId]
 export const GET = withApi(async (req: NextRequest, { params }) => {
   const { keyResultId } = params as Params;
 
@@ -20,7 +20,8 @@ export const GET = withApi(async (req: NextRequest, { params }) => {
         path: "team",
         select: "name slug",
       },
-    });
+    })
+    .populate("task");
 
   if (!keyResult) {
     throw new Error("Key result not found");
@@ -31,22 +32,46 @@ export const GET = withApi(async (req: NextRequest, { params }) => {
   protected: true,
 });
 
-// PUT /api/teams/[teamId]/okr/[objectiveId]/key-results/[keyResultId]
+// PUT /api/key-results/[keyResultId]
 export const PUT = withApi(async (req: NextRequest, { params }) => {
   const { keyResultId } = params as Params;
   const body = await req.json();
 
   const validatedData = updateKeyResultSchema.parse(body);
 
-  // Calculate progress based on current and target values
-  const progress = Math.round(((validatedData.current ?? 0) / (validatedData.target ?? 1)) * 100);
-  validatedData.progress = Math.min(100, Math.max(0, progress));
+  // If dueDate is provided, convert to Date object
+  if (validatedData.dueDate) {
+    validatedData.dueDate = new Date(validatedData.dueDate);
+  }
 
-  // Update status based on progress
-  if (progress >= 100) {
-    validatedData.status = KeyResultStatus.COMPLETED;
-  } else if (progress > 0) {
-    validatedData.status = validatedData.status || KeyResultStatus.IN_PROGRESS;
+  // Update task reference if provided
+  if (validatedData.taskId !== undefined) {
+    if (validatedData.taskId && validatedData.taskId !== "") {
+      // Associate with task
+      const task = await dbService.task.findById(validatedData.taskId);
+      if (!task) {
+        return { error: "Task not found" };
+      }
+      validatedData.task = validatedData.taskId;
+    } else {
+      // Remove task association
+      validatedData.task = null;
+    }
+    // Remove taskId as it's not part of the model
+    delete validatedData.taskId;
+  }
+
+  // Calculate progress based on current and target values
+  if (validatedData.current !== undefined && validatedData.target !== undefined) {
+    const progress = Math.round((validatedData.current / validatedData.target) * 100);
+    validatedData.progress = Math.min(100, Math.max(0, progress));
+
+    // Update status based on progress
+    if (progress >= 100) {
+      validatedData.status = KeyResultStatus.COMPLETED;
+    } else if (progress > 0) {
+      validatedData.status = validatedData.status || KeyResultStatus.IN_PROGRESS;
+    }
   }
 
   const keyResult = await dbService.keyResult.findOneAndUpdate(
@@ -62,6 +87,7 @@ export const PUT = withApi(async (req: NextRequest, { params }) => {
         select: "name slug",
       },
     },
+    { path: "task" }
   ]);
 
   if (!keyResult) {
@@ -73,17 +99,18 @@ export const PUT = withApi(async (req: NextRequest, { params }) => {
   protected: true,
 });
 
-// DELETE /api/teams/[teamId]/okr/[objectiveId]/key-results/[keyResultId]
+// DELETE /api/key-results/[keyResultId]
 export const DELETE = withApi(async (req: NextRequest, { params }) => {
   const { keyResultId } = params as Params;
 
-  const keyResult = await dbService.keyResult.deleteOne({ _id: keyResultId });
-
+  const keyResult = await dbService.keyResult.findById(keyResultId);
   if (!keyResult) {
     throw new Error("Key result not found");
   }
 
-  return { data: keyResult };
+  await keyResult.deleteOne();
+
+  return { success: true };
 }, {
   protected: true,
 }); 

@@ -15,9 +15,10 @@ import * as React from "react";
 interface DatePickerProps {
   date?: Date;
   onChange: (date: Date | undefined) => void;
+  disabledDate?: (date: Date) => boolean;
 }
 
-export function DatePicker({ date, onChange }: DatePickerProps) {
+export function DatePicker({ date, onChange, disabledDate }: DatePickerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
 
   const handleSelect = (selected: Date | undefined) => {
@@ -40,7 +41,12 @@ export function DatePicker({ date, onChange }: DatePickerProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <Calendar mode="single" selected={date} onSelect={handleSelect} />
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={handleSelect}
+          disabled={disabledDate}
+        />
       </PopoverContent>
     </Popover>
   );

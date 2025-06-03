@@ -474,24 +474,21 @@ export class ApiService {
     page?: number;
     limit?: number;
     status?: string;
-    startDate?: Date;
-    endDate?: Date;
+    dueDate?: Date;
     ownerId?: string;
   } = {}) => {
     const {
       page = 1,
       limit = 10,
       status,
-      startDate,
-      endDate,
+      dueDate,
       ownerId
     } = options;
 
     let url = `/teams/${teamId}/okr?page=${page}&limit=${limit}`;
 
     if (status) url += `&status=${status}`;
-    if (startDate) url += `&startDate=${startDate.toISOString()}`;
-    if (endDate) url += `&endDate=${endDate.toISOString()}`;
+    if (dueDate) url += `&dueDate=${dueDate.toISOString()}`;
     if (ownerId) url += `&ownerId=${ownerId}`;
 
     return this.call<Objective[]>('GET', url);
@@ -501,20 +498,20 @@ export class ApiService {
     return this.call<Objective>('POST', `/teams/${teamId}/okr`, data);
   };
 
-  getObjective = async (teamId: string, objectiveId: string) => {
-    return this.call<Objective>('GET', `/teams/${teamId}/okr/${objectiveId}`);
+  getObjective = async (objectiveId: string) => {
+    return this.call<Objective>('GET', `/okr/${objectiveId}`);
   };
 
-  updateObjective = async (teamId: string, objectiveId: string, data: UpdateObjectiveInput) => {
-    return this.call<Objective>('PUT', `/teams/${teamId}/okr/${objectiveId}`, data);
+  updateObjective = async (objectiveId: string, data: UpdateObjectiveInput) => {
+    return this.call<Objective>('PUT', `/okr/${objectiveId}`, data);
   };
 
-  deleteObjective = async (teamId: string, objectiveId: string) => {
-    return this.call('DELETE', `/teams/${teamId}/okr/${objectiveId}`);
+  deleteObjective = async (objectiveId: string) => {
+    return this.call('DELETE', `/okr/${objectiveId}`);
   };
 
   // Key Results methods
-  getObjectiveKeyResults = async (teamId: string, objectiveId: string, options: {
+  getObjectiveKeyResults = async (objectiveId: string, options: {
     page?: number;
     limit?: number;
     status?: string;
@@ -527,7 +524,7 @@ export class ApiService {
       ownerId
     } = options;
 
-    let url = `/teams/${teamId}/okr/${objectiveId}/key-results?page=${page}&limit=${limit}`;
+    let url = `/okr/${objectiveId}/key-results?page=${page}&limit=${limit}`;
 
     if (status) url += `&status=${status}`;
     if (ownerId) url += `&ownerId=${ownerId}`;
@@ -535,20 +532,34 @@ export class ApiService {
     return this.call<KeyResult[]>('GET', url);
   };
 
-  createKeyResult = async (teamId: string, objectiveId: string, data: CreateKeyResultInput) => {
-    return this.call<KeyResult>('POST', `/teams/${teamId}/okr/${objectiveId}/key-results`, data);
+  createKeyResult = async (objectiveId: string, data: CreateKeyResultInput) => {
+    return this.call<KeyResult>('POST', `/okr/${objectiveId}/key-results`, data);
   };
 
-  getKeyResult = async (teamId: string, objectiveId: string, keyResultId: string) => {
-    return this.call<KeyResult>('GET', `/teams/${teamId}/okr/${objectiveId}/key-results/${keyResultId}`);
+  getKeyResult = async (keyResultId: string) => {
+    return this.call<KeyResult>('GET', `/key-results/${keyResultId}`);
   };
 
-  updateKeyResult = async (teamId: string, objectiveId: string, keyResultId: string, data: UpdateKeyResultInput) => {
-    return this.call<KeyResult>('PUT', `/teams/${teamId}/okr/${objectiveId}/key-results/${keyResultId}`, data);
+  updateKeyResult = async (keyResultId: string, data: UpdateKeyResultInput) => {
+    return this.call<KeyResult>('PUT', `/key-results/${keyResultId}`, data);
   };
 
-  deleteKeyResult = async (teamId: string, objectiveId: string, keyResultId: string) => {
-    return this.call('DELETE', `/teams/${teamId}/okr/${objectiveId}/key-results/${keyResultId}`);
+  deleteKeyResult = async (keyResultId: string) => {
+    return this.call('DELETE', `/key-results/${keyResultId}`);
+  };
+
+  // OKR Statistics
+  getTeamOkrStatistics = async (teamId: string) => {
+    return this.call<{
+      totalObjectives: number;
+      completedObjectives: number;
+      inProgressObjectives: number;
+      atRiskObjectives: number;
+      totalKeyResults: number;
+      completedKeyResults: number;
+      averageProgress: number;
+      statusCounts: Record<string, number>;
+    }>('GET', `/teams/${teamId}/okr/statistics`);
   };
 }
 

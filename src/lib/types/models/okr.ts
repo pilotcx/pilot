@@ -1,6 +1,7 @@
 import { BaseEntity } from './base';
 import { Team } from './team';
 import { User } from './user';
+import { Task } from './task';
 
 export enum ObjectiveStatus {
   NOT_STARTED = 'NOT_STARTED',
@@ -23,11 +24,10 @@ export interface Objective extends BaseEntity {
   description?: string;
   status: ObjectiveStatus;
   progress: number; // 0-100
-  startDate: Date;
-  endDate: Date;
-  owner: User;
-  team: Team;
-  keyResults: KeyResult[];
+  dueDate: Date;
+  owner: string | User;
+  team: any;
+  keyResults: string[] | KeyResult[];
 }
 
 export interface KeyResult extends BaseEntity {
@@ -39,17 +39,16 @@ export interface KeyResult extends BaseEntity {
   target: number;
   current: number;
   unit: string;
-  startDate: Date;
-  endDate: Date;
-  objective: Objective;
-  owner: User;
+  dueDate: Date;
+  objective: string | Objective;
+  owner: string | User;
+  task?: string | Task;
 }
 
 export interface CreateObjectiveInput {
   title: string;
   description?: string;
-  startDate: Date;
-  endDate: Date;
+  dueDate: Date;
   teamId: string;
   ownerId: string;
 }
@@ -59,8 +58,7 @@ export interface UpdateObjectiveInput {
   description?: string;
   status?: ObjectiveStatus;
   progress?: number;
-  startDate?: Date;
-  endDate?: Date;
+  dueDate?: Date;
   ownerId?: string;
 }
 
@@ -70,10 +68,10 @@ export interface CreateKeyResultInput {
   target: number;
   current: number;
   unit: string;
-  startDate: Date;
-  endDate: Date;
+  dueDate: Date;
   objectiveId: string;
   ownerId: string;
+  taskId?: string;
 }
 
 export interface UpdateKeyResultInput {
@@ -84,7 +82,6 @@ export interface UpdateKeyResultInput {
   target?: number;
   current?: number;
   unit?: string;
-  startDate?: Date;
-  endDate?: Date;
+  dueDate?: Date;
   ownerId?: string;
 } 

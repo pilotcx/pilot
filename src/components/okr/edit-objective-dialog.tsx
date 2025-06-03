@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +19,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -29,10 +26,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { updateObjectiveSchema } from "@/lib/validations/okr";
-import { Objective, ObjectiveStatus } from "@/lib/types/models/okr";
+import { Textarea } from "@/components/ui/textarea";
 import apiService from "@/lib/services/api";
-import { DatePicker } from "@/components/ui/date-picker";
+import { Objective, ObjectiveStatus } from "@/lib/types/models/okr";
+import { updateObjectiveSchema } from "@/lib/validations/okr";
+import { zodResolver } from "@hookform/resolvers/zod";
+import dayjs from "dayjs";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 interface EditObjectiveDialogProps {
@@ -54,25 +55,20 @@ export function EditObjectiveDialog({
     resolver: zodResolver(updateObjectiveSchema),
     defaultValues: {
       title: objective.title,
-      description: objective.description,
-      status: objective.status as ObjectiveStatus,
+      description: objective.description || "",
+      status: objective.status,
       progress: objective.progress,
-      startDate: new Date(objective.startDate),
-      endDate: new Date(objective.endDate),
+      dueDate: dayjs(objective.dueDate).toISOString(),
     },
   });
 
   const onSubmit = async (values: any) => {
     try {
       setIsSubmitting(true);
-      await apiService.updateObjective(
-        objective.team._id as string,
-        objective._id as string,
-        values
-      );
+      await apiService.updateObjective(objective._id, values);
       toast.success("Objective updated successfully");
-      onUpdate();
       onOpenChange(false);
+      onUpdate();
     } catch (error: any) {
       toast.error(error.message || "Failed to update objective");
     } finally {
@@ -99,7 +95,7 @@ export function EditObjectiveDialog({
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input placeholder="Enter objective title" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -113,7 +109,10 @@ export function EditObjectiveDialog({
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea {...field} />
+                    <Textarea
+                      placeholder="Enter objective description"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -172,52 +171,27 @@ export function EditObjectiveDialog({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="startDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Start Date</FormLabel>
-                    <FormControl>
-                      <DatePicker
-                        date={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="endDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>End Date</FormLabel>
-                    <FormControl>
-                      <DatePicker
-                        date={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="dueDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Due Date</FormLabel>
+                  <FormControl>
+                    <DatePicker
+                      disabledDate={(date) => dayjs(date).isBefore(dayjs(), "day")}
+                      date={dayjs(field.value).toDate()}
+                      onChange={(date) => field.onChange(date?.toISOString())}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancel
-              </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Save Changes"}
+                {isSubmitting ? "Updating..." : "Update Objective"}
               </Button>
             </DialogFooter>
           </form>
@@ -225,4 +199,4 @@ export function EditObjectiveDialog({
       </DialogContent>
     </Dialog>
   );
-} 
+}

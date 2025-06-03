@@ -48,20 +48,21 @@ export function CreateObjectiveDialog({
     defaultValues: {
       title: "",
       description: "",
-      startDate: dayjs().toISOString(),
-      endDate: dayjs().add(3, 'month').toISOString(),
-      teamId: team._id as string,
+      dueDate: dayjs().add(1, "month").toISOString(),
+      teamId: team?._id as string,
     },
   });
 
-  const onSubmit = async (values: any) => {
+  const onSubmit = async (data: any) => {
+    if (!team?._id) return;
+
     try {
       setIsSubmitting(true);
-      await apiService.createObjective(team._id as string, values);
+      await apiService.createObjective(team._id as string, data);
       toast.success("Objective created successfully");
       form.reset();
-      onCreate();
       onOpenChange(false);
+      onCreate();
     } catch (error: any) {
       toast.error(error.message || "Failed to create objective");
     } finally {
@@ -113,41 +114,23 @@ export function CreateObjectiveDialog({
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="startDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Start Date</FormLabel>
-                    <FormControl>
-                      <DatePicker
-                        date={dayjs(field.value).toDate()}
-                        onChange={(date) => field.onChange(dayjs(date).toISOString())}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="endDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>End Date</FormLabel>
-                    <FormControl>
-                      <DatePicker
-                        date={dayjs(field.value).toDate()}
-                        onChange={(date) => field.onChange(dayjs(date).toISOString())}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="dueDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Due Date</FormLabel>
+                  <FormControl>
+                    <DatePicker
+                      disabledDate={(date) => dayjs(date).isBefore(dayjs(), "day")}
+                      date={dayjs(field.value).toDate()}
+                      onChange={(date) => field.onChange(date?.toISOString())}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <DialogFooter>
               <Button

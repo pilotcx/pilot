@@ -8,7 +8,7 @@ interface Params {
   objectiveId: string;
 }
 
-// GET /api/teams/[teamId]/okr/[objectiveId]/key-results
+// GET /api/okr/[objectiveId]/key-results
 export const GET = withApi(async (req: NextRequest, { params, searchParams }) => {
   const { objectiveId } = params as Params;
   const { status, ownerId } = Object.fromEntries(searchParams);
@@ -32,7 +32,8 @@ export const GET = withApi(async (req: NextRequest, { params, searchParams }) =>
           path: "team",
           select: "name slug",
         },
-      }),
+      })
+      .populate("task"),
     dbService.keyResult.count(query),
   ]);
 
@@ -49,7 +50,7 @@ export const GET = withApi(async (req: NextRequest, { params, searchParams }) =>
   protected: true,
 });
 
-// POST /api/teams/[teamId]/okr/[objectiveId]/key-results
+// POST /api/okr/[objectiveId]/key-results
 export const POST = withApi(async (req: NextRequest, { params }, decoded) => {
   const { objectiveId } = params as Params;
   const body = await req.json();
@@ -66,16 +67,20 @@ export const POST = withApi(async (req: NextRequest, { params }, decoded) => {
   }
 
   // Prepare key result data
-  const keyResultData = {
-    ...validatedData.data,
+  const keyResultData: any = {
+    title: validatedData.data.title,
+    description: validatedData.data.description,
+    target: validatedData.data.target,
+    current: validatedData.data.current,
+    unit: validatedData.data.unit,
+    dueDate: new Date(validatedData.data.dueDate),
     owner: decoded!.id,
     objective: objectiveId,
     status: KeyResultStatus.NOT_STARTED,
-    progress: 0,
-    dueDate: new Date(validatedData.data.dueDate)
+    progress: 0
   };
 
-  // If a task is associated, check and add warning flag if needed
+  // If a task is associated, add it to the data
   if (validatedData.data.taskId) {
     const task = await dbService.task.findById(validatedData.data.taskId);
     if (task) {

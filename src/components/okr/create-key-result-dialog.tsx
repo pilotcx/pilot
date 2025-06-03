@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -21,12 +19,26 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { createKeyResultSchema } from "@/lib/validations/okr";
-import { Objective } from "@/lib/types/models/okr";
 import apiService from "@/lib/services/api";
-import { DatePicker } from "@/components/ui/date-picker";
+import { Objective } from "@/lib/types/models/okr";
+import { createKeyResultSchema } from "@/lib/validations/okr";
+import { zodResolver } from "@hookform/resolvers/zod";
+import dayjs from "dayjs";
+import { useEffect, useState, useRef } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { Task } from "@/lib/types/models/task";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
+import { Combobox } from "@/components/ui/combobox";
 
 interface CreateKeyResultDialogProps {
   objective: Objective;
@@ -42,6 +54,11 @@ export function CreateKeyResultDialog({
   onCreate,
 }: CreateKeyResultDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [showTaskWarning, setShowTaskWarning] = useState(false);
+  const [tasksLoaded, setTasksLoaded] = useState(false);
+  const apiCallInProgressRef = useRef(false);
 
   const form = useForm({
     resolver: zodResolver(createKeyResultSchema),
@@ -51,21 +68,83 @@ export function CreateKeyResultDialog({
       target: 100,
       current: 0,
       unit: "%",
-      startDate: new Date(objective.startDate),
-      endDate: new Date(objective.endDate),
-      objectiveId: objective._id,
-      ownerId: objective.owner._id,
+      dueDate: objective?.dueDate ? dayjs(objective.dueDate).toISOString() : dayjs().add(1, "month").toISOString(),
+      objectiveId: objective?._id,
+      taskId: "none",
     },
   });
+
+  useEffect(() => {
+    const loadTasks = async () => {
+      // Use ref to prevent duplicate API calls
+      if (apiCallInProgressRef.current) return;
+      
+      try {
+        // Only load tasks if dialog is open and tasks haven't been loaded yet
+        if (open && !tasksLoaded && objective?.team) {
+          apiCallInProgressRef.current = true;
+          console.log("Loading tasks for create key result dialog");
+          
+          const teamId = typeof objective.team === 'object' ? objective.team._id : objective.team;
+          // Load team tasks with a higher limit
+          const response = await apiService.getTeamTasks(teamId, { 
+            limit: 100
+          });
+          setTasks(response.data || []);
+          setTasksLoaded(true);
+          apiCallInProgressRef.current = false;
+        }
+      } catch (error) {
+        console.error("Failed to load tasks:", error);
+        apiCallInProgressRef.current = false;
+      }
+    };
+    
+    loadTasks();
+  }, [open, objective, tasksLoaded]);
+
+  // Reset tasksLoaded when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setTasksLoaded(false);
+      apiCallInProgressRef.current = false;
+    }
+  }, [open]);
+
+  // Watch for task changes
+  const watchedTaskId = form.watch("taskId");
+  
+  useEffect(() => {
+    if (watchedTaskId && watchedTaskId !== "none") {
+      const task = tasks.find(t => t._id === watchedTaskId);
+      setSelectedTask(task || null);
+      
+      // Check if task due date is after key result due date
+      const krDueDate = form.getValues("dueDate");
+      if (task && krDueDate && dayjs(task.dueDate).isAfter(dayjs(krDueDate))) {
+        setShowTaskWarning(true);
+      } else {
+        setShowTaskWarning(false);
+      }
+    } else {
+      setSelectedTask(null);
+      setShowTaskWarning(false);
+    }
+  }, [watchedTaskId, tasks, form]);
 
   const onSubmit = async (values: any) => {
     try {
       setIsSubmitting(true);
-      await apiService.createKeyResult(objective.team._id as string, objective._id, values);
+      // Convert "none" to empty string for the API call
+      const submissionData = {
+        ...values,
+        taskId: values.taskId === "none" ? "" : values.taskId
+      };
+      await apiService.createKeyResult(objective._id, submissionData);
       toast.success("Key result created successfully");
       form.reset();
-      onCreate();
       onOpenChange(false);
+      onCreate();
     } catch (error: any) {
       toast.error(error.message || "Failed to create key result");
     } finally {
@@ -73,9 +152,18 @@ export function CreateKeyResultDialog({
     }
   };
 
+  // Convert tasks to options format for combobox
+  const taskOptions = [
+    { value: "none", label: "None" },
+    ...tasks.map(task => ({
+      value: task._id as string,
+      label: task.title
+    }))
+  ];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Key Result</DialogTitle>
           <DialogDescription>
@@ -152,50 +240,58 @@ export function CreateKeyResultDialog({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="startDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Start Date</FormLabel>
-                    <FormControl>
-                      <DatePicker
-                        date={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="dueDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Due Date</FormLabel>
+                  <FormControl>
+                    <DatePicker
+                      disabledDate={(date) => 
+                        dayjs(date).isBefore(dayjs(), "day") ||
+                        (objective?.dueDate && dayjs(date).isAfter(dayjs(objective.dueDate)))
+                      }
+                      date={dayjs(field.value).toDate()}
+                      onChange={(date) => field.onChange(date?.toISOString())}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="endDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>End Date</FormLabel>
-                    <FormControl>
-                      <DatePicker
-                        date={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="taskId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Associated Task (Optional)</FormLabel>
+                  <FormControl>
+                    <Combobox
+                      options={taskOptions}
+                      value={field.value || "none"}
+                      onChange={field.onChange}
+                      placeholder="Search tasks..."
+                      emptyText="No matching tasks found"
+                      clearable
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {showTaskWarning && (
+              <Alert className="bg-yellow-50 text-yellow-800 border border-yellow-200">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  The selected task's due date is after this key result's due date, which may cause delays.
+                </AlertDescription>
+              </Alert>
+            )}
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancel
-              </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Creating..." : "Create Key Result"}
               </Button>
@@ -205,4 +301,4 @@ export function CreateKeyResultDialog({
       </DialogContent>
     </Dialog>
   );
-} 
+}
