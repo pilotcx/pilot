@@ -215,9 +215,11 @@ export function CreateKeyResultDialog({
                       <Input
                         type="number"
                         {...field}
-                        onChange={(e) =>
-                          field.onChange(parseFloat(e.target.value))
-                        }
+                        value={field.value ?? ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(value === '' ? '' : parseFloat(value));
+                        }}
                       />
                     </FormControl>
                     <FormMessage />

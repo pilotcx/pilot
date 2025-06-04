@@ -160,9 +160,11 @@ export function EditObjectiveDialog({
                         min="0"
                         max="100"
                         {...field}
-                        onChange={(e) =>
-                          field.onChange(parseInt(e.target.value, 10))
-                        }
+                        value={field.value ?? ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(value === '' ? '' : parseInt(value, 10));
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
