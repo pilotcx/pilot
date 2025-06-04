@@ -21,8 +21,8 @@ export interface MixedModel<T>
 }
 
 export class BaseRepository<T> {
-  deleteMany(arg0: { parentId: string; }) {
-    throw new Error('Method not implemented.');
+  deleteMany(filter: FilterQuery<T>) {
+    return this._model.deleteMany(this.processFilter(filter));
   }
   private _model: MixedModel<T>;
 
