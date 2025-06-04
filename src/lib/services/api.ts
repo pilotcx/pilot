@@ -20,6 +20,7 @@ import {Integration} from "@/lib/types/models/integration";
 import {Domain} from "@/lib/types/models/domain";
 import {EmailAddress} from "@/lib/types/models/email-address";
 import {Email, EmailConversation} from "@/lib/types/models/email";
+import { Objective, KeyResult, CreateObjectiveInput, UpdateObjectiveInput, CreateKeyResultInput, UpdateKeyResultInput } from '../types/models/okr';
 
 export class ApiService {
   api = axios.create({
@@ -466,6 +467,99 @@ export class ApiService {
         emailAddress,
       }
     });
+  };
+
+  // OKR methods
+  getTeamObjectives = async (teamId: string, options: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    dueDate?: Date;
+    ownerId?: string;
+  } = {}) => {
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      dueDate,
+      ownerId
+    } = options;
+
+    let url = `/teams/${teamId}/okr?page=${page}&limit=${limit}`;
+
+    if (status) url += `&status=${status}`;
+    if (dueDate) url += `&dueDate=${dueDate.toISOString()}`;
+    if (ownerId) url += `&ownerId=${ownerId}`;
+
+    return this.call<Objective[]>('GET', url);
+  };
+
+  createObjective = async (teamId: string, data: CreateObjectiveInput) => {
+    return this.call<Objective>('POST', `/teams/${teamId}/okr`, data);
+  };
+
+  getObjective = async (objectiveId: string) => {
+    return this.call<Objective>('GET', `/okr/${objectiveId}`);
+  };
+
+  updateObjective = async (objectiveId: string, data: UpdateObjectiveInput) => {
+    return this.call<Objective>('PUT', `/okr/${objectiveId}`, data);
+  };
+
+  deleteObjective = async (objectiveId: string) => {
+    return this.call('DELETE', `/okr/${objectiveId}`);
+  };
+
+  // Key Results methods
+  getObjectiveKeyResults = async (objectiveId: string, options: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    ownerId?: string;
+  } = {}) => {
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      ownerId
+    } = options;
+
+    let url = `/okr/${objectiveId}/key-results?page=${page}&limit=${limit}`;
+
+    if (status) url += `&status=${status}`;
+    if (ownerId) url += `&ownerId=${ownerId}`;
+
+    return this.call<KeyResult[]>('GET', url);
+  };
+
+  createKeyResult = async (objectiveId: string, data: CreateKeyResultInput) => {
+    return this.call<KeyResult>('POST', `/okr/${objectiveId}/key-results`, data);
+  };
+
+  getKeyResult = async (keyResultId: string) => {
+    return this.call<KeyResult>('GET', `/key-results/${keyResultId}`);
+  };
+
+  updateKeyResult = async (keyResultId: string, data: UpdateKeyResultInput) => {
+    return this.call<KeyResult>('PUT', `/key-results/${keyResultId}`, data);
+  };
+
+  deleteKeyResult = async (keyResultId: string) => {
+    return this.call('DELETE', `/key-results/${keyResultId}`);
+  };
+
+  // OKR Statistics
+  getTeamOkrStatistics = async (teamId: string) => {
+    return this.call<{
+      totalObjectives: number;
+      completedObjectives: number;
+      inProgressObjectives: number;
+      atRiskObjectives: number;
+      totalKeyResults: number;
+      completedKeyResults: number;
+      averageProgress: number;
+      statusCounts: Record<string, number>;
+    }>('GET', `/teams/${teamId}/okr/statistics`);
   };
 }
 

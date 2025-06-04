@@ -17,4 +17,6 @@ export enum Schemas {
   Integration = 'Integration',
   Domain = 'Domain',
   EmailAddress = 'EmailAddress',
+  Objective = 'Objective',
+  KeyResult = 'KeyResult',
 }
